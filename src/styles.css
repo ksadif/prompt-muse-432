@@ -62,9 +62,13 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --radius: 0.5rem;
+  --background: oklch(0.985 0.002 80);
+  --foreground: oklch(0.18 0.01 60);
+  --console-orange: oklch(0.68 0.18 38);
+  --console-sidebar: oklch(0.97 0.004 80);
+  --console-active: oklch(0.93 0.008 80);
+  --console-mono: ui-monospace, "SF Mono", Menlo, monospace;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.129 0.042 264.695);
   --popover: oklch(1 0 0);
