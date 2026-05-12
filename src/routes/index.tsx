@@ -1,169 +1,380 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
-import { WorkbenchHeader } from "@/components/console/WorkbenchHeader";
+import { Sidebar } from "@/components/console/Sidebar";
+import { PromptListPanel } from "@/components/console/PromptListPanel";
+import { PromptInfoBar } from "@/components/console/PromptInfoBar";
+import { PromptEditorBlock } from "@/components/console/PromptEditorBlock";
+import { AgentPreview } from "@/components/console/AgentPreview";
+import { EvalTable } from "@/components/console/EvalTable";
+import { RightDrawer } from "@/components/console/RightDrawer";
+import { initialFolders, versionHistory } from "@/components/console/mockData";
 import {
-  Settings2,
-  Braces,
-  Wrench,
-  Sparkles,
-  Info,
-  ChevronDown,
-  Paperclip,
-  SquareDashed,
-  MessagesSquare,
-  ArrowRight,
-  ExternalLink,
-} from "lucide-react";
-import { useState } from "react";
-import { GeneratePromptDialog } from "@/components/console/GeneratePromptDialog";
+  ALL_MODELS,
+  ALL_TOOLS,
+  ALL_MEMORIES,
+  type EditorBlock,
+  type Folder,
+  type PromptItem,
+} from "@/components/console/types";
+import { Plus } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [{ title: "Workbench · Claude Console" }],
-  }),
+  head: () => ({ meta: [{ title: "Prompt 工作台 · Claude Console" }] }),
   component: PromptPage,
 });
 
+function makeBlock(idx: number): EditorBlock {
+  return {
+    id: `b${Date.now()}-${idx}`,
+    title: idx === 0 ? "主 Prompt" : `后处理 #${idx}`,
+    linkedPromptId: null,
+    model: "claude-opus-4-7",
+    maxTurns: 5,
+    tools: [],
+    memories: [],
+    systemPrompt: "",
+    userPrompt: "",
+  };
+}
+
+type DrawerKind =
+  | { kind: "model"; blockIdx: number }
+  | { kind: "tools"; blockIdx: number }
+  | { kind: "memory"; blockIdx: number }
+  | { kind: "history" }
+  | { kind: "compare"; cb: (p: PromptItem) => void }
+  | null;
+
 function PromptPage() {
-  const [system, setSystem] = useState("");
-  const [user, setUser] = useState("");
-  const [genOpen, setGenOpen] = useState(false);
+  const [folders, setFolders] = useState<Folder[]>(initialFolders);
+  const [selectedId, setSelectedId] = useState<string>("p1");
+  const [tab, setTab] = useState<"edit" | "test">("edit");
+  const [blocksMap, setBlocksMap] = useState<Record<string, EditorBlock[]>>({
+    p1: [makeBlock(0)],
+  });
+  const [drawer, setDrawer] = useState<DrawerKind>(null);
+
+  const selectedPrompt = useMemo(() => {
+    for (const f of folders) {
+      const p = f.prompts.find((x) => x.id === selectedId);
+      if (p) return p;
+    }
+    return null;
+  }, [folders, selectedId]);
+
+  const blocks = blocksMap[selectedId] ?? [makeBlock(0)];
+
+  function setBlocks(updater: (b: EditorBlock[]) => EditorBlock[]) {
+    setBlocksMap((m) => ({ ...m, [selectedId]: updater(m[selectedId] ?? [makeBlock(0)]) }));
+  }
+
+  function handleAddFolder(name: string) {
+    setFolders((fs) => [...fs, { id: `f${Date.now()}`, name, prompts: [] }]);
+  }
+
+  function handleAddPrompt(d: { name: string; description: string; folderId: string }) {
+    const newPrompt: PromptItem = {
+      id: `p${Date.now()}`,
+      name: d.name,
+      updatedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
+      owner: "yz",
+    };
+    setFolders((fs) =>
+      fs.map((f) => (f.id === d.folderId ? { ...f, prompts: [...f.prompts, newPrompt] } : f)),
+    );
+    setSelectedId(newPrompt.id);
+    setBlocksMap((m) => ({ ...m, [newPrompt.id]: [makeBlock(0)] }));
+  }
+
+  function renamePrompt(name: string) {
+    setFolders((fs) =>
+      fs.map((f) => ({
+        ...f,
+        prompts: f.prompts.map((p) => (p.id === selectedId ? { ...p, name } : p)),
+      })),
+    );
+  }
+
+  function duplicatePrompt() {
+    if (!selectedPrompt) return;
+    const dup: PromptItem = {
+      ...selectedPrompt,
+      id: `p${Date.now()}`,
+      name: selectedPrompt.name + "（副本）",
+      updatedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
+    };
+    setFolders((fs) =>
+      fs.map((f) =>
+        f.prompts.find((x) => x.id === selectedId)
+          ? { ...f, prompts: [...f.prompts, dup] }
+          : f,
+      ),
+    );
+    setBlocksMap((m) => ({ ...m, [dup.id]: blocks.map((b) => ({ ...b, id: `b${Math.random()}` })) }));
+    setSelectedId(dup.id);
+  }
+
+  function deletePrompt() {
+    setFolders((fs) =>
+      fs.map((f) => ({ ...f, prompts: f.prompts.filter((p) => p.id !== selectedId) })),
+    );
+    const remain = folders.flatMap((f) => f.prompts).find((p) => p.id !== selectedId);
+    if (remain) setSelectedId(remain.id);
+  }
 
   return (
-    <ConsoleShell>
-      <WorkbenchHeader title="点点3.0-Prompt" savedAt="May 11, 2:56 PM" />
+    <div className="min-h-screen flex bg-background text-foreground">
+      <Sidebar />
+      <PromptListPanel
+        folders={folders}
+        selectedId={selectedId}
+        onSelect={(id) => {
+          setSelectedId(id);
+          if (!blocksMap[id]) setBlocksMap((m) => ({ ...m, [id]: [makeBlock(0)] }));
+        }}
+        onAddFolder={handleAddFolder}
+        onAddPrompt={handleAddPrompt}
+      />
+      <div className="flex-1 min-w-0 flex flex-col">
+        {selectedPrompt && (
+          <PromptInfoBar
+            prompt={selectedPrompt}
+            onRename={renamePrompt}
+            onShowHistory={() => setDrawer({ kind: "history" })}
+            onDuplicate={duplicatePrompt}
+            onDelete={deletePrompt}
+            onSave={() => {}}
+          />
+        )}
 
-      <div className="grid grid-cols-[1fr_360px] gap-0">
-        {/* Left: prompt editor */}
-        <div className="px-6 py-5 border-r border-border min-h-[calc(100vh-120px)]">
-          <div className="flex items-center justify-between text-sm mb-4">
-            <div className="flex items-center gap-4">
-              <button className="inline-flex items-center gap-1.5 text-foreground hover:text-foreground">
-                <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
-                claude-opus-4-7
-              </button>
-              <button className="text-muted-foreground hover:text-foreground">
-                <Braces className="h-3.5 w-3.5" />
-              </button>
-              <button className="text-muted-foreground hover:text-foreground">
-                <Wrench className="h-3.5 w-3.5" />
-              </button>
-              <button className="text-muted-foreground hover:text-foreground text-sm">
-                Examples
-              </button>
-            </div>
-            <button className="inline-flex items-center gap-1.5 text-sm text-[var(--console-orange)] hover:opacity-80">
-              <Sparkles className="h-3.5 w-3.5" />
-              Templatize
-            </button>
-          </div>
-
-          {/* System Prompt */}
-          <div className="rounded-lg border border-border bg-background mb-4">
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
-              <div className="flex items-center gap-1.5 text-sm font-medium">
-                System Prompt
-                <Info className="h-3 w-3 text-muted-foreground" />
-              </div>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <textarea
-              value={system}
-              onChange={(e) => setSystem(e.target.value)}
-              placeholder="Define a role, tone or context (optional)"
-              className="w-full px-4 py-3 text-sm bg-transparent outline-none resize-none min-h-[80px] placeholder:text-muted-foreground"
-            />
-          </div>
-
-          {/* User */}
-          <div className="rounded-lg border border-border bg-background mb-3">
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
-              <div className="text-sm font-medium">User</div>
-              <Paperclip className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="flex items-start gap-2 px-3 py-3">
+        {/* Tabs */}
+        <div className="border-b border-border bg-background px-5">
+          <div className="inline-flex gap-1 -mb-px">
+            {[
+              { k: "edit", label: "Prompt 编辑" },
+              { k: "test", label: "效果测试" },
+            ].map((t) => (
               <button
-                onClick={() => setGenOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent shrink-0"
+                key={t.k}
+                onClick={() => setTab(t.k as "edit" | "test")}
+                className={`px-4 py-2.5 text-sm border-b-2 transition ${
+                  tab === t.k
+                    ? "border-[var(--console-orange)] text-foreground font-medium"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
               >
-                <Sparkles className="h-3 w-3 text-[var(--console-orange)]" />
-                Generate Prompt
+                {t.label}
               </button>
-              <textarea
-                value={user}
-                onChange={(e) => setUser(e.target.value)}
-                placeholder="or enter instructions or prompt for Claude…"
-                className="flex-1 bg-transparent text-sm outline-none resize-none min-h-[32px] placeholder:text-muted-foreground"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-5 text-sm text-muted-foreground">
-            <button className="inline-flex items-center gap-1.5 hover:text-foreground">
-              <SquareDashed className="h-3.5 w-3.5" /> Pre-fill response
-            </button>
-            <button className="inline-flex items-center gap-1.5 hover:text-foreground">
-              <MessagesSquare className="h-3.5 w-3.5" /> Add message pair
-            </button>
+            ))}
           </div>
         </div>
 
-        {/* Right: welcome panel */}
-        <aside className="px-6 py-6 min-h-[calc(100vh-120px)]">
-          <h2 className="text-xl font-semibold mb-5">Welcome to Workbench</h2>
-          <ul className="space-y-3.5 text-sm text-foreground/90">
-            {[
-              <>
-                Write a prompt in the left column, and click{" "}
-                <span className="inline-flex items-center gap-1 rounded bg-foreground/90 text-background px-1.5 py-0.5 text-xs">
-                  ▶ Run
-                </span>{" "}
-                to see Claude's response
-              </>,
-              <>
-                Editing the prompt, or changing{" "}
-                <Settings2 className="inline h-3 w-3" /> model parameters creates a
-                new version
-              </>,
-              <>
-                Write variables like this:{" "}
-                <code className="font-[var(--console-mono)] text-[12px] text-blue-600">
-                  {"{{VARIABLE_NAME}}"}
-                </code>
-              </>,
-              <>
-                Add messages using{" "}
-                <MessagesSquare className="inline h-3 w-3" /> to simulate a
-                conversation
-              </>,
-              <>
-                High quality examples greatly improve performance. After drafting a
-                prompt, click{" "}
-                <span className="inline-flex items-center rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium">
-                  EXAMPLES
-                </span>{" "}
-                to add some
-              </>,
-            ].map((c, i) => (
-              <li key={i} className="flex gap-2.5">
-                <ArrowRight className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
-                <div className="leading-relaxed">{c}</div>
-              </li>
-            ))}
-          </ul>
-
-          <button className="mt-6 inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm hover:bg-accent">
-            <span className="rounded bg-muted p-1">📖</span>
-            Learn about prompt design
-            <ExternalLink className="h-3 w-3 text-muted-foreground" />
-          </button>
-        </aside>
+        {tab === "edit" ? (
+          <div className="grid grid-cols-[1fr_400px] flex-1 min-h-0">
+            <div className="px-6 py-5 border-r border-border overflow-y-auto">
+              {blocks.map((b, i) => (
+                <PromptEditorBlock
+                  key={b.id}
+                  block={b}
+                  index={i}
+                  removable={i > 0}
+                  folders={folders}
+                  onChange={(nb) =>
+                    setBlocks((bs) => bs.map((x, idx) => (idx === i ? nb : x)))
+                  }
+                  onRemove={() => setBlocks((bs) => bs.filter((_, idx) => idx !== i))}
+                  onOpenModelPicker={() => setDrawer({ kind: "model", blockIdx: i })}
+                  onOpenToolPicker={() => setDrawer({ kind: "tools", blockIdx: i })}
+                  onOpenMemoryPicker={() => setDrawer({ kind: "memory", blockIdx: i })}
+                />
+              ))}
+              <button
+                onClick={() => setBlocks((bs) => [...bs, makeBlock(bs.length)])}
+                className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-dashed border-border py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+              >
+                <Plus className="h-3.5 w-3.5" /> 增加后处理
+              </button>
+            </div>
+            <div className="overflow-y-auto">
+              <AgentPreview />
+            </div>
+          </div>
+        ) : (
+          selectedPrompt && (
+            <EvalTable
+              folders={folders}
+              currentPrompt={selectedPrompt}
+              onPickComparePrompt={(cb) => setDrawer({ kind: "compare", cb })}
+            />
+          )
+        )}
       </div>
-      <GeneratePromptDialog
-        open={genOpen}
-        onClose={() => setGenOpen(false)}
-        onGenerated={(p) => setUser(p)}
-      />
-    </ConsoleShell>
+
+      {/* 右侧抽屉 */}
+      <RightDrawer
+        open={drawer?.kind === "model"}
+        title="选择模型"
+        onClose={() => setDrawer(null)}
+      >
+        <div className="space-y-1">
+          {ALL_MODELS.map((m) => {
+            const active =
+              drawer?.kind === "model" && blocks[drawer.blockIdx]?.model === m;
+            return (
+              <button
+                key={m}
+                onClick={() => {
+                  if (drawer?.kind !== "model") return;
+                  setBlocks((bs) =>
+                    bs.map((b, idx) => (idx === drawer.blockIdx ? { ...b, model: m } : b)),
+                  );
+                  setDrawer(null);
+                }}
+                className={`w-full text-left px-3 py-2 rounded-md border ${
+                  active
+                    ? "border-[var(--console-orange)] bg-[var(--console-active)]"
+                    : "border-border hover:bg-accent"
+                }`}
+              >
+                {m}
+              </button>
+            );
+          })}
+        </div>
+      </RightDrawer>
+
+      <RightDrawer
+        open={drawer?.kind === "tools"}
+        title="选择工具"
+        onClose={() => setDrawer(null)}
+      >
+        <div className="space-y-1.5">
+          {ALL_TOOLS.map((t) => {
+            const cur = drawer?.kind === "tools" ? blocks[drawer.blockIdx]?.tools ?? [] : [];
+            const active = cur.includes(t);
+            return (
+              <label
+                key={t}
+                className="flex items-center gap-2 px-3 py-2 rounded-md border border-border hover:bg-accent cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={active}
+                  onChange={() => {
+                    if (drawer?.kind !== "tools") return;
+                    setBlocks((bs) =>
+                      bs.map((b, idx) =>
+                        idx === drawer.blockIdx
+                          ? {
+                              ...b,
+                              tools: active ? b.tools.filter((x) => x !== t) : [...b.tools, t],
+                            }
+                          : b,
+                      ),
+                    );
+                  }}
+                />
+                {t}
+              </label>
+            );
+          })}
+        </div>
+      </RightDrawer>
+
+      <RightDrawer
+        open={drawer?.kind === "memory"}
+        title="选择记忆"
+        onClose={() => setDrawer(null)}
+      >
+        <div className="space-y-1.5">
+          {ALL_MEMORIES.map((t) => {
+            const cur = drawer?.kind === "memory" ? blocks[drawer.blockIdx]?.memories ?? [] : [];
+            const active = cur.includes(t);
+            return (
+              <label
+                key={t}
+                className="flex items-center gap-2 px-3 py-2 rounded-md border border-border hover:bg-accent cursor-pointer"
+              >
+                <input
+                  type="checkbox"
+                  checked={active}
+                  onChange={() => {
+                    if (drawer?.kind !== "memory") return;
+                    setBlocks((bs) =>
+                      bs.map((b, idx) =>
+                        idx === drawer.blockIdx
+                          ? {
+                              ...b,
+                              memories: active
+                                ? b.memories.filter((x) => x !== t)
+                                : [...b.memories, t],
+                            }
+                          : b,
+                      ),
+                    );
+                  }}
+                />
+                {t}
+              </label>
+            );
+          })}
+        </div>
+      </RightDrawer>
+
+      <RightDrawer
+        open={drawer?.kind === "history"}
+        title="版本历史"
+        onClose={() => setDrawer(null)}
+      >
+        <div className="space-y-2">
+          {versionHistory.map((v) => (
+            <div
+              key={v.version}
+              className="rounded-md border border-border bg-background p-3 hover:bg-accent cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-sm">{v.name}</span>
+                <span className="text-[11px] rounded bg-[var(--console-active)] px-1.5 py-0.5">
+                  {v.version}
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {v.time} · 操作人：{v.operator}
+              </div>
+            </div>
+          ))}
+        </div>
+      </RightDrawer>
+
+      <RightDrawer
+        open={drawer?.kind === "compare"}
+        title="选择对比 Prompt"
+        onClose={() => setDrawer(null)}
+      >
+        <div className="space-y-3">
+          {folders.map((f) => (
+            <div key={f.id}>
+              <div className="text-xs font-medium text-muted-foreground mb-1.5">{f.name}</div>
+              {f.prompts.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    if (drawer?.kind === "compare") drawer.cb(p);
+                    setDrawer(null);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-md border border-border hover:bg-accent mb-1"
+                >
+                  <div className="text-sm">{p.name}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {p.updatedAt} · {p.owner}
+                  </div>
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+      </RightDrawer>
+    </div>
   );
 }
