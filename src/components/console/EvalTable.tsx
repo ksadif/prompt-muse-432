@@ -192,8 +192,9 @@ export function EvalTable({
   const [rows, setRows] = useState<EvalRow[]>(initialEvalRows);
   const [comparePrompts, setComparePrompts] = useState<PromptItem[]>([]);
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [scoreFilters, setScoreFilters] = useState<Record<number, string>>({});
-  const [issueFilters, setIssueFilters] = useState<Record<number, string>>({});
+  const [scoreFilters, setScoreFilters] = useState<Record<number, string[]>>({});
+  const [issueFilters, setIssueFilters] = useState<Record<number, string[]>>({});
+  const [noteFilters, setNoteFilters] = useState<Record<number, string>>({});
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
 
