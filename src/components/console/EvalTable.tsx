@@ -212,6 +212,21 @@ export function EvalTable({
   const filtered = rows.filter((r) => {
     if (filters.id && !String(r.id).includes(filters.id)) return false;
     if (filters.input && !r.input.includes(filters.input)) return false;
+    for (let vi = 0; vi < (allVersionsCount); vi++) {
+      const v = r.versions[vi];
+      const sf = scoreFilters[vi];
+      if (sf && sf.length > 0) {
+        const sv = v?.score == null ? "未评" : String(v.score);
+        if (!sf.includes(sv)) return false;
+      }
+      const isf = issueFilters[vi];
+      if (isf && isf.length > 0) {
+        const iv = v?.issueType ?? "无";
+        if (!isf.includes(iv)) return false;
+      }
+      const nf = noteFilters[vi];
+      if (nf && !(v?.note ?? "").includes(nf)) return false;
+    }
     return true;
   });
 
