@@ -15,13 +15,13 @@ function SwitchRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="inline-flex items-center gap-1.5 cursor-pointer select-none">
+    <div className="inline-flex items-center gap-2 rounded-full bg-[var(--console-active)] pl-3 pr-1 py-1 cursor-pointer select-none">
       <span className="text-xs text-foreground">{label}</span>
       <button
         type="button"
         onClick={() => onChange(!checked)}
         className={`relative h-4 w-7 rounded-full transition ${
-          checked ? "bg-[var(--console-orange)]" : "bg-muted"
+          checked ? "bg-[var(--console-orange)]" : "bg-background border border-border"
         }`}
       >
         <span
@@ -30,7 +30,7 @@ function SwitchRow({
           }`}
         />
       </button>
-    </label>
+    </div>
   );
 }
 
@@ -112,7 +112,7 @@ export function EvalTable({
           </select>
         </div>
 
-        <div className="h-5 w-px bg-border" />
+        
 
         <SwitchRow label="显示 Prompt 配置" checked={showConfig} onChange={setShowConfig} />
         <SwitchRow label="显示测试集字段" checked={showExtras} onChange={setShowExtras} />
