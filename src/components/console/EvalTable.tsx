@@ -56,10 +56,10 @@ function ChatPreview({ input, output }: { input: string; output: string }) {
     <div className="mx-auto w-[220px] rounded-[20px] border border-border bg-[var(--console-sidebar)]/60 p-2 shadow-sm">
       {/* phone notch */}
       <div className="mx-auto mb-1.5 h-1 w-10 rounded-full bg-border/70" />
-      <div className="rounded-xl bg-background px-2 py-2 space-y-2">
+      <div className="rounded-xl bg-background px-2 py-2 space-y-2 max-h-[180px] overflow-y-auto [scrollbar-width:thin]">
         {/* user bubble */}
         <div className="flex justify-end">
-          <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-[var(--console-orange)]/15 px-2.5 py-1.5 text-[12px] leading-snug text-foreground">
+          <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-[var(--console-orange)]/15 px-2.5 py-1.5 text-[12px] leading-snug text-foreground whitespace-pre-wrap break-words">
             {input}
           </div>
         </div>
@@ -68,7 +68,7 @@ function ChatPreview({ input, output }: { input: string; output: string }) {
           <div className="h-5 w-5 shrink-0 rounded-full bg-[var(--console-orange)]/80 text-white text-[10px] font-medium flex items-center justify-center">
             点
           </div>
-          <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-muted px-2.5 py-1.5 text-[12px] leading-snug text-foreground">
+          <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-muted px-2.5 py-1.5 text-[12px] leading-snug text-foreground whitespace-pre-wrap break-words">
             {output}
           </div>
         </div>
@@ -125,6 +125,8 @@ export function EvalTable({
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [scoreFilters, setScoreFilters] = useState<Record<number, string>>({});
   const [issueFilters, setIssueFilters] = useState<Record<number, string>>({});
+  const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(1);
 
   const allVersions = useMemo(
     () => [currentPrompt, ...comparePrompts],
@@ -142,6 +144,10 @@ export function EvalTable({
     if (filters.input && !r.input.includes(filters.input)) return false;
     return true;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pageRows = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   function updateVersion(rowId: number, vIndex: number, patch: Partial<EvalRow["versions"][number]>) {
     setRows((rs) =>
@@ -265,7 +271,7 @@ export function EvalTable({
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r) => (
+            {pageRows.map((r) => (
               <tr key={r.id} className="border-b border-border last:border-0 hover:bg-[var(--console-sidebar)]/30 align-top">
                 <td className="px-3 py-3 text-xs text-muted-foreground">{r.id}</td>
                 <td className="px-3 py-3 text-sm">
@@ -362,6 +368,40 @@ export function EvalTable({
         <span className="text-xs text-muted-foreground">
           共 {filtered.length} 行 · 当前对比版本数：{allVersions.length}（最多 3）
         </span>
+
+        <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+          <span>每页</span>
+          <select
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(+e.target.value);
+              setPage(1);
+            }}
+            className="rounded-md border border-border bg-background px-1.5 py-0.5 text-xs outline-none focus:border-[var(--console-orange)] cursor-pointer"
+          >
+            {[5, 10, 20, 50].map((n) => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+          <span>条</span>
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage <= 1}
+            className="rounded-md border border-border bg-background px-2 py-0.5 hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            上一页
+          </button>
+          <span className="text-foreground">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage >= totalPages}
+            className="rounded-md border border-border bg-background px-2 py-0.5 hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            下一页
+          </button>
+        </div>
       </div>
     </div>
   );
