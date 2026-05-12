@@ -5,6 +5,35 @@ import { initialEvalRows, testSets, type EvalRow } from "./mockData";
 
 const ISSUE_TYPES = ["无", "略冗长", "事实错误", "格式不符", "拒答", "其他"];
 
+function SwitchRow({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+      <span className="text-sm text-foreground">{label}</span>
+      <button
+        type="button"
+        onClick={() => onChange(!checked)}
+        className={`relative h-[18px] w-8 rounded-full transition ${
+          checked ? "bg-[var(--console-orange)]" : "bg-muted"
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 h-3.5 w-3.5 rounded-full bg-white shadow transition-all ${
+            checked ? "left-[14px]" : "left-0.5"
+          }`}
+        />
+      </button>
+    </label>
+  );
+}
+
 export function EvalTable({
   folders,
   currentPrompt,
@@ -69,13 +98,13 @@ export function EvalTable({
   return (
     <div className="px-6 py-5">
       {/* 顶部控制条 */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background pl-3 pr-1 py-1 text-sm">
-          <span className="text-muted-foreground text-xs">关联测试集</span>
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        <div className="inline-flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">关联测试集</span>
           <select
             value={testSetId}
             onChange={(e) => setTestSetId(e.target.value)}
-            className="bg-transparent text-sm outline-none pr-1 cursor-pointer"
+            className="rounded-md border border-border bg-background px-2.5 py-1.5 text-sm outline-none focus:border-[var(--console-orange)] cursor-pointer"
           >
             {testSets.map((t) => (
               <option key={t.id} value={t.id}>{t.name}</option>
@@ -83,26 +112,10 @@ export function EvalTable({
           </select>
         </div>
 
-        <button
-          onClick={() => setShowConfig((v) => !v)}
-          className={`rounded-full border px-3 py-1.5 text-sm transition ${
-            showConfig
-              ? "border-[var(--console-orange)] bg-[var(--console-active)] text-[var(--console-orange)]"
-              : "border-border bg-background text-muted-foreground hover:bg-accent"
-          }`}
-        >
-          显示 Prompt 配置
-        </button>
-        <button
-          onClick={() => setShowExtras((v) => !v)}
-          className={`rounded-full border px-3 py-1.5 text-sm transition ${
-            showExtras
-              ? "border-[var(--console-orange)] bg-[var(--console-active)] text-[var(--console-orange)]"
-              : "border-border bg-background text-muted-foreground hover:bg-accent"
-          }`}
-        >
-          显示测试集字段
-        </button>
+        <div className="h-5 w-px bg-border" />
+
+        <SwitchRow label="显示 Prompt 配置" checked={showConfig} onChange={setShowConfig} />
+        <SwitchRow label="显示测试集字段" checked={showExtras} onChange={setShowExtras} />
 
         <button
           onClick={() => filtered.forEach((r) => allVersions.forEach((_, vi) => runRow(r.id, vi)))}
