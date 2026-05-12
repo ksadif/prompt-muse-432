@@ -112,7 +112,7 @@ export function EvalTable({
           </select>
         </div>
 
-        <div className="h-5 w-px bg-border" />
+        
 
         <SwitchRow label="显示 Prompt 配置" checked={showConfig} onChange={setShowConfig} />
         <SwitchRow label="显示测试集字段" checked={showExtras} onChange={setShowExtras} />
