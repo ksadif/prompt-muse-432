@@ -314,10 +314,32 @@ export function EvalTable({
                   ))}
                 {allVersions.map((_, vi) => {
                   const v = r.versions[vi];
+                  const key = `${r.id}-${vi}`;
+                  const isExpanded = previewMode === "single" || expanded[key];
                   return (
                     <td key={vi} className="px-3 py-3 text-sm border-l border-border">
                       {v?.output ? (
-                        <ChatPreview input={r.input} output={v.output} />
+                        isExpanded ? (
+                          <div className="space-y-1.5">
+                            <ChatPreview input={r.input} output={v.output} />
+                            {previewMode === "list" && (
+                              <button
+                                onClick={() => setExpanded((e) => ({ ...e, [key]: false }))}
+                                className="block mx-auto text-[11px] text-muted-foreground hover:text-foreground"
+                              >
+                                收起
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setExpanded((e) => ({ ...e, [key]: true }))}
+                            className="w-full text-left rounded-md border border-dashed border-border bg-muted/30 px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground truncate"
+                            title={v.output}
+                          >
+                            ▶ {v.output.slice(0, 24)}{v.output.length > 24 ? "…" : ""}
+                          </button>
+                        )
                       ) : (
                         <button
                           onClick={() => runRow(r.id, vi)}
