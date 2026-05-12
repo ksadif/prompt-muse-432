@@ -69,33 +69,47 @@ export function EvalTable({
   return (
     <div className="px-6 py-5">
       {/* 顶部控制条 */}
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">关联测试集</span>
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background pl-3 pr-1 py-1 text-sm">
+          <span className="text-muted-foreground text-xs">关联测试集</span>
           <select
             value={testSetId}
             onChange={(e) => setTestSetId(e.target.value)}
-            className="rounded-md border border-border bg-background px-2 py-1.5 text-sm outline-none"
+            className="bg-transparent text-sm outline-none pr-1 cursor-pointer"
           >
             {testSets.map((t) => (
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
         </div>
-        <label className="inline-flex items-center gap-1.5 text-sm cursor-pointer">
-          <input type="checkbox" checked={showConfig} onChange={(e) => setShowConfig(e.target.checked)} />
+
+        <button
+          onClick={() => setShowConfig((v) => !v)}
+          className={`rounded-full border px-3 py-1.5 text-sm transition ${
+            showConfig
+              ? "border-[var(--console-orange)] bg-[var(--console-active)] text-[var(--console-orange)]"
+              : "border-border bg-background text-muted-foreground hover:bg-accent"
+          }`}
+        >
           显示 Prompt 配置
-        </label>
-        <label className="inline-flex items-center gap-1.5 text-sm cursor-pointer">
-          <input type="checkbox" checked={showExtras} onChange={(e) => setShowExtras(e.target.checked)} />
+        </button>
+        <button
+          onClick={() => setShowExtras((v) => !v)}
+          className={`rounded-full border px-3 py-1.5 text-sm transition ${
+            showExtras
+              ? "border-[var(--console-orange)] bg-[var(--console-active)] text-[var(--console-orange)]"
+              : "border-border bg-background text-muted-foreground hover:bg-accent"
+          }`}
+        >
           显示测试集字段
-        </label>
+        </button>
+
         <button
           onClick={() => filtered.forEach((r) => allVersions.forEach((_, vi) => runRow(r.id, vi)))}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-3 py-1.5 text-sm hover:opacity-90"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-[var(--console-orange)] text-white px-3 py-1.5 text-sm hover:opacity-90"
         >
           <Play className="h-3 w-3 fill-current" />
-          效果测试
+          运行测试
         </button>
       </div>
 
