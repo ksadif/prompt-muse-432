@@ -55,7 +55,7 @@ export function AgentPreview() {
         <textarea
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="输入查询内容（支持 {{变量}}）"
+          placeholder="请输入要测试的内容..."
           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] resize-none min-h-[72px]"
         />
         <div className="flex items-center justify-between mt-2">
