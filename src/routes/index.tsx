@@ -27,6 +27,7 @@ export const Route = createFileRoute("/")({
 function PromptPage() {
   const [system, setSystem] = useState("");
   const [user, setUser] = useState("");
+  const [genOpen, setGenOpen] = useState(false);
 
   return (
     <ConsoleShell>
