@@ -159,6 +159,11 @@ function PromptPage() {
           </button>
         </aside>
       </div>
+      <GeneratePromptDialog
+        open={genOpen}
+        onClose={() => setGenOpen(false)}
+        onGenerated={(p) => setUser(p)}
+      />
     </ConsoleShell>
   );
 }
