@@ -130,7 +130,7 @@ function PromptPage() {
     <div className="min-h-screen flex bg-background text-foreground">
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col relative">
-        <div className="px-3 pt-3 pb-2 flex items-center gap-2 border-b border-border bg-background">
+        <div className="px-3 h-12 flex items-center gap-2 border-b border-border bg-background">
           <button
             onClick={() => setListOpen((v) => !v)}
             className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent"
@@ -144,6 +144,34 @@ function PromptPage() {
             title="新建 Prompt"
           >
             <Plus className="h-4 w-4" />
+          </button>
+
+          <div className="flex-1 flex justify-center">
+            <div className="inline-flex items-center rounded-full bg-[var(--console-active)] p-0.5">
+              {[
+                { k: "edit", label: "Prompt 编辑" },
+                { k: "test", label: "效果测试" },
+              ].map((t) => (
+                <button
+                  key={t.k}
+                  onClick={() => setTab(t.k as "edit" | "test")}
+                  className={`px-4 py-1.5 text-sm rounded-full transition ${
+                    tab === t.k
+                      ? "bg-background text-foreground shadow-sm font-medium"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button className="px-3 h-8 text-sm rounded-md border border-border hover:bg-accent">
+            获取代码
+          </button>
+          <button className="px-3 h-8 text-sm rounded-md bg-foreground text-background inline-flex items-center gap-1.5 hover:opacity-90">
+            ▶ 运行
           </button>
         </div>
 
@@ -179,28 +207,6 @@ function PromptPage() {
             onSave={() => {}}
           />
         )}
-
-        {/* Tabs */}
-        <div className="border-b border-border bg-background px-5">
-          <div className="inline-flex gap-1 -mb-px">
-            {[
-              { k: "edit", label: "Prompt 编辑" },
-              { k: "test", label: "效果测试" },
-            ].map((t) => (
-              <button
-                key={t.k}
-                onClick={() => setTab(t.k as "edit" | "test")}
-                className={`px-4 py-2.5 text-sm border-b-2 transition ${
-                  tab === t.k
-                    ? "border-[var(--console-orange)] text-foreground font-medium"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
 
         {tab === "edit" ? (
           <div className="grid grid-cols-[1fr_400px] flex-1 min-h-0">
