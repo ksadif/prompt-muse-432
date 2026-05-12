@@ -263,7 +263,7 @@ export function EvalTable({
                   return (
                     <td key={vi} className="px-3 py-3 text-sm border-l border-border">
                       {v?.output ? (
-                        v.output
+                        <ChatPreview input={r.input} output={v.output} />
                       ) : (
                         <button
                           onClick={() => runRow(r.id, vi)}
