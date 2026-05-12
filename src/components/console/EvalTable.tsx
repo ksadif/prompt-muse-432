@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
-import { Plus, Search, Play } from "lucide-react";
+import { Plus, ChevronDown, Play } from "lucide-react";
 import type { Folder, PromptItem } from "./types";
 import { initialEvalRows, testSets, type EvalRow } from "./mockData";
 
