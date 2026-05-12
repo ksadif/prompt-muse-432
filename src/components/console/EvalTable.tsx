@@ -51,6 +51,32 @@ function HeaderSearch({
   );
 }
 
+function ChatPreview({ input, output }: { input: string; output: string }) {
+  return (
+    <div className="mx-auto w-[220px] rounded-[20px] border border-border bg-[var(--console-sidebar)]/60 p-2 shadow-sm">
+      {/* phone notch */}
+      <div className="mx-auto mb-1.5 h-1 w-10 rounded-full bg-border/70" />
+      <div className="rounded-xl bg-background px-2 py-2 space-y-2">
+        {/* user bubble */}
+        <div className="flex justify-end">
+          <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-[var(--console-orange)]/15 px-2.5 py-1.5 text-[12px] leading-snug text-foreground">
+            {input}
+          </div>
+        </div>
+        {/* AI bubble */}
+        <div className="flex items-end gap-1.5">
+          <div className="h-5 w-5 shrink-0 rounded-full bg-[var(--console-orange)]/80 text-white text-[10px] font-medium flex items-center justify-center">
+            点
+          </div>
+          <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-muted px-2.5 py-1.5 text-[12px] leading-snug text-foreground">
+            {output}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SwitchRow({
   label,
   checked,
@@ -263,7 +289,7 @@ export function EvalTable({
                   return (
                     <td key={vi} className="px-3 py-3 text-sm border-l border-border">
                       {v?.output ? (
-                        v.output
+                        <ChatPreview input={r.input} output={v.output} />
                       ) : (
                         <button
                           onClick={() => runRow(r.id, vi)}
