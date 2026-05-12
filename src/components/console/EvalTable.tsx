@@ -195,7 +195,29 @@ export function EvalTable({
 
         
 
-        <SwitchRow label="显示 Prompt 配置" checked={showConfig} onChange={setShowConfig} />
+        <div className="inline-flex items-center gap-1 rounded-full bg-muted/50 p-1">
+          <span className="px-2 text-xs text-muted-foreground">预览模式</span>
+          {([
+            { v: "single", label: "单条" },
+            { v: "list", label: "列表" },
+          ] as const).map((opt) => (
+            <button
+              key={opt.v}
+              onClick={() => {
+                setPreviewMode(opt.v);
+                setPage(1);
+              }}
+              className={`rounded-full px-2.5 py-0.5 text-xs transition ${
+                previewMode === opt.v
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
         <SwitchRow label="显示测试集字段" checked={showExtras} onChange={setShowExtras} />
 
         <button
