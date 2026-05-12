@@ -24,31 +24,31 @@ type Section = {
 const sections: Section[] = [
   {
     icon: Wrench,
-    label: "Build",
+    label: "构建",
     items: [
-      { label: "Workbench", to: "/" },
-      { label: "测试集", to: "/evaluate" },
-      { label: "Files" },
-      { label: "Skills" },
-      { label: "Batches" },
+      { label: "Prompt 工作台", to: "/" },
+      { label: "测试集管理", to: "/evaluate" },
+      { label: "文件" },
+      { label: "技能" },
+      { label: "批处理" },
     ],
   },
   {
     icon: Sparkles,
-    label: "Managed Agents",
-    badge: "New",
+    label: "托管 Agent",
+    badge: "新",
     items: [
-      { label: "Quickstart" },
-      { label: "Agents" },
-      { label: "Sessions" },
-      { label: "Environments" },
-      { label: "Credential vaults" },
-      { label: "Memory stores" },
+      { label: "快速开始" },
+      { label: "Agent 列表" },
+      { label: "会话" },
+      { label: "环境" },
+      { label: "凭证库" },
+      { label: "记忆库" },
     ],
   },
-  { icon: BarChart3, label: "Analytics" },
+  { icon: BarChart3, label: "数据分析" },
   { icon: Terminal, label: "Claude Code" },
-  { icon: Briefcase, label: "Manage" },
+  { icon: Briefcase, label: "管理" },
 ];
 
 export function Sidebar() {
