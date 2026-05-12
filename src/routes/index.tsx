@@ -252,7 +252,11 @@ function PromptPage() {
         title="选择模型"
         onClose={() => setDrawer(null)}
       >
-        <div className="space-y-1">
+        <div className="space-y-2">
+          <input
+            placeholder="搜索模型..."
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] mb-1"
+          />
           {ALL_MODELS.map((m) => {
             const active =
               drawer?.kind === "model" && blocks[drawer.blockIdx]?.model === m;
@@ -266,13 +270,22 @@ function PromptPage() {
                   );
                   setDrawer(null);
                 }}
-                className={`w-full text-left px-3 py-2 rounded-md border ${
+                className={`w-full text-left px-3 py-2.5 rounded-lg border transition flex items-center gap-3 ${
                   active
                     ? "border-[var(--console-orange)] bg-[var(--console-active)]"
-                    : "border-border hover:bg-accent"
+                    : "border-border hover:bg-accent hover:border-[var(--console-orange)]/40"
                 }`}
               >
-                {m}
+                <div className="h-7 w-7 shrink-0 rounded-md bg-[var(--console-orange)]/10 text-[var(--console-orange)] inline-flex items-center justify-center text-[11px] font-semibold">
+                  AI
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{m}</div>
+                  <div className="text-[11px] text-muted-foreground">通用对话模型</div>
+                </div>
+                {active && (
+                  <span className="text-[11px] text-[var(--console-orange)] font-medium">已选</span>
+                )}
               </button>
             );
           })}
@@ -284,15 +297,30 @@ function PromptPage() {
         title="选择工具"
         onClose={() => setDrawer(null)}
       >
-        <div className="space-y-1.5">
+        <div className="space-y-2">
+          <input
+            placeholder="搜索工具..."
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] mb-1"
+          />
           {ALL_TOOLS.map((t) => {
             const cur = drawer?.kind === "tools" ? blocks[drawer.blockIdx]?.tools ?? [] : [];
             const active = cur.includes(t);
             return (
               <label
                 key={t}
-                className="flex items-center gap-2 px-3 py-2 rounded-md border border-border hover:bg-accent cursor-pointer"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition ${
+                  active
+                    ? "border-[var(--console-orange)] bg-[var(--console-active)]"
+                    : "border-border hover:bg-accent hover:border-[var(--console-orange)]/40"
+                }`}
               >
+                <div className="h-7 w-7 shrink-0 rounded-md bg-[var(--console-orange)]/10 text-[var(--console-orange)] inline-flex items-center justify-center text-xs">
+                  🔧
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{t}</div>
+                  <div className="text-[11px] text-muted-foreground">点击启用此工具</div>
+                </div>
                 <input
                   type="checkbox"
                   checked={active}
@@ -309,8 +337,8 @@ function PromptPage() {
                       ),
                     );
                   }}
+                  className="h-4 w-4 accent-[var(--console-orange)]"
                 />
-                {t}
               </label>
             );
           })}
@@ -322,15 +350,30 @@ function PromptPage() {
         title="选择记忆"
         onClose={() => setDrawer(null)}
       >
-        <div className="space-y-1.5">
+        <div className="space-y-2">
+          <input
+            placeholder="搜索记忆库..."
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] mb-1"
+          />
           {ALL_MEMORIES.map((t) => {
             const cur = drawer?.kind === "memory" ? blocks[drawer.blockIdx]?.memories ?? [] : [];
             const active = cur.includes(t);
             return (
               <label
                 key={t}
-                className="flex items-center gap-2 px-3 py-2 rounded-md border border-border hover:bg-accent cursor-pointer"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition ${
+                  active
+                    ? "border-[var(--console-orange)] bg-[var(--console-active)]"
+                    : "border-border hover:bg-accent hover:border-[var(--console-orange)]/40"
+                }`}
               >
+                <div className="h-7 w-7 shrink-0 rounded-md bg-[var(--console-orange)]/10 text-[var(--console-orange)] inline-flex items-center justify-center text-xs">
+                  🧠
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{t}</div>
+                  <div className="text-[11px] text-muted-foreground">长期记忆数据源</div>
+                </div>
                 <input
                   type="checkbox"
                   checked={active}
@@ -349,8 +392,8 @@ function PromptPage() {
                       ),
                     );
                   }}
+                  className="h-4 w-4 accent-[var(--console-orange)]"
                 />
-                {t}
               </label>
             );
           })}
