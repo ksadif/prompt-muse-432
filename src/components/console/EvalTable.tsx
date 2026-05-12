@@ -145,6 +145,10 @@ export function EvalTable({
     return true;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pageRows = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   function updateVersion(rowId: number, vIndex: number, patch: Partial<EvalRow["versions"][number]>) {
     setRows((rs) =>
       rs.map((r) => {
