@@ -242,7 +242,16 @@ export function EvalTable({
             {filtered.map((r) => (
               <tr key={r.id} className="border-b border-border last:border-0 hover:bg-[var(--console-sidebar)]/30 align-top">
                 <td className="px-3 py-3 text-xs text-muted-foreground">{r.id}</td>
-                <td className="px-3 py-3 text-sm">{r.input}</td>
+                <td className="px-3 py-3 text-sm">
+                  <input
+                    value={r.input}
+                    onChange={(e) =>
+                      setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, input: e.target.value } : x)))
+                    }
+                    placeholder="输入测试内容..."
+                    className="w-full bg-transparent text-sm outline-none focus:bg-background focus:border focus:border-[var(--console-orange)] rounded px-1 py-0.5"
+                  />
+                </td>
                 {showExtras &&
                   extraKeys.map((k) => (
                     <td key={k} className="px-3 py-3 text-xs text-muted-foreground">
@@ -311,9 +320,22 @@ export function EvalTable({
         </table>
       </div>
 
-      {/* 列筛选条（分数/问题类型整列筛选） */}
-      <div className="mt-3 text-xs text-muted-foreground">
-        共 {filtered.length} 行 · 当前对比版本数：{allVersions.length}（最多 3）
+      <div className="mt-3 flex items-center gap-3">
+        <button
+          onClick={() => {
+            const nextId = (rows.reduce((m, r) => Math.max(m, r.id), 0) || 0) + 1;
+            setRows((rs) => [
+              ...rs,
+              { id: nextId, input: "", extras: {}, versions: [] },
+            ]);
+          }}
+          className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2.5 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+        >
+          <Plus className="h-3 w-3" /> 新增一行
+        </button>
+        <span className="text-xs text-muted-foreground">
+          共 {filtered.length} 行 · 当前对比版本数：{allVersions.length}（最多 3）
+        </span>
       </div>
     </div>
   );
