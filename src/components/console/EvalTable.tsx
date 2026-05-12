@@ -179,22 +179,22 @@ export function EvalTable({
           <thead className="bg-[var(--console-sidebar)]/60">
             <tr className="border-b border-border">
               <th className="px-3 py-2.5 text-left text-xs font-medium w-20">
-                <div>编号</div>
-                <input
-                  placeholder="搜索"
-                  value={filters.id ?? ""}
-                  onChange={(e) => setFilters((f) => ({ ...f, id: e.target.value }))}
-                  className="mt-1 w-full rounded border border-border bg-background px-1.5 py-0.5 text-[11px] font-normal outline-none"
-                />
+                <div className="flex items-center gap-1">
+                  编号
+                  <HeaderSearch
+                    value={filters.id ?? ""}
+                    onChange={(v) => setFilters((f) => ({ ...f, id: v }))}
+                  />
+                </div>
               </th>
               <th className="px-3 py-2.5 text-left text-xs font-medium min-w-[160px]">
-                <div className="flex items-center gap-1"><Search className="h-3 w-3" />输入文字</div>
-                <input
-                  placeholder="搜索"
-                  value={filters.input ?? ""}
-                  onChange={(e) => setFilters((f) => ({ ...f, input: e.target.value }))}
-                  className="mt-1 w-full rounded border border-border bg-background px-1.5 py-0.5 text-[11px] font-normal outline-none"
-                />
+                <div className="flex items-center gap-1">
+                  输入文字
+                  <HeaderSearch
+                    value={filters.input ?? ""}
+                    onChange={(v) => setFilters((f) => ({ ...f, input: v }))}
+                  />
+                </div>
               </th>
               {showExtras &&
                 extraKeys.map((k) => (
