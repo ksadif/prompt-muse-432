@@ -104,7 +104,7 @@ export function EvalTable({
           <select
             value={testSetId}
             onChange={(e) => setTestSetId(e.target.value)}
-            className="rounded-md border border-border bg-background px-2.5 py-1.5 text-sm outline-none focus:border-[var(--console-orange)] cursor-pointer"
+            className="rounded-md border border-border bg-background px-2 py-1 text-xs outline-none focus:border-[var(--console-orange)] cursor-pointer"
           >
             {testSets.map((t) => (
               <option key={t.id} value={t.id}>{t.name}</option>
