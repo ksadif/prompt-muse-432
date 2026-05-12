@@ -242,7 +242,16 @@ export function EvalTable({
             {filtered.map((r) => (
               <tr key={r.id} className="border-b border-border last:border-0 hover:bg-[var(--console-sidebar)]/30 align-top">
                 <td className="px-3 py-3 text-xs text-muted-foreground">{r.id}</td>
-                <td className="px-3 py-3 text-sm">{r.input}</td>
+                <td className="px-3 py-3 text-sm">
+                  <input
+                    value={r.input}
+                    onChange={(e) =>
+                      setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, input: e.target.value } : x)))
+                    }
+                    placeholder="输入测试内容..."
+                    className="w-full bg-transparent text-sm outline-none focus:bg-background focus:border focus:border-[var(--console-orange)] rounded px-1 py-0.5"
+                  />
+                </td>
                 {showExtras &&
                   extraKeys.map((k) => (
                     <td key={k} className="px-3 py-3 text-xs text-muted-foreground">
