@@ -15,6 +15,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useState } from "react";
+import { GeneratePromptDialog } from "@/components/console/GeneratePromptDialog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
