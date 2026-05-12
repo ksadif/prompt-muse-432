@@ -125,6 +125,8 @@ export function EvalTable({
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [scoreFilters, setScoreFilters] = useState<Record<number, string>>({});
   const [issueFilters, setIssueFilters] = useState<Record<number, string>>({});
+  const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(1);
 
   const allVersions = useMemo(
     () => [currentPrompt, ...comparePrompts],
