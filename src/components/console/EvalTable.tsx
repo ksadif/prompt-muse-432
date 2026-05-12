@@ -311,9 +311,22 @@ export function EvalTable({
         </table>
       </div>
 
-      {/* 列筛选条（分数/问题类型整列筛选） */}
-      <div className="mt-3 text-xs text-muted-foreground">
-        共 {filtered.length} 行 · 当前对比版本数：{allVersions.length}（最多 3）
+      <div className="mt-3 flex items-center gap-3">
+        <button
+          onClick={() => {
+            const nextId = (rows.reduce((m, r) => Math.max(m, r.id), 0) || 0) + 1;
+            setRows((rs) => [
+              ...rs,
+              { id: nextId, input: "", extras: {}, versions: [] },
+            ]);
+          }}
+          className="inline-flex items-center gap-1 rounded-md border border-dashed border-border px-2.5 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+        >
+          <Plus className="h-3 w-3" /> 新增一行
+        </button>
+        <span className="text-xs text-muted-foreground">
+          共 {filtered.length} 行 · 当前对比版本数：{allVersions.length}（最多 3）
+        </span>
       </div>
     </div>
   );
