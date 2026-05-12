@@ -2,22 +2,17 @@ import { useRef, useState } from "react";
 import { Image as ImageIcon, FileText, FileSpreadsheet, Play, Bot, User, X } from "lucide-react";
 
 type Step = { role: "user" | "agent" | "tool"; content: string; meta?: string };
-type InputMode = "text" | "image" | "excel";
 type Attachment = { name: string; url?: string; kind: "image" | "excel" };
+type DialogKind = null | "image" | "note" | "excel";
 
 export function AgentPreview() {
-  const [mode, setMode] = useState<InputMode>("text");
   const [query, setQuery] = useState("");
   const [note, setNote] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [steps, setSteps] = useState<Step[]>([]);
+  const [dialog, setDialog] = useState<DialogKind>(null);
   const imgRef = useRef<HTMLInputElement>(null);
   const xlsRef = useRef<HTMLInputElement>(null);
-
-  function pick(kind: "image" | "excel") {
-    setMode(kind);
-    (kind === "image" ? imgRef : xlsRef).current?.click();
-  }
 
   function onFiles(e: React.ChangeEvent<HTMLInputElement>, kind: "image" | "excel") {
     const files = Array.from(e.target.files ?? []);
@@ -30,153 +25,60 @@ export function AgentPreview() {
     e.target.value = "";
   }
 
+  const images = attachments.filter((a) => a.kind === "image");
+  const excels = attachments.filter((a) => a.kind === "excel");
+
   function run() {
-    const hasContent = query.trim() || note.trim() || attachments.length;
-    if (!hasContent) return;
-    const userText =
-      mode === "text"
-        ? query
-        : mode === "image"
-          ? `[图片输入] ${attachments.map((a) => a.name).join("、")}${note ? "\n备注：" + note : ""}`
-          : `[Excel 输入] ${attachments.map((a) => a.name).join("、")}${note ? "\n备注：" + note : ""}`;
+    if (!query.trim() && !note.trim() && !attachments.length) return;
+    const parts: string[] = [];
+    if (query.trim()) parts.push(query);
+    if (images.length) parts.push(`[图片] ${images.map((a) => a.name).join("、")}`);
+    if (excels.length) parts.push(`[Excel] ${excels.map((a) => a.name).join("、")}`);
+    if (note.trim()) parts.push(`备注：${note}`);
     setSteps([
-      { role: "user", content: userText },
+      { role: "user", content: parts.join("\n") },
       { role: "tool", content: "调用工具：知识库检索", meta: "命中 3 条相关文档" },
       { role: "agent", content: "我是点点，你的社区助手。可以告诉我具体的问题吗？" },
     ]);
   }
 
-  const tabs: { k: InputMode; label: string; icon: typeof ImageIcon }[] = [
-    { k: "image", label: "图片", icon: ImageIcon },
-    { k: "text", label: "文本", icon: FileText },
-    { k: "excel", label: "Excel", icon: FileSpreadsheet },
+  const triggers: { k: Exclude<DialogKind, null>; icon: typeof ImageIcon; title: string; badge: number }[] = [
+    { k: "image", icon: ImageIcon, title: "上传图片", badge: images.length },
+    { k: "note", icon: FileText, title: "附加笔记", badge: note.trim() ? 1 : 0 },
+    { k: "excel", icon: FileSpreadsheet, title: "上传 Excel", badge: excels.length },
   ];
 
   return (
     <div className="flex flex-col h-full">
       <div className="px-4 py-3 border-b border-border">
         <div className="text-sm font-semibold mb-2">Agent 效果预览</div>
-
-        <div className="flex items-center gap-1 mb-2">
-          {tabs.map((t) => {
-            const Icon = t.icon;
-            const active = mode === t.k;
-            return (
-              <button
-                key={t.k}
-                onClick={() => {
-                  if (t.k === "text") setMode("text");
-                  else pick(t.k);
-                }}
-                className={`h-8 inline-flex items-center gap-1.5 px-2.5 rounded-md text-xs border transition ${
-                  active
-                    ? "border-[var(--console-orange)] text-[var(--console-orange)] bg-[var(--console-active)]"
-                    : "border-border text-muted-foreground hover:bg-accent"
-                }`}
-                title={t.label}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {t.label}
-              </button>
-            );
-          })}
-          <input
-            ref={imgRef}
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={(e) => onFiles(e, "image")}
-          />
-          <input
-            ref={xlsRef}
-            type="file"
-            accept=".xls,.xlsx,.csv"
-            multiple
-            className="hidden"
-            onChange={(e) => onFiles(e, "excel")}
-          />
-        </div>
-
-        {mode === "text" && (
-          <textarea
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="输入查询内容（支持 {{变量}}）"
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] resize-none min-h-[88px]"
-          />
-        )}
-
-        {mode === "image" && (
-          <div className="space-y-2">
-            <button
-              onClick={() => imgRef.current?.click()}
-              className="w-full rounded-md border border-dashed border-border py-6 text-xs text-muted-foreground hover:bg-accent"
-            >
-              点击上传图片，或拖拽到此处
-            </button>
-            {attachments.filter((a) => a.kind === "image").length > 0 && (
-              <div className="grid grid-cols-3 gap-2">
-                {attachments
-                  .filter((a) => a.kind === "image")
-                  .map((a, i) => (
-                    <div key={i} className="relative rounded-md border border-border overflow-hidden">
-                      <img src={a.url} alt={a.name} className="w-full h-16 object-cover" />
-                      <button
-                        onClick={() => setAttachments((arr) => arr.filter((x) => x !== a))}
-                        className="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-background/90 inline-flex items-center justify-center"
-                      >
-                        <X className="h-2.5 w-2.5" />
-                      </button>
-                    </div>
-                  ))}
-              </div>
-            )}
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="可选：附加文字说明"
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] resize-none min-h-[56px]"
-            />
+        <textarea
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="输入查询内容（支持 {{变量}}）"
+          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] resize-none min-h-[72px]"
+        />
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center gap-1 text-muted-foreground">
+            {triggers.map((t) => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.k}
+                  onClick={() => setDialog(t.k)}
+                  className="relative h-7 w-7 inline-flex items-center justify-center rounded hover:bg-accent"
+                  title={t.title}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {t.badge > 0 && (
+                    <span className="absolute -top-1 -right-1 h-3.5 min-w-3.5 px-1 rounded-full bg-[var(--console-orange)] text-white text-[9px] inline-flex items-center justify-center">
+                      {t.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
-        )}
-
-        {mode === "excel" && (
-          <div className="space-y-2">
-            <button
-              onClick={() => xlsRef.current?.click()}
-              className="w-full rounded-md border border-dashed border-border py-6 text-xs text-muted-foreground hover:bg-accent"
-            >
-              上传 Excel / CSV（用于带记忆批量测试）
-            </button>
-            {attachments.filter((a) => a.kind === "excel").length > 0 && (
-              <div className="space-y-1">
-                {attachments
-                  .filter((a) => a.kind === "excel")
-                  .map((a, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5 text-xs"
-                    >
-                      <FileSpreadsheet className="h-3.5 w-3.5 text-[var(--console-orange)]" />
-                      <span className="flex-1 truncate">{a.name}</span>
-                      <button onClick={() => setAttachments((arr) => arr.filter((x) => x !== a))}>
-                        <X className="h-3 w-3 text-muted-foreground" />
-                      </button>
-                    </div>
-                  ))}
-              </div>
-            )}
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="可选：附加文字说明"
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] resize-none min-h-[56px]"
-            />
-          </div>
-        )}
-
-        <div className="flex items-center justify-end mt-2">
           <button
             onClick={run}
             className="inline-flex items-center gap-1.5 rounded-md bg-[var(--console-orange)] text-white px-3 py-1.5 text-xs hover:opacity-90"
@@ -206,6 +108,126 @@ export function AgentPreview() {
           ))
         )}
       </div>
+
+      <input
+        ref={imgRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => onFiles(e, "image")}
+      />
+      <input
+        ref={xlsRef}
+        type="file"
+        accept=".xls,.xlsx,.csv"
+        multiple
+        className="hidden"
+        onChange={(e) => onFiles(e, "excel")}
+      />
+
+      {dialog && (
+        <div
+          className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center"
+          onClick={() => setDialog(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-[480px] max-w-[92vw] rounded-lg bg-background border border-border shadow-xl"
+          >
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <div className="text-sm font-semibold">
+                {dialog === "image" && "上传图片"}
+                {dialog === "note" && "附加笔记"}
+                {dialog === "excel" && "上传 Excel"}
+              </div>
+              <button onClick={() => setDialog(null)} className="p-1 rounded hover:bg-accent">
+                <X className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-3">
+              {dialog === "image" && (
+                <>
+                  <button
+                    onClick={() => imgRef.current?.click()}
+                    className="w-full rounded-md border border-dashed border-border py-8 text-xs text-muted-foreground hover:bg-accent"
+                  >
+                    点击选择图片，或拖拽到此处（支持多张）
+                  </button>
+                  {images.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {images.map((a, i) => (
+                        <div key={i} className="relative rounded-md border border-border overflow-hidden">
+                          <img src={a.url} alt={a.name} className="w-full h-20 object-cover" />
+                          <button
+                            onClick={() => setAttachments((arr) => arr.filter((x) => x !== a))}
+                            className="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-background/90 inline-flex items-center justify-center"
+                          >
+                            <X className="h-2.5 w-2.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {dialog === "note" && (
+                <textarea
+                  autoFocus
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="输入笔记/补充说明……"
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] resize-none min-h-[140px]"
+                />
+              )}
+
+              {dialog === "excel" && (
+                <>
+                  <button
+                    onClick={() => xlsRef.current?.click()}
+                    className="w-full rounded-md border border-dashed border-border py-8 text-xs text-muted-foreground hover:bg-accent"
+                  >
+                    点击选择 Excel / CSV（用于带记忆批量测试）
+                  </button>
+                  {excels.length > 0 && (
+                    <div className="space-y-1">
+                      {excels.map((a, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5 text-xs"
+                        >
+                          <FileSpreadsheet className="h-3.5 w-3.5 text-[var(--console-orange)]" />
+                          <span className="flex-1 truncate">{a.name}</span>
+                          <button onClick={() => setAttachments((arr) => arr.filter((x) => x !== a))}>
+                            <X className="h-3 w-3 text-muted-foreground" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="px-4 py-3 border-t border-border flex justify-end gap-2">
+              <button
+                onClick={() => setDialog(null)}
+                className="px-3 py-1.5 text-xs rounded-md border border-border hover:bg-accent"
+              >
+                取消
+              </button>
+              <button
+                onClick={() => setDialog(null)}
+                className="px-3 py-1.5 text-xs rounded-md bg-[var(--console-orange)] text-white hover:opacity-90"
+              >
+                确定
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
