@@ -56,10 +56,10 @@ function ChatPreview({ input, output }: { input: string; output: string }) {
     <div className="mx-auto w-[220px] rounded-[20px] border border-border bg-[var(--console-sidebar)]/60 p-2 shadow-sm">
       {/* phone notch */}
       <div className="mx-auto mb-1.5 h-1 w-10 rounded-full bg-border/70" />
-      <div className="rounded-xl bg-background px-2 py-2 space-y-2">
+      <div className="rounded-xl bg-background px-2 py-2 space-y-2 max-h-[180px] overflow-y-auto [scrollbar-width:thin]">
         {/* user bubble */}
         <div className="flex justify-end">
-          <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-[var(--console-orange)]/15 px-2.5 py-1.5 text-[12px] leading-snug text-foreground">
+          <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-[var(--console-orange)]/15 px-2.5 py-1.5 text-[12px] leading-snug text-foreground whitespace-pre-wrap break-words">
             {input}
           </div>
         </div>
@@ -68,7 +68,7 @@ function ChatPreview({ input, output }: { input: string; output: string }) {
           <div className="h-5 w-5 shrink-0 rounded-full bg-[var(--console-orange)]/80 text-white text-[10px] font-medium flex items-center justify-center">
             点
           </div>
-          <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-muted px-2.5 py-1.5 text-[12px] leading-snug text-foreground">
+          <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-muted px-2.5 py-1.5 text-[12px] leading-snug text-foreground whitespace-pre-wrap break-words">
             {output}
           </div>
         </div>
