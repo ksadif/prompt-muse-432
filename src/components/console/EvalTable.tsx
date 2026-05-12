@@ -194,7 +194,74 @@ export function EvalTable({
           </select>
         </div>
 
-        
+function HeaderMultiSelect({
+  options,
+  selected,
+  onChange,
+}: {
+  options: string[];
+  selected: string[];
+  onChange: (v: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const active = selected.length > 0;
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  function toggle(o: string) {
+    onChange(selected.includes(o) ? selected.filter((x) => x !== o) : [...selected, o]);
+  }
+
+  return (
+    <div className="relative inline-block" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={`inline-flex items-center justify-center h-4 w-4 rounded hover:bg-accent transition ${
+          active ? "text-[var(--console-orange)]" : "text-muted-foreground/60"
+        } ${open ? "rotate-180" : ""}`}
+      >
+        <ChevronDown className="h-3 w-3" strokeWidth={2.5} />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full mt-1 z-20 min-w-[110px] rounded-md border border-border bg-background shadow-lg p-1">
+          {options.map((o) => {
+            const checked = selected.includes(o);
+            return (
+              <label
+                key={o}
+                className="flex items-center gap-2 rounded px-2 py-1 text-[11px] hover:bg-accent cursor-pointer font-normal"
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggle(o)}
+                  className="accent-[var(--console-orange)] h-3 w-3"
+                />
+                {o}
+              </label>
+            );
+          })}
+          {active && (
+            <button
+              onClick={() => onChange([])}
+              className="w-full mt-1 rounded px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent text-left"
+            >
+              清空
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
         <div className="inline-flex items-center gap-2">
           <span className="text-xs text-muted-foreground">预览模式</span>
