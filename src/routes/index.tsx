@@ -208,6 +208,7 @@ function PromptPage() {
           />
         )}
 
+        {tab === "edit" ? (
           <div className="grid grid-cols-[1fr_400px] flex-1 min-h-0">
             <div className="px-6 py-5 border-r border-border overflow-y-auto">
               {blocks.map((b, i) => (
