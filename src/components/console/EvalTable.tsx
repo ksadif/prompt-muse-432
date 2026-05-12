@@ -212,7 +212,7 @@ export function EvalTable({
   const filtered = rows.filter((r) => {
     if (filters.id && !String(r.id).includes(filters.id)) return false;
     if (filters.input && !r.input.includes(filters.input)) return false;
-    for (let vi = 0; vi < (allVersionsCount); vi++) {
+    for (let vi = 0; vi < allVersions.length; vi++) {
       const v = r.versions[vi];
       const sf = scoreFilters[vi];
       if (sf && sf.length > 0) {
