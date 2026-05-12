@@ -195,8 +195,8 @@ export function EvalTable({
                 {allVersions.map((_, vi) => {
                   const v = r.versions[vi] ?? { score: null, issueType: "无", note: "" };
                   return (
-                    <>
-                      <td key={"s" + vi} className="px-2 py-3 border-l border-border">
+                    <Fragment key={"vf" + vi}>
+                      <td className="px-2 py-3 border-l border-border">
                         <input
                           type="number"
                           min={1}
@@ -208,7 +208,7 @@ export function EvalTable({
                           className="w-12 rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none"
                         />
                       </td>
-                      <td key={"i" + vi} className="px-2 py-3">
+                      <td className="px-2 py-3">
                         <select
                           value={v.issueType}
                           onChange={(e) => updateVersion(r.id, vi, { issueType: e.target.value })}
@@ -219,7 +219,7 @@ export function EvalTable({
                           ))}
                         </select>
                       </td>
-                      <td key={"n" + vi} className="px-2 py-3">
+                      <td className="px-2 py-3">
                         <input
                           value={v.note}
                           onChange={(e) => updateVersion(r.id, vi, { note: e.target.value })}
@@ -227,7 +227,7 @@ export function EvalTable({
                           className="w-28 rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none"
                         />
                       </td>
-                    </>
+                    </Fragment>
                   );
                 })}
               </tr>
