@@ -241,11 +241,9 @@ export function EvalTable({
                     <span className="truncate">{p.name}</span>
                     <span className="text-[10px] text-muted-foreground">v{vi + 1}</span>
                   </div>
-                  {showConfig && (
-                    <div className="mt-1 text-[10px] text-muted-foreground font-normal leading-snug">
-                      模型 claude-opus-4-7 · 工具 网页搜索 · 主对话
-                    </div>
-                  )}
+                  <div className="mt-1 text-[10px] text-muted-foreground font-normal leading-snug">
+                    模型 claude-opus-4-7 · 工具 网页搜索 · 主对话
+                  </div>
                 </th>
               ))}
               {comparePrompts.length < 2 && (
