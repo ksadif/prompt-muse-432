@@ -271,7 +271,7 @@ export function EvalTable({
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r) => (
+            {pageRows.map((r) => (
               <tr key={r.id} className="border-b border-border last:border-0 hover:bg-[var(--console-sidebar)]/30 align-top">
                 <td className="px-3 py-3 text-xs text-muted-foreground">{r.id}</td>
                 <td className="px-3 py-3 text-sm">
