@@ -167,9 +167,6 @@ function PromptPage() {
             </div>
           </div>
 
-          <button className="px-3 h-8 text-sm rounded-md bg-foreground text-background inline-flex items-center gap-1.5 hover:opacity-90">
-            ▶ 运行
-          </button>
         </div>
 
         <PromptListPanel
