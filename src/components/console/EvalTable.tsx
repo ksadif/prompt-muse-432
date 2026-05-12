@@ -118,7 +118,8 @@ export function EvalTable({
   onPickComparePrompt: (cb: (p: PromptItem) => void) => void;
 }) {
   const [testSetId, setTestSetId] = useState(testSets[0].id);
-  const [showConfig, setShowConfig] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"single" | "list">("list");
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showExtras, setShowExtras] = useState(false);
   const [rows, setRows] = useState<EvalRow[]>(initialEvalRows);
   const [comparePrompts, setComparePrompts] = useState<PromptItem[]>([]);
@@ -145,9 +146,10 @@ export function EvalTable({
     return true;
   });
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const effectivePageSize = previewMode === "single" ? 1 : pageSize;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / effectivePageSize));
   const currentPage = Math.min(page, totalPages);
-  const pageRows = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const pageRows = filtered.slice((currentPage - 1) * effectivePageSize, currentPage * effectivePageSize);
 
   function updateVersion(rowId: number, vIndex: number, patch: Partial<EvalRow["versions"][number]>) {
     setRows((rs) =>
@@ -194,7 +196,29 @@ export function EvalTable({
 
         
 
-        <SwitchRow label="显示 Prompt 配置" checked={showConfig} onChange={setShowConfig} />
+        <div className="inline-flex items-center gap-1 rounded-full bg-muted/50 p-1">
+          <span className="px-2 text-xs text-muted-foreground">预览模式</span>
+          {([
+            { v: "single", label: "单条" },
+            { v: "list", label: "列表" },
+          ] as const).map((opt) => (
+            <button
+              key={opt.v}
+              onClick={() => {
+                setPreviewMode(opt.v);
+                setPage(1);
+              }}
+              className={`rounded-full px-2.5 py-0.5 text-xs transition ${
+                previewMode === opt.v
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
         <SwitchRow label="显示测试集字段" checked={showExtras} onChange={setShowExtras} />
 
         <button
@@ -240,11 +264,9 @@ export function EvalTable({
                     <span className="truncate">{p.name}</span>
                     <span className="text-[10px] text-muted-foreground">v{vi + 1}</span>
                   </div>
-                  {showConfig && (
-                    <div className="mt-1 text-[10px] text-muted-foreground font-normal leading-snug">
-                      模型 claude-opus-4-7 · 工具 网页搜索 · 主对话
-                    </div>
-                  )}
+                  <div className="mt-1 text-[10px] text-muted-foreground font-normal leading-snug">
+                    模型 claude-opus-4-7 · 工具 网页搜索 · 主对话
+                  </div>
                 </th>
               ))}
               {comparePrompts.length < 2 && (
@@ -292,10 +314,32 @@ export function EvalTable({
                   ))}
                 {allVersions.map((_, vi) => {
                   const v = r.versions[vi];
+                  const key = `${r.id}-${vi}`;
+                  const isExpanded = previewMode === "single" || expanded[key];
                   return (
                     <td key={vi} className="px-3 py-3 text-sm border-l border-border">
                       {v?.output ? (
-                        <ChatPreview input={r.input} output={v.output} />
+                        isExpanded ? (
+                          <div className="space-y-1.5">
+                            <ChatPreview input={r.input} output={v.output} />
+                            {previewMode === "list" && (
+                              <button
+                                onClick={() => setExpanded((e) => ({ ...e, [key]: false }))}
+                                className="block mx-auto text-[11px] text-muted-foreground hover:text-foreground"
+                              >
+                                收起
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setExpanded((e) => ({ ...e, [key]: true }))}
+                            className="w-full text-left rounded-md border border-dashed border-border bg-muted/30 px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground truncate"
+                            title={v.output}
+                          >
+                            ▶ {v.output.slice(0, 24)}{v.output.length > 24 ? "…" : ""}
+                          </button>
+                        )
                       ) : (
                         <button
                           onClick={() => runRow(r.id, vi)}
