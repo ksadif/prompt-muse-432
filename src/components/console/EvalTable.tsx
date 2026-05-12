@@ -334,10 +334,11 @@ export function EvalTable({
                         ) : (
                           <button
                             onClick={() => setExpanded((e) => ({ ...e, [key]: true }))}
-                            className="w-full text-left rounded-md border border-dashed border-border bg-muted/30 px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground truncate"
+                            className="group w-full flex items-center gap-1.5 text-left text-xs text-foreground/80 hover:text-foreground py-0.5"
                             title={v.output}
                           >
-                            ▶ {v.output.slice(0, 24)}{v.output.length > 24 ? "…" : ""}
+                            <ChevronDown className="h-3 w-3 shrink-0 -rotate-90 text-muted-foreground group-hover:text-[var(--console-orange)] transition" />
+                            <span className="truncate">{v.output}</span>
                           </button>
                         )
                       ) : (
