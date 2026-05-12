@@ -51,6 +51,74 @@ function HeaderSearch({
   );
 }
 
+function HeaderMultiSelect({
+  options,
+  selected,
+  onChange,
+}: {
+  options: string[];
+  selected: string[];
+  onChange: (v: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const active = selected.length > 0;
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  function toggle(o: string) {
+    onChange(selected.includes(o) ? selected.filter((x) => x !== o) : [...selected, o]);
+  }
+
+  return (
+    <div className="relative inline-block" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={`inline-flex items-center justify-center h-4 w-4 rounded hover:bg-accent transition ${
+          active ? "text-[var(--console-orange)]" : "text-muted-foreground/60"
+        } ${open ? "rotate-180" : ""}`}
+      >
+        <ChevronDown className="h-3 w-3" strokeWidth={2.5} />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full mt-1 z-20 min-w-[110px] rounded-md border border-border bg-background shadow-lg p-1">
+          {options.map((o) => {
+            const checked = selected.includes(o);
+            return (
+              <label
+                key={o}
+                className="flex items-center gap-2 rounded px-2 py-1 text-[11px] hover:bg-accent cursor-pointer font-normal"
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggle(o)}
+                  className="accent-[var(--console-orange)] h-3 w-3"
+                />
+                {o}
+              </label>
+            );
+          })}
+          {active && (
+            <button
+              onClick={() => onChange([])}
+              className="w-full mt-1 rounded px-2 py-1 text-[11px] text-muted-foreground hover:bg-accent text-left"
+            >
+              清空
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ChatPreview({ input, output }: { input: string; output: string }) {
   return (
     <div className="mx-auto w-[220px] rounded-[20px] border border-border bg-[var(--console-sidebar)]/60 p-2 shadow-sm">
@@ -124,8 +192,9 @@ export function EvalTable({
   const [rows, setRows] = useState<EvalRow[]>(initialEvalRows);
   const [comparePrompts, setComparePrompts] = useState<PromptItem[]>([]);
   const [filters, setFilters] = useState<Record<string, string>>({});
-  const [scoreFilters, setScoreFilters] = useState<Record<number, string>>({});
-  const [issueFilters, setIssueFilters] = useState<Record<number, string>>({});
+  const [scoreFilters, setScoreFilters] = useState<Record<number, string[]>>({});
+  const [issueFilters, setIssueFilters] = useState<Record<number, string[]>>({});
+  const [noteFilters, setNoteFilters] = useState<Record<number, string>>({});
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
 
@@ -143,6 +212,21 @@ export function EvalTable({
   const filtered = rows.filter((r) => {
     if (filters.id && !String(r.id).includes(filters.id)) return false;
     if (filters.input && !r.input.includes(filters.input)) return false;
+    for (let vi = 0; vi < allVersions.length; vi++) {
+      const v = r.versions[vi];
+      const sf = scoreFilters[vi];
+      if (sf && sf.length > 0) {
+        const sv = v?.score == null ? "未评" : String(v.score);
+        if (!sf.includes(sv)) return false;
+      }
+      const isf = issueFilters[vi];
+      if (isf && isf.length > 0) {
+        const iv = v?.issueType ?? "无";
+        if (!isf.includes(iv)) return false;
+      }
+      const nf = noteFilters[vi];
+      if (nf && !(v?.note ?? "").includes(nf)) return false;
+    }
     return true;
   });
 
@@ -193,8 +277,6 @@ export function EvalTable({
             ))}
           </select>
         </div>
-
-        
 
         <div className="inline-flex items-center gap-2">
           <span className="text-xs text-muted-foreground">预览模式</span>
@@ -287,10 +369,38 @@ export function EvalTable({
             </tr>
             <tr className="border-b border-border bg-[var(--console-sidebar)]/40">
               <th colSpan={2 + (showExtras ? extraKeys.length : 0) + allVersions.length + (comparePrompts.length < 2 ? 1 : 0)}></th>
-              {allVersions.map((p, vi) => (
-                <th key={"hdr" + vi} colSpan={3} className="px-3 py-1.5 text-left text-[11px] text-muted-foreground border-l border-border">
-                  版本 {vi + 1}：分数 / 问题类型 / 备注
-                </th>
+              {allVersions.map((_, vi) => (
+                <Fragment key={"hdr" + vi}>
+                  <th className="px-2 py-1.5 text-left text-[11px] text-muted-foreground border-l border-border font-normal">
+                    <div className="flex items-center gap-1">
+                      v{vi + 1} 分数
+                      <HeaderMultiSelect
+                        options={["1", "2", "3", "4", "5", "未评"]}
+                        selected={scoreFilters[vi] ?? []}
+                        onChange={(arr) => setScoreFilters((s) => ({ ...s, [vi]: arr }))}
+                      />
+                    </div>
+                  </th>
+                  <th className="px-2 py-1.5 text-left text-[11px] text-muted-foreground font-normal">
+                    <div className="flex items-center gap-1">
+                      问题类型
+                      <HeaderMultiSelect
+                        options={ISSUE_TYPES}
+                        selected={issueFilters[vi] ?? []}
+                        onChange={(arr) => setIssueFilters((s) => ({ ...s, [vi]: arr }))}
+                      />
+                    </div>
+                  </th>
+                  <th className="px-2 py-1.5 text-left text-[11px] text-muted-foreground font-normal">
+                    <div className="flex items-center gap-1">
+                      备注
+                      <HeaderSearch
+                        value={noteFilters[vi] ?? ""}
+                        onChange={(v) => setNoteFilters((s) => ({ ...s, [vi]: v }))}
+                      />
+                    </div>
+                  </th>
+                </Fragment>
               ))}
             </tr>
           </thead>
