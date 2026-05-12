@@ -17,7 +17,8 @@ import {
   type Folder,
   type PromptItem,
 } from "@/components/console/types";
-import { Plus } from "lucide-react";
+import { Plus, ListTree } from "lucide-react";
+import { NewPromptDialog } from "@/components/console/NewPromptDialog";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Prompt 工作台 · Claude Console" }] }),
@@ -54,6 +55,8 @@ function PromptPage() {
     p1: [makeBlock(0)],
   });
   const [drawer, setDrawer] = useState<DrawerKind>(null);
+  const [listOpen, setListOpen] = useState(false);
+  const [newPromptOpen, setNewPromptOpen] = useState(false);
 
   const selectedPrompt = useMemo(() => {
     for (const f of folders) {
@@ -126,17 +129,46 @@ function PromptPage() {
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       <Sidebar />
-      <PromptListPanel
-        folders={folders}
-        selectedId={selectedId}
-        onSelect={(id) => {
-          setSelectedId(id);
-          if (!blocksMap[id]) setBlocksMap((m) => ({ ...m, [id]: [makeBlock(0)] }));
-        }}
-        onAddFolder={handleAddFolder}
-        onAddPrompt={handleAddPrompt}
-      />
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col relative">
+        <div className="px-3 pt-3 pb-2 flex items-center gap-2 border-b border-border bg-background">
+          <button
+            onClick={() => setListOpen((v) => !v)}
+            className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent"
+            title="Prompt 列表"
+          >
+            <ListTree className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setNewPromptOpen(true)}
+            className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border text-[var(--console-orange)] hover:bg-accent"
+            title="新建 Prompt"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+
+        <PromptListPanel
+          open={listOpen}
+          onClose={() => setListOpen(false)}
+          folders={folders}
+          selectedId={selectedId}
+          onSelect={(id) => {
+            setSelectedId(id);
+            if (!blocksMap[id]) setBlocksMap((m) => ({ ...m, [id]: [makeBlock(0)] }));
+          }}
+          onAddFolder={handleAddFolder}
+        />
+
+        <NewPromptDialog
+          open={newPromptOpen}
+          folders={folders}
+          onClose={() => setNewPromptOpen(false)}
+          onCreate={(d) => {
+            handleAddPrompt(d);
+            setNewPromptOpen(false);
+          }}
+        />
+
         {selectedPrompt && (
           <PromptInfoBar
             prompt={selectedPrompt}
