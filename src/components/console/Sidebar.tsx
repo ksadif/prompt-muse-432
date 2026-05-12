@@ -54,8 +54,8 @@ const sections: Section[] = [
 export function Sidebar() {
   const { pathname } = useLocation();
   const [open, setOpen] = useState<Record<string, boolean>>({
-    Build: true,
-    "Managed Agents": true,
+    构建: true,
+    "托管 Agent": true,
   });
 
   return (
