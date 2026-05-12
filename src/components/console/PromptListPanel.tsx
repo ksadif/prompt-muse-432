@@ -1,42 +1,57 @@
-import { useState } from "react";
-import { ChevronDown, ChevronRight, FolderPlus, FilePlus, Folder as FolderIcon, FileText } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronDown, ChevronRight, FolderPlus, Folder as FolderIcon, FileText, X } from "lucide-react";
 import type { Folder } from "./types";
-import { NewPromptDialog } from "./NewPromptDialog";
 
 export function PromptListPanel({
+  open,
+  onClose,
   folders,
   selectedId,
   onSelect,
   onAddFolder,
-  onAddPrompt,
 }: {
+  open: boolean;
+  onClose: () => void;
   folders: Folder[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   onAddFolder: (name: string) => void;
-  onAddPrompt: (data: { name: string; description: string; folderId: string }) => void;
 }) {
   const [openMap, setOpenMap] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(folders.map((f) => [f.id, true])),
   );
   const [newFolderName, setNewFolderName] = useState<string | null>(null);
-  const [newPromptOpen, setNewPromptOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [open, onClose]);
+
+  if (!open) return null;
 
   return (
-    <div className="w-[280px] shrink-0 border-r border-border bg-[var(--console-sidebar)] flex flex-col">
-      <div className="px-3 py-3 border-b border-border flex items-center gap-2">
-        <button
-          onClick={() => setNewFolderName("")}
-          className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md border border-border bg-background px-2 py-1.5 text-xs hover:bg-accent"
-        >
-          <FolderPlus className="h-3.5 w-3.5" /> 新建文件夹
-        </button>
-        <button
-          onClick={() => setNewPromptOpen(true)}
-          className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-md bg-[var(--console-orange)] text-white px-2 py-1.5 text-xs hover:opacity-90"
-        >
-          <FilePlus className="h-3.5 w-3.5" /> 新建 Prompt
-        </button>
+    <div
+      ref={ref}
+      className="absolute left-3 top-12 z-40 w-[300px] max-h-[70vh] rounded-lg border border-border bg-background shadow-xl flex flex-col"
+    >
+      <div className="px-3 py-2.5 border-b border-border flex items-center justify-between">
+        <span className="text-sm font-medium">Prompt 列表</span>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setNewFolderName("")}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"
+          >
+            <FolderPlus className="h-3.5 w-3.5" /> 新建文件夹
+          </button>
+          <button onClick={onClose} className="p-1 hover:bg-accent rounded">
+            <X className="h-3.5 w-3.5 text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto py-2">
@@ -87,7 +102,10 @@ export function PromptListPanel({
                     return (
                       <button
                         key={p.id}
-                        onClick={() => onSelect(p.id)}
+                        onClick={() => {
+                          onSelect(p.id);
+                          onClose();
+                        }}
                         className={`w-full text-left pl-9 pr-3 py-1.5 hover:bg-accent flex flex-col gap-0.5 ${
                           active ? "bg-[var(--console-active)]" : ""
                         }`}
@@ -108,16 +126,6 @@ export function PromptListPanel({
           );
         })}
       </div>
-
-      <NewPromptDialog
-        open={newPromptOpen}
-        folders={folders}
-        onClose={() => setNewPromptOpen(false)}
-        onCreate={(d) => {
-          onAddPrompt(d);
-          setNewPromptOpen(false);
-        }}
-      />
     </div>
   );
 }
