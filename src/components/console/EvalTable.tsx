@@ -15,13 +15,15 @@ function SwitchRow({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full bg-[var(--console-active)] pl-3 pr-1 py-1 cursor-pointer select-none">
+    <div className="inline-flex items-center gap-2 rounded-full bg-muted/50 pl-3 pr-1 py-1 cursor-pointer select-none">
       <span className="text-xs text-foreground">{label}</span>
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative h-4 w-7 rounded-full transition ${
-          checked ? "bg-[var(--console-orange)]" : "bg-background border border-border"
+        className={`relative h-4 w-7 rounded-full transition border ${
+          checked
+            ? "bg-[var(--console-orange)]/40 border-[var(--console-orange)]/50"
+            : "bg-background border-border"
         }`}
       >
         <span
