@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
-import { Plus, Search, Play } from "lucide-react";
+import { Plus, ChevronDown, Play } from "lucide-react";
 import type { Folder, PromptItem } from "./types";
 import { initialEvalRows, testSets, type EvalRow } from "./mockData";
 
@@ -30,11 +30,11 @@ function HeaderSearch({
     <div className="relative inline-block" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`p-0.5 rounded hover:bg-accent ${
-          active ? "text-[var(--console-orange)]" : "text-muted-foreground"
-        }`}
+        className={`inline-flex items-center justify-center h-4 w-4 rounded hover:bg-accent transition ${
+          active ? "text-[var(--console-orange)]" : "text-muted-foreground/60"
+        } ${open ? "rotate-180" : ""}`}
       >
-        <Search className="h-3 w-3" />
+        <ChevronDown className="h-3 w-3" strokeWidth={2.5} />
       </button>
       {open && (
         <div className="absolute left-0 top-full mt-1 z-20 rounded-md border border-border bg-background shadow-lg p-1.5">
