@@ -55,6 +55,8 @@ function PromptPage() {
     p1: [makeBlock(0)],
   });
   const [drawer, setDrawer] = useState<DrawerKind>(null);
+  const [listOpen, setListOpen] = useState(false);
+  const [newPromptOpen, setNewPromptOpen] = useState(false);
 
   const selectedPrompt = useMemo(() => {
     for (const f of folders) {
