@@ -17,7 +17,8 @@ import {
   type Folder,
   type PromptItem,
 } from "@/components/console/types";
-import { Plus } from "lucide-react";
+import { Plus, ListTree } from "lucide-react";
+import { NewPromptDialog } from "@/components/console/NewPromptDialog";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Prompt 工作台 · Claude Console" }] }),
