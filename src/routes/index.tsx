@@ -15,6 +15,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useState } from "react";
+import { GeneratePromptDialog } from "@/components/console/GeneratePromptDialog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/")({
 function PromptPage() {
   const [system, setSystem] = useState("");
   const [user, setUser] = useState("");
+  const [genOpen, setGenOpen] = useState(false);
 
   return (
     <ConsoleShell>
@@ -80,7 +82,10 @@ function PromptPage() {
               <Paperclip className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="flex items-start gap-2 px-3 py-3">
-              <button className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent shrink-0">
+              <button
+                onClick={() => setGenOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent shrink-0"
+              >
                 <Sparkles className="h-3 w-3 text-[var(--console-orange)]" />
                 Generate Prompt
               </button>
@@ -154,6 +159,11 @@ function PromptPage() {
           </button>
         </aside>
       </div>
+      <GeneratePromptDialog
+        open={genOpen}
+        onClose={() => setGenOpen(false)}
+        onGenerated={(p) => setUser(p)}
+      />
     </ConsoleShell>
   );
 }
