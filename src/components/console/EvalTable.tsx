@@ -369,10 +369,38 @@ export function EvalTable({
             </tr>
             <tr className="border-b border-border bg-[var(--console-sidebar)]/40">
               <th colSpan={2 + (showExtras ? extraKeys.length : 0) + allVersions.length + (comparePrompts.length < 2 ? 1 : 0)}></th>
-              {allVersions.map((p, vi) => (
-                <th key={"hdr" + vi} colSpan={3} className="px-3 py-1.5 text-left text-[11px] text-muted-foreground border-l border-border">
-                  版本 {vi + 1}：分数 / 问题类型 / 备注
-                </th>
+              {allVersions.map((_, vi) => (
+                <Fragment key={"hdr" + vi}>
+                  <th className="px-2 py-1.5 text-left text-[11px] text-muted-foreground border-l border-border font-normal">
+                    <div className="flex items-center gap-1">
+                      v{vi + 1} 分数
+                      <HeaderMultiSelect
+                        options={["1", "2", "3", "4", "5", "未评"]}
+                        selected={scoreFilters[vi] ?? []}
+                        onChange={(arr) => setScoreFilters((s) => ({ ...s, [vi]: arr }))}
+                      />
+                    </div>
+                  </th>
+                  <th className="px-2 py-1.5 text-left text-[11px] text-muted-foreground font-normal">
+                    <div className="flex items-center gap-1">
+                      问题类型
+                      <HeaderMultiSelect
+                        options={ISSUE_TYPES}
+                        selected={issueFilters[vi] ?? []}
+                        onChange={(arr) => setIssueFilters((s) => ({ ...s, [vi]: arr }))}
+                      />
+                    </div>
+                  </th>
+                  <th className="px-2 py-1.5 text-left text-[11px] text-muted-foreground font-normal">
+                    <div className="flex items-center gap-1">
+                      备注
+                      <HeaderSearch
+                        value={noteFilters[vi] ?? ""}
+                        onChange={(v) => setNoteFilters((s) => ({ ...s, [vi]: v }))}
+                      />
+                    </div>
+                  </th>
+                </Fragment>
               ))}
             </tr>
           </thead>
