@@ -27,6 +27,7 @@ const sections: Section[] = [
     label: "Build",
     items: [
       { label: "Workbench", to: "/" },
+      { label: "测试集", to: "/evaluate" },
       { label: "Files" },
       { label: "Skills" },
       { label: "Batches" },
