@@ -5,6 +5,35 @@ import { initialEvalRows, testSets, type EvalRow } from "./mockData";
 
 const ISSUE_TYPES = ["无", "略冗长", "事实错误", "格式不符", "拒答", "其他"];
 
+function SwitchRow({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+      <span className="text-sm text-foreground">{label}</span>
+      <button
+        type="button"
+        onClick={() => onChange(!checked)}
+        className={`relative h-[18px] w-8 rounded-full transition ${
+          checked ? "bg-[var(--console-orange)]" : "bg-muted"
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 h-3.5 w-3.5 rounded-full bg-white shadow transition-all ${
+            checked ? "left-[14px]" : "left-0.5"
+          }`}
+        />
+      </button>
+    </label>
+  );
+}
+
 export function EvalTable({
   folders,
   currentPrompt,
