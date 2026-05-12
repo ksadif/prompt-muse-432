@@ -368,6 +368,40 @@ export function EvalTable({
         <span className="text-xs text-muted-foreground">
           共 {filtered.length} 行 · 当前对比版本数：{allVersions.length}（最多 3）
         </span>
+
+        <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+          <span>每页</span>
+          <select
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(+e.target.value);
+              setPage(1);
+            }}
+            className="rounded-md border border-border bg-background px-1.5 py-0.5 text-xs outline-none focus:border-[var(--console-orange)] cursor-pointer"
+          >
+            {[5, 10, 20, 50].map((n) => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+          <span>条</span>
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage <= 1}
+            className="rounded-md border border-border bg-background px-2 py-0.5 hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            上一页
+          </button>
+          <span className="text-foreground">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage >= totalPages}
+            className="rounded-md border border-border bg-background px-2 py-0.5 hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            下一页
+          </button>
+        </div>
       </div>
     </div>
   );
