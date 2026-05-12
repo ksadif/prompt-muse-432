@@ -1,9 +1,55 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useMemo, useRef, useState, useEffect } from "react";
 import { Plus, Search, Play } from "lucide-react";
 import type { Folder, PromptItem } from "./types";
 import { initialEvalRows, testSets, type EvalRow } from "./mockData";
 
 const ISSUE_TYPES = ["无", "略冗长", "事实错误", "格式不符", "拒答", "其他"];
+
+function HeaderSearch({
+  value,
+  onChange,
+  placeholder = "搜索",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const active = !!value;
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  return (
+    <div className="relative inline-block" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className={`p-0.5 rounded hover:bg-accent ${
+          active ? "text-[var(--console-orange)]" : "text-muted-foreground"
+        }`}
+      >
+        <Search className="h-3 w-3" />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full mt-1 z-20 rounded-md border border-border bg-background shadow-lg p-1.5">
+          <input
+            autoFocus
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className="w-40 rounded border border-border bg-background px-2 py-1 text-[11px] font-normal outline-none focus:border-[var(--console-orange)]"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 function SwitchRow({
   label,
@@ -133,22 +179,22 @@ export function EvalTable({
           <thead className="bg-[var(--console-sidebar)]/60">
             <tr className="border-b border-border">
               <th className="px-3 py-2.5 text-left text-xs font-medium w-20">
-                <div>编号</div>
-                <input
-                  placeholder="搜索"
-                  value={filters.id ?? ""}
-                  onChange={(e) => setFilters((f) => ({ ...f, id: e.target.value }))}
-                  className="mt-1 w-full rounded border border-border bg-background px-1.5 py-0.5 text-[11px] font-normal outline-none"
-                />
+                <div className="flex items-center gap-1">
+                  编号
+                  <HeaderSearch
+                    value={filters.id ?? ""}
+                    onChange={(v) => setFilters((f) => ({ ...f, id: v }))}
+                  />
+                </div>
               </th>
               <th className="px-3 py-2.5 text-left text-xs font-medium min-w-[160px]">
-                <div className="flex items-center gap-1"><Search className="h-3 w-3" />输入文字</div>
-                <input
-                  placeholder="搜索"
-                  value={filters.input ?? ""}
-                  onChange={(e) => setFilters((f) => ({ ...f, input: e.target.value }))}
-                  className="mt-1 w-full rounded border border-border bg-background px-1.5 py-0.5 text-[11px] font-normal outline-none"
-                />
+                <div className="flex items-center gap-1">
+                  输入文字
+                  <HeaderSearch
+                    value={filters.input ?? ""}
+                    onChange={(v) => setFilters((f) => ({ ...f, input: v }))}
+                  />
+                </div>
               </th>
               {showExtras &&
                 extraKeys.map((k) => (
