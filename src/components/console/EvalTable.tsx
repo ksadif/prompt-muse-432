@@ -203,11 +203,10 @@ export function EvalTable({
     [currentPrompt, comparePrompts],
   );
 
-  const extraKeys = useMemo(() => {
-    const set = new Set<string>();
-    rows.forEach((r) => Object.keys(r.extras).forEach((k) => set.add(k)));
-    return Array.from(set);
-  }, [rows]);
+  const extraKeys = useMemo(
+    () => ["输入图片", "输入笔记", "输入时间", "地理位置", "用户UID", "设备平台信息", "短期记忆", "长期记忆"],
+    [],
+  );
 
   const filtered = rows.filter((r) => {
     if (filters.id && !String(r.id).includes(filters.id)) return false;
