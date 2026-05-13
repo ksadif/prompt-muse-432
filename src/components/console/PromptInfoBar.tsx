@@ -95,6 +95,7 @@ export function PromptInfoBar({
           {centerSlot}
         </div>
       )}
+      {rightSlot && <div className="ml-auto flex items-center gap-2">{rightSlot}</div>}
     </div>
   );
 }
