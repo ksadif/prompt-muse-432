@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Settings2, Wrench, Brain, Sparkles, Link2, Trash2, ChevronDown } from "lucide-react";
+import { Settings2, Wrench, Link2, Trash2, ChevronDown } from "lucide-react";
 import type { EditorBlock, Folder } from "./types";
-import { ImprovePromptDialog } from "./ImprovePromptDialog";
 
 export function PromptEditorBlock({
   block,
@@ -24,7 +23,6 @@ export function PromptEditorBlock({
   onOpenToolPicker: () => void;
   onOpenMemoryPicker: () => void;
 }) {
-  const [improveOpen, setImproveOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const allPrompts = folders.flatMap((f) => f.prompts);
   const linked = block.linkedPromptId
@@ -97,20 +95,6 @@ export function PromptEditorBlock({
           {block.model}
         </button>
 
-        <div className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1">
-          <span className="text-muted-foreground">最大轮次</span>
-          <input
-            disabled={disabled}
-            type="number"
-            min={1}
-            value={block.maxTurns}
-            onChange={(e) =>
-              onChange({ ...block, maxTurns: Math.max(1, +e.target.value || 1) })
-            }
-            className="w-10 bg-transparent outline-none text-center"
-          />
-        </div>
-
         <button
           disabled={disabled}
           onClick={onOpenToolPicker}
@@ -118,24 +102,6 @@ export function PromptEditorBlock({
         >
           <Wrench className="h-3 w-3" />
           工具 ({block.tools.length})
-        </button>
-
-        <button
-          disabled={disabled}
-          onClick={onOpenMemoryPicker}
-          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 hover:bg-accent disabled:opacity-50"
-        >
-          <Brain className="h-3 w-3" />
-          记忆 ({block.memories.length})
-        </button>
-
-        <button
-          disabled={disabled}
-          onClick={() => setImproveOpen(true)}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 text-[var(--console-orange)] hover:bg-accent disabled:opacity-50"
-        >
-          <Sparkles className="h-3 w-3" />
-          改善 Prompt
         </button>
       </div>
 
@@ -173,13 +139,6 @@ export function PromptEditorBlock({
         </div>
       )}
 
-      <ImprovePromptDialog
-        open={improveOpen}
-        onClose={() => setImproveOpen(false)}
-        onApply={(s) =>
-          onChange({ ...block, systemPrompt: block.systemPrompt + "\n\n" + s })
-        }
-      />
     </div>
   );
 }
