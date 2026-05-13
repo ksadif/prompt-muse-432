@@ -8,8 +8,8 @@ const VARIANT = {
   agent: {
     title: "Agent 列表",
     itemIcon: Bot,
-    accent: "text-violet-600",
-    activeBg: "bg-violet-500/10",
+    accent: "text-[var(--console-orange)]",
+    activeBg: "bg-[var(--console-active)]",
     searchPlaceholder: "搜索 Agent",
     suffix: "Agent",
     onlyMineLabel: "只看我的 Agent",
