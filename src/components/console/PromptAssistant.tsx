@@ -1,24 +1,23 @@
-import { useState } from "react";
-import { Send, Sparkles, User } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowUp, Sparkles, Wand2, Bug, Scissors, Lightbulb } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const SUGGESTIONS = [
-  "帮我审查当前 Prompt 的问题",
-  "如何让回答更简洁？",
-  "这个 Prompt 容易产生哪些幻觉？",
-  "如何加入 few-shot 示例？",
+const QUICK_ACTIONS = [
+  { icon: Bug, label: "审查问题", prompt: "帮我审查当前 Prompt 的潜在问题" },
+  { icon: Scissors, label: "更简洁", prompt: "如何让回答更简洁、更聚焦？" },
+  { icon: Lightbulb, label: "防幻觉", prompt: "这个 Prompt 容易产生哪些幻觉？怎么避免？" },
+  { icon: Wand2, label: "加示例", prompt: "如何加入 few-shot 示例提升稳定性？" },
 ];
 
 export function PromptAssistant() {
-  const [messages, setMessages] = useState<Msg[]>([
-    {
-      role: "assistant",
-      content:
-        "你好，我是 Prompt 写作助手。可以帮你审查 Prompt 结构、找出潜在问题、给出改写建议。把你的诉求告诉我吧。",
-    },
-  ]);
+  const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages]);
 
   function send(text: string) {
     const t = text.trim();
@@ -29,7 +28,7 @@ export function PromptAssistant() {
       {
         role: "assistant",
         content:
-          "（示例回复）我注意到你的 Prompt 角色定义较弱、输出格式未明确。建议：\n\n1. 在 System 中明确「你是 …，目标是 …」\n2. 使用 Markdown 段落约束输出格式\n3. 增加 1-2 个 few-shot 例子覆盖边界情况",
+          "我看了下你的 Prompt，给几点建议：\n\n**1. 角色定义**：在 System 顶部明确「你是 …，目标是 …」，让模型有稳定的视角。\n\n**2. 输出格式**：用 Markdown 段落或 JSON Schema 约束输出结构。\n\n**3. 边界覆盖**：补 1-2 个 few-shot 示例覆盖常见 corner case。\n\n需要我直接给出改写后的版本吗？",
       },
     ]);
     setInput("");
@@ -37,48 +36,38 @@ export function PromptAssistant() {
 
   return (
     <div className="flex flex-col h-full -m-5">
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`flex gap-2 ${m.role === "user" ? "justify-end" : ""}`}
-          >
-            {m.role === "assistant" && (
-              <div className="shrink-0 h-7 w-7 rounded-full bg-[var(--console-orange)]/15 text-[var(--console-orange)] flex items-center justify-center">
-                <Sparkles className="h-3.5 w-3.5" />
-              </div>
-            )}
-            <div
-              className={`max-w-[80%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap ${
-                m.role === "user"
-                  ? "bg-[var(--console-cta)] text-[var(--console-cta-foreground)]"
-                  : "bg-muted text-foreground"
-              }`}
-            >
-              {m.content}
-            </div>
-            {m.role === "user" && (
-              <div className="shrink-0 h-7 w-7 rounded-full bg-muted flex items-center justify-center">
-                <User className="h-3.5 w-3.5 text-muted-foreground" />
-              </div>
-            )}
+      {/* 消息区 */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-5">
+        {messages.length === 0 ? (
+          <Welcome onPick={send} />
+        ) : (
+          <div className="space-y-4">
+            {messages.map((m, i) => (
+              <Bubble key={i} msg={m} />
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
-      <div className="border-t border-border p-3 space-y-2">
-        <div className="flex flex-wrap gap-1.5">
-          {SUGGESTIONS.map((s) => (
+      {/* 快捷操作 */}
+      {messages.length > 0 && (
+        <div className="px-3 pt-2 flex flex-wrap gap-1.5">
+          {QUICK_ACTIONS.map((q) => (
             <button
-              key={s}
-              onClick={() => send(s)}
-              className="text-[11px] rounded-full border border-border px-2 py-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+              key={q.label}
+              onClick={() => send(q.prompt)}
+              className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-2.5 py-1 text-[11px] text-muted-foreground hover:border-[var(--console-orange)] hover:text-[var(--console-orange)] transition"
             >
-              {s}
+              <q.icon className="h-3 w-3" />
+              {q.label}
             </button>
           ))}
         </div>
-        <div className="flex items-end gap-2 rounded-md border border-border bg-background focus-within:border-[var(--console-orange)] p-1.5">
+      )}
+
+      {/* 输入区 */}
+      <div className="p-3">
+        <div className="rounded-2xl border border-border bg-background focus-within:border-[var(--console-orange)] focus-within:ring-2 focus-within:ring-[var(--console-orange)]/15 transition shadow-sm">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -89,18 +78,88 @@ export function PromptAssistant() {
               }
             }}
             rows={2}
-            placeholder="问点什么…（Enter 发送，Shift+Enter 换行）"
-            className="flex-1 bg-transparent outline-none text-sm resize-none px-2 py-1"
+            placeholder="问点什么…"
+            className="w-full bg-transparent outline-none text-sm resize-none px-3.5 pt-3 pb-1 placeholder:text-muted-foreground/70"
           />
-          <button
-            onClick={() => send(input)}
-            disabled={!input.trim()}
-            className="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-40"
-          >
-            <Send className="h-3.5 w-3.5" />
-          </button>
+          <div className="flex items-center justify-between px-2.5 pb-2">
+            <span className="text-[10px] text-muted-foreground/70">
+              Enter 发送 · Shift+Enter 换行
+            </span>
+            <button
+              onClick={() => send(input)}
+              disabled={!input.trim()}
+              className="inline-flex items-center justify-center h-7 w-7 rounded-full bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            >
+              <ArrowUp className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function Welcome({ onPick }: { onPick: (s: string) => void }) {
+  return (
+    <div className="h-full flex flex-col items-center justify-center text-center px-2 py-8">
+      <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-[var(--console-orange)] to-amber-400 flex items-center justify-center shadow-lg shadow-[var(--console-orange)]/20">
+        <Sparkles className="h-6 w-6 text-white" />
+      </div>
+      <div className="mt-3 text-[15px] font-semibold">Prompt 写作助手</div>
+      <p className="mt-1 text-xs text-muted-foreground max-w-[260px] leading-relaxed">
+        审查结构、找出潜在问题、给出改写建议。试试下面的操作开始：
+      </p>
+      <div className="mt-5 grid grid-cols-2 gap-2 w-full max-w-[300px]">
+        {QUICK_ACTIONS.map((q) => (
+          <button
+            key={q.label}
+            onClick={() => onPick(q.prompt)}
+            className="group flex flex-col items-start gap-1.5 rounded-xl border border-border bg-background p-3 text-left hover:border-[var(--console-orange)] hover:bg-[var(--console-orange)]/[0.03] transition"
+          >
+            <q.icon className="h-4 w-4 text-[var(--console-orange)]" />
+            <span className="text-xs font-medium">{q.label}</span>
+            <span className="text-[10px] text-muted-foreground line-clamp-2">
+              {q.prompt}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Bubble({ msg }: { msg: Msg }) {
+  if (msg.role === "user") {
+    return (
+      <div className="flex justify-end">
+        <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3.5 py-2 text-sm whitespace-pre-wrap leading-relaxed shadow-sm">
+          {msg.content}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex gap-2.5">
+      <div className="shrink-0 h-7 w-7 rounded-full bg-gradient-to-br from-[var(--console-orange)] to-amber-400 flex items-center justify-center shadow-sm">
+        <Sparkles className="h-3.5 w-3.5 text-white" />
+      </div>
+      <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-muted/60 text-foreground px-3.5 py-2 text-sm whitespace-pre-wrap leading-relaxed">
+        {renderMarkdownLite(msg.content)}
+      </div>
+    </div>
+  );
+}
+
+function renderMarkdownLite(text: string) {
+  // 极简 markdown：**bold** 与段落
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((p, i) =>
+    p.startsWith("**") && p.endsWith("**") ? (
+      <strong key={i} className="font-semibold">
+        {p.slice(2, -2)}
+      </strong>
+    ) : (
+      <span key={i}>{p}</span>
+    ),
   );
 }
