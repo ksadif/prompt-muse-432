@@ -290,6 +290,7 @@ function PromptPage() {
               >
                 <Plus className="h-3.5 w-3.5" /> 增加后处理
               </button>
+              </div>
             </div>
             {/* 右：Agent 效果预览 */}
             <div className="overflow-y-auto">
