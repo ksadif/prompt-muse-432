@@ -657,6 +657,13 @@ export function EvalTable({
           共 {filtered.length} 行 · 当前对比版本数：{allVersions.length}（最多 3）
         </span>
 
+        <ExportMenu
+          getRows={() => filtered}
+          versions={allVersions}
+          extraKeys={extraKeys}
+          testSetName={testSets.find((t) => t.id === testSetId)?.name ?? "测试集"}
+        />
+
         <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
           <span>每页</span>
           <select
