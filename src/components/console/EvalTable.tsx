@@ -503,7 +503,10 @@ export function EvalTable({
                 <Fragment key={"hdr" + vi}>
                   <th className="px-2 py-1.5 text-left text-[11px] text-muted-foreground border-l border-border font-normal">
                     <div className="flex items-center gap-1">
-                      v{vi + 1} 分数
+                      <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        v{vi + 1}
+                      </span>
+                      分数
                       <HeaderMultiSelect
                         options={["1", "2", "3", "4", "5", "未评"]}
                         selected={scoreFilters[vi] ?? []}
