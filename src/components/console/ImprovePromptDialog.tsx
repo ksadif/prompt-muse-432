@@ -57,7 +57,7 @@ export function ImprovePromptDialog({
               <button
                 disabled={!input.trim()}
                 onClick={handleAnalyze}
-                className="px-4 py-1.5 text-sm rounded-md bg-[var(--console-orange)] text-white hover:opacity-90 disabled:opacity-40"
+                className="px-4 py-1.5 text-sm rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-40"
               >
                 让大模型分析
               </button>
@@ -68,7 +68,7 @@ export function ImprovePromptDialog({
                   setResult(null);
                   setInput("");
                 }}
-                className="px-4 py-1.5 text-sm rounded-md bg-[var(--console-orange)] text-white hover:opacity-90"
+                className="px-4 py-1.5 text-sm rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90"
               >
                 应用建议
               </button>

@@ -292,7 +292,7 @@ export function EvalTable({
                 }}
                 className={`rounded-full px-3 py-0.5 text-xs transition ${
                   previewMode === opt.v
-                    ? "bg-[var(--console-orange)] text-white shadow-sm"
+                    ? "bg-[var(--console-cta)] text-[var(--console-cta-foreground)] shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -306,7 +306,7 @@ export function EvalTable({
 
         <button
           onClick={() => filtered.forEach((r) => allVersions.forEach((_, vi) => runRow(r.id, vi)))}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-[var(--console-orange)] text-white px-3 py-1.5 text-sm hover:opacity-90"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
         >
           <Play className="h-3 w-3 fill-current" />
           运行测试
