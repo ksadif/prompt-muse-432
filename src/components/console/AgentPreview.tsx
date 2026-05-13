@@ -60,14 +60,8 @@ export function AgentPreview() {
   return (
     <div className="flex flex-col h-full">
       <div className="px-4 py-3 border-b border-border">
-        <div className="text-sm font-semibold mb-2">Agent 效果预览</div>
-        <textarea
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="请输入要测试的内容..."
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] resize-none min-h-[72px]"
-        />
-        <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-sm font-semibold">Agent 效果预览</div>
           <div className="flex items-center gap-1 text-muted-foreground">
             {triggers.map((t) => {
               const Icon = t.icon;
@@ -89,6 +83,12 @@ export function AgentPreview() {
             })}
           </div>
         </div>
+        <textarea
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="请输入要测试的内容..."
+          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] resize-none min-h-[72px]"
+        />
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
