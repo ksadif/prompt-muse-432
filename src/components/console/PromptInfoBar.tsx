@@ -87,6 +87,11 @@ export function PromptInfoBar({
         )}
       </div>
       <span className="text-xs text-muted-foreground">最近编辑：{prompt.updatedAt}</span>
+      {centerSlot && (
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          {centerSlot}
+        </div>
+      )}
     </div>
   );
 }
