@@ -1,44 +1,27 @@
-import { useState } from "react";
-import {
-  ChevronDown,
-  ChevronRight,
-  FolderPlus,
-  Folder as FolderIcon,
-  FileText,
-  Bot,
-  Workflow,
-} from "lucide-react";
+import { useMemo, useState } from "react";
+import { X, Search, Lock, Box, Bot, Plus } from "lucide-react";
 import type { Folder } from "./types";
-import { LeftDrawer } from "./LeftDrawer";
 
 type Variant = "agent" | "prompt";
 
 const VARIANT = {
   agent: {
-    title: "Agent 任务",
-    subtitle: "Agent Orchestration",
-    folderIcon: Workflow,
+    title: "Agents",
     itemIcon: Bot,
     accent: "text-violet-600",
-    accentBg: "bg-violet-500/10",
-    activeBg: "bg-violet-500/10",
-    chip: "AGT",
-    // 标识风格：尖括号 + 单行小写
-    formatName: (n: string) => `<agent:${n}>`,
-    nameClass: "font-mono text-violet-700 dark:text-violet-300",
+    activeBg: "bg-violet-500/8",
+    createLabel: "Create New Agent",
+    searchPlaceholder: "Search agents",
+    suffix: "agent",
   },
   prompt: {
-    title: "Prompt 列表",
-    subtitle: "Prompt Workbench",
-    folderIcon: FolderIcon,
-    itemIcon: FileText,
+    title: "Prompts",
+    itemIcon: Box,
     accent: "text-[var(--console-orange)]",
-    accentBg: "bg-[var(--console-orange)]/10",
     activeBg: "bg-[var(--console-active)]",
-    chip: "PRM",
-    // 标识风格：斜杠路径
-    formatName: (n: string) => `prompt / ${n}`,
-    nameClass: "font-medium text-foreground",
+    createLabel: "Create New Prompt",
+    searchPlaceholder: "Search prompts",
+    suffix: "Prompt",
   },
 } as const;
 
@@ -48,7 +31,7 @@ export function PromptListPanel({
   folders,
   selectedId,
   onSelect,
-  onAddFolder,
+  onCreate,
   variant = "prompt",
 }: {
   open: boolean;
@@ -56,123 +39,129 @@ export function PromptListPanel({
   folders: Folder[];
   selectedId: string | null;
   onSelect: (id: string) => void;
-  onAddFolder: (name: string) => void;
+  onAddFolder?: (name: string) => void;
+  onCreate?: () => void;
   variant?: Variant;
 }) {
   const v = VARIANT[variant];
-  const FolderIco = v.folderIcon;
   const ItemIco = v.itemIcon;
+  const [query, setQuery] = useState("");
+  const [onlyMine, setOnlyMine] = useState(false);
 
-  const [openMap, setOpenMap] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(folders.map((f) => [f.id, true])),
-  );
-  const [newFolderName, setNewFolderName] = useState<string | null>(null);
+  const items = useMemo(() => {
+    const all = folders.flatMap((f) =>
+      f.prompts.map((p) => ({ ...p, folder: f.name })),
+    );
+    return all.filter((p) => {
+      if (onlyMine && p.owner !== "yz") return false;
+      if (query && !p.name.toLowerCase().includes(query.toLowerCase())) return false;
+      return true;
+    });
+  }, [folders, query, onlyMine]);
+
+  if (!open) return null;
 
   return (
-    <LeftDrawer
-      open={open}
-      onClose={onClose}
-      width={340}
-      title={
-        <>
-          <span
-            className={`inline-flex items-center justify-center rounded px-1.5 py-0.5 text-[10px] font-bold ${v.accent} ${v.accentBg}`}
+    <>
+      <div className="fixed inset-0 z-40 bg-black/20" onClick={onClose} />
+      <aside className="fixed left-0 top-0 z-50 h-screen w-[420px] bg-background border-r border-border shadow-2xl flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <h3 className="text-lg font-semibold tracking-tight">{v.title}</h3>
+          <button
+            onClick={onClose}
+            className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
           >
-            {v.chip}
-          </span>
-          <span>{v.title}</span>
-          <span className="text-[11px] font-normal text-muted-foreground">
-            · {v.subtitle}
-          </span>
-        </>
-      }
-      headerExtra={
-        <button
-          onClick={() => setNewFolderName("")}
-          className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent"
-        >
-          <FolderPlus className="h-3.5 w-3.5" /> 新建文件夹
-        </button>
-      }
-    >
-      {newFolderName !== null && (
-        <div className="px-1 py-1.5">
-          <input
-            autoFocus
-            value={newFolderName}
-            onChange={(e) => setNewFolderName(e.target.value)}
-            onBlur={() => {
-              if (newFolderName.trim()) onAddFolder(newFolderName.trim());
-              setNewFolderName(null);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                if (newFolderName.trim()) onAddFolder(newFolderName.trim());
-                setNewFolderName(null);
-              }
-              if (e.key === "Escape") setNewFolderName(null);
-            }}
-            placeholder="文件夹名称"
-            className="w-full rounded-md border border-border bg-background px-2 py-1 text-xs outline-none focus:border-[var(--console-orange)]"
-          />
+            <X className="h-4 w-4" />
+          </button>
         </div>
-      )}
 
-      {folders.map((f) => {
-        const isOpen = openMap[f.id] ?? true;
-        return (
-          <div key={f.id} className="mb-1">
-            <button
-              onClick={() => setOpenMap((m) => ({ ...m, [f.id]: !isOpen }))}
-              className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-md text-[13px] hover:bg-accent text-foreground"
-            >
-              {isOpen ? (
-                <ChevronDown className="h-3 w-3 text-muted-foreground" />
-              ) : (
-                <ChevronRight className="h-3 w-3 text-muted-foreground" />
-              )}
-              <FolderIco className={`h-3.5 w-3.5 ${v.accent}`} />
-              <span className="font-medium">{f.name}</span>
-              <span className="ml-auto text-[11px] text-muted-foreground">
-                {f.prompts.length}
-              </span>
-            </button>
-            {isOpen && (
-              <div className="mt-0.5">
-                {f.prompts.map((p) => {
-                  const active = p.id === selectedId;
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => {
-                        onSelect(p.id);
-                        onClose();
-                      }}
-                      className={`w-full text-left pl-8 pr-2 py-1.5 rounded-md hover:bg-accent flex flex-col gap-0.5 ${
-                        active ? v.activeBg : ""
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <ItemIco
-                          className={`h-3 w-3 shrink-0 ${
-                            active ? v.accent : "text-muted-foreground"
-                          }`}
-                        />
-                        <span className={`text-[12.5px] truncate ${v.nameClass}`}>
-                          {v.formatName(p.name)}
-                        </span>
-                      </div>
-                      <div className="text-[10.5px] text-muted-foreground pl-4.5 ml-1">
-                        {p.updatedAt} · {p.owner}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+        {/* Search */}
+        <div className="px-5 pb-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={v.searchPlaceholder}
+              className="w-full rounded-md border border-border bg-muted/40 pl-9 pr-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] focus:bg-background"
+            />
           </div>
-        );
-      })}
-    </LeftDrawer>
+        </div>
+
+        {/* Toggle */}
+        <div className="px-5 pb-2 flex items-center gap-2">
+          <button
+            onClick={() => setOnlyMine((v) => !v)}
+            role="switch"
+            aria-checked={onlyMine}
+            className={`relative inline-flex h-4 w-7 rounded-full transition ${
+              onlyMine ? "bg-[var(--console-cta)]" : "bg-muted-foreground/30"
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 h-3 w-3 rounded-full bg-background transition ${
+                onlyMine ? "left-3.5" : "left-0.5"
+              }`}
+            />
+          </button>
+          <span className="text-[13px] text-muted-foreground">
+            Only show my {variant === "agent" ? "agents" : "prompts"}
+          </span>
+        </div>
+
+        {/* List */}
+        <div className="flex-1 overflow-y-auto px-2 py-1">
+          {items.map((p) => {
+            const active = p.id === selectedId;
+            return (
+              <button
+                key={p.id}
+                onClick={() => {
+                  onSelect(p.id);
+                  onClose();
+                }}
+                className={`w-full text-left px-3 py-2.5 rounded-md hover:bg-accent ${
+                  active ? v.activeBg : ""
+                }`}
+              >
+                <div className="text-[14px] font-medium text-foreground truncate">
+                  {p.name}
+                  <span className="ml-1 text-muted-foreground/70 font-normal">
+                    · {v.suffix}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+                  <ItemIco className={`h-3 w-3 ${v.accent}`} />
+                  <span>{p.updatedAt} by {p.owner}</span>
+                  <Lock className="h-3 w-3 ml-0.5" />
+                </div>
+              </button>
+            );
+          })}
+          {items.length === 0 && (
+            <div className="text-center text-sm text-muted-foreground py-10">
+              没有找到匹配的内容
+            </div>
+          )}
+        </div>
+
+        {/* Create button */}
+        {onCreate && (
+          <div className="p-4 border-t border-border">
+            <button
+              onClick={() => {
+                onCreate();
+                onClose();
+              }}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--console-cta)] text-[var(--console-cta-foreground)] py-2.5 text-sm font-medium hover:opacity-90"
+            >
+              <Plus className="h-4 w-4" />
+              {v.createLabel}
+            </button>
+          </div>
+        )}
+      </aside>
+    </>
   );
 }

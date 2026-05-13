@@ -184,6 +184,7 @@ function PromptWorkbenchPage() {
             if (!contentMap[id]) setContentMap((m) => ({ ...m, [id]: { system: "", user: "" } }));
           }}
           onAddFolder={handleAddFolder}
+          onCreate={() => setNewOpen(true)}
         />
 
         <NewPromptDialog

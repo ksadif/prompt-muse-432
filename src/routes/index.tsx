@@ -159,6 +159,7 @@ function PromptPage() {
             if (!blocksMap[id]) setBlocksMap((m) => ({ ...m, [id]: [makeBlock(0)] }));
           }}
           onAddFolder={handleAddFolder}
+          onCreate={() => setNewPromptOpen(true)}
         />
 
         <NewPromptDialog
