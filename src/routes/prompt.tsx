@@ -176,19 +176,17 @@ function PromptWorkbenchPage() {
                   <>
                     <button
                       onClick={() => setJinjaOpen(true)}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent"
+                      className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border bg-background hover:bg-accent"
                       title="Jinja2 占位符参考"
                     >
-                      <BookOpen className="h-3.5 w-3.5" />
-                      占位符
+                      <BookOpen className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => setAssistantOpen(true)}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent"
+                      className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border bg-background hover:bg-accent"
                       title="Prompt 写作助手"
                     >
-                      <Sparkles className="h-3.5 w-3.5 text-[var(--console-orange)]" />
-                      写作助手
+                      <Sparkles className="h-4 w-4 text-[var(--console-orange)]" />
                     </button>
                   </>
                 }
