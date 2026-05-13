@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Settings2, Wrench, Link2, Trash2, ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Settings2, Wrench, Link2, Trash2, ChevronDown, Check } from "lucide-react";
 import type { EditorBlock, Folder } from "./types";
+import { ALL_MODELS, ALL_TOOLS } from "./types";
 
 export function PromptEditorBlock({
   block,
