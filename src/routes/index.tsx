@@ -214,31 +214,83 @@ function PromptPage() {
         )}
 
         {tab === "edit" ? (
-          <div className="grid grid-cols-[1fr_400px] flex-1 min-h-0">
-            <div className="px-6 py-5 border-r border-border overflow-y-auto">
-              {blocks.map((b, i) => (
-                <PromptEditorBlock
-                  key={b.id}
-                  block={b}
-                  index={i}
-                  removable={i > 0}
-                  folders={folders}
-                  onChange={(nb) =>
-                    setBlocks((bs) => bs.map((x, idx) => (idx === i ? nb : x)))
-                  }
-                  onRemove={() => setBlocks((bs) => bs.filter((_, idx) => idx !== i))}
-                  onOpenModelPicker={() => setDrawer({ kind: "model", blockIdx: i })}
-                  onOpenToolPicker={() => setDrawer({ kind: "tools", blockIdx: i })}
-                  onOpenMemoryPicker={() => setDrawer({ kind: "memory", blockIdx: i })}
-                />
-              ))}
+          <div className="grid grid-cols-[280px_1fr] flex-1 min-h-0">
+            {/* 左：节点列 */}
+            <div className="border-r border-border overflow-y-auto bg-muted/20 px-3 py-4">
+              <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider px-1 mb-2">
+                Agent 流程
+              </div>
+              {blocks.map((b, i) => {
+                const linked = folders
+                  .flatMap((f) => f.prompts)
+                  .find((p) => p.id === b.linkedPromptId);
+                const active = drawer?.kind === "edit" && drawer.blockIdx === i;
+                return (
+                  <div key={b.id}>
+                    <button
+                      onClick={() => setDrawer({ kind: "edit", blockIdx: i })}
+                      className={`w-full text-left rounded-lg border bg-background hover:border-[var(--console-orange)]/60 hover:shadow-sm transition p-3 group ${
+                        active
+                          ? "border-[var(--console-orange)] shadow-sm"
+                          : "border-border"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded bg-[var(--console-orange)]/10 text-[var(--console-orange)] text-[10.5px] font-semibold">
+                            {i === 0 ? "主" : `#${i}`}
+                          </span>
+                          <span className="text-[13px] font-medium">
+                            {i === 0 ? "主 Prompt" : `后处理 ${i}`}
+                          </span>
+                        </div>
+                        {i > 0 && (
+                          <span
+                            role="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setBlocks((bs) => bs.filter((_, idx) => idx !== i));
+                              if (drawer?.kind === "edit" && drawer.blockIdx === i) setDrawer(null);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive cursor-pointer"
+                            title="删除"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </span>
+                        )}
+                      </div>
+                      {linked && (
+                        <div className="text-[11px] text-[var(--console-orange)] mb-1 truncate">
+                          关联：{linked.name}
+                        </div>
+                      )}
+                      <div className="text-[11px] text-muted-foreground truncate">
+                        {b.model}
+                      </div>
+                      <div className="mt-1.5 flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
+                        <span>工具 {b.tools.length}</span>
+                        <span>·</span>
+                        <span>记忆 {b.memories.length}</span>
+                        <span>·</span>
+                        <span>轮次 {b.maxTurns}</span>
+                      </div>
+                    </button>
+                    {i < blocks.length - 1 && (
+                      <div className="flex justify-center py-1.5 text-muted-foreground/60">
+                        <ArrowDown className="h-3.5 w-3.5" />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               <button
                 onClick={() => setBlocks((bs) => [...bs, makeBlock(bs.length)])}
-                className="w-full inline-flex items-center justify-center gap-1.5 rounded-md border border-dashed border-border py-2.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+                className="mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-border py-2.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
               >
                 <Plus className="h-3.5 w-3.5" /> 增加后处理
               </button>
             </div>
+            {/* 右：Agent 效果预览 */}
             <div className="overflow-y-auto">
               <AgentPreview />
             </div>
@@ -253,6 +305,38 @@ function PromptPage() {
           )
         )}
       </div>
+
+      {/* 节点编辑抽屉 */}
+      <RightDrawer
+        open={drawer?.kind === "edit"}
+        title={
+          drawer?.kind === "edit"
+            ? drawer.blockIdx === 0
+              ? "编辑：主 Prompt"
+              : `编辑：后处理 ${drawer.blockIdx}`
+            : ""
+        }
+        onClose={() => setDrawer(null)}
+        width={560}
+      >
+        {drawer?.kind === "edit" && blocks[drawer.blockIdx] && (
+          <PromptEditorBlock
+            block={blocks[drawer.blockIdx]}
+            index={drawer.blockIdx}
+            removable={false}
+            folders={folders}
+            onChange={(nb) =>
+              setBlocks((bs) =>
+                bs.map((x, idx) => (idx === drawer.blockIdx ? nb : x)),
+              )
+            }
+            onRemove={() => {}}
+            onOpenModelPicker={() => setDrawer({ kind: "model", blockIdx: drawer.blockIdx })}
+            onOpenToolPicker={() => setDrawer({ kind: "tools", blockIdx: drawer.blockIdx })}
+            onOpenMemoryPicker={() => setDrawer({ kind: "memory", blockIdx: drawer.blockIdx })}
+          />
+        )}
+      </RightDrawer>
 
       {/* 右侧抽屉 */}
       <RightDrawer
