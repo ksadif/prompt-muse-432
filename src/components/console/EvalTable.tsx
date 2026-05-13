@@ -654,7 +654,7 @@ export function EvalTable({
           <Plus className="h-3 w-3" /> 新增一行
         </button>
         <span className="text-xs text-muted-foreground">
-          共 {filtered.length} 行 · 当前对比版本数：{allVersions.length}（最多 3）
+          共 {filtered.length} 行
         </span>
 
         <ExportMenu
