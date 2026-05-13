@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Image as ImageIcon, FileText, FileSpreadsheet, Bot, User, X } from "lucide-react";
+import { Image as ImageIcon, FileText, FileSpreadsheet, Bot, User, X, ArrowUp } from "lucide-react";
 
 type Step = { role: "user" | "agent" | "tool"; content: string; meta?: string };
 type Attachment = { name: string; url?: string; kind: "image" | "excel" };
