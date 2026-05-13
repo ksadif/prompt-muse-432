@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PromptRouteImport } from './routes/prompt'
 import { Route as EvaluateRouteImport } from './routes/evaluate'
 import { Route as IndexRouteImport } from './routes/index'
 
+const PromptRoute = PromptRouteImport.update({
+  id: '/prompt',
+  path: '/prompt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EvaluateRoute = EvaluateRouteImport.update({
   id: '/evaluate',
   path: '/evaluate',
@@ -26,31 +32,42 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/evaluate': typeof EvaluateRoute
+  '/prompt': typeof PromptRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/evaluate': typeof EvaluateRoute
+  '/prompt': typeof PromptRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/evaluate': typeof EvaluateRoute
+  '/prompt': typeof PromptRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/evaluate'
+  fullPaths: '/' | '/evaluate' | '/prompt'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/evaluate'
-  id: '__root__' | '/' | '/evaluate'
+  to: '/' | '/evaluate' | '/prompt'
+  id: '__root__' | '/' | '/evaluate' | '/prompt'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EvaluateRoute: typeof EvaluateRoute
+  PromptRoute: typeof PromptRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/prompt': {
+      id: '/prompt'
+      path: '/prompt'
+      fullPath: '/prompt'
+      preLoaderRoute: typeof PromptRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/evaluate': {
       id: '/evaluate'
       path: '/evaluate'
@@ -71,6 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EvaluateRoute: EvaluateRoute,
+  PromptRoute: PromptRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

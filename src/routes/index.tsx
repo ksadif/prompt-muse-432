@@ -21,7 +21,7 @@ import { Plus, ListTree, Play } from "lucide-react";
 import { NewPromptDialog } from "@/components/console/NewPromptDialog";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [{ title: "Prompt 工作台 · Claude Console" }] }),
+  head: () => ({ meta: [{ title: "Agent 编排 · Claude Console" }] }),
   component: PromptPage,
 });
 
@@ -181,7 +181,7 @@ function PromptPage() {
             centerSlot={
               <div className="inline-flex items-center rounded-full bg-[var(--console-active)] p-0.5">
                 {[
-                  { k: "edit", label: "Prompt 编辑" },
+                  { k: "edit", label: "Agent 调试" },
                   { k: "test", label: "效果测试" },
                 ].map((t) => (
                   <button
