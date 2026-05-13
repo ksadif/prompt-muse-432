@@ -464,20 +464,6 @@ export function EvalTable({
                 <th key={p.id + vi} className="px-3 py-2.5 text-left text-xs font-medium min-w-[200px] border-l border-border">
                   <div className="flex items-center gap-1.5">
                     <span className="truncate">{p.name}</span>
-                    <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground tracking-tight">
-                      v{vi + 1}
-                    </span>
-                  </div>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                    <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-normal text-muted-foreground">
-                      claude-opus-4-7
-                    </span>
-                    <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-normal text-muted-foreground">
-                      网页搜索
-                    </span>
-                    <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-normal text-muted-foreground">
-                      主对话
-                    </span>
                   </div>
                 </th>
               ))}
