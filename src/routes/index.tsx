@@ -216,10 +216,11 @@ function PromptPage() {
         {tab === "edit" ? (
           <div className="grid grid-cols-[280px_1fr] flex-1 min-h-0">
             {/* 左：节点列 */}
-            <div className="border-r border-border overflow-y-auto bg-muted/20 px-3 py-4">
-              <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider px-1 mb-2">
+            <div className="border-r border-border overflow-y-auto bg-muted/20">
+              <div className="px-4 py-3 border-b border-border text-sm font-semibold">
                 Agent 流程
               </div>
+              <div className="px-3 py-4">
               {blocks.map((b, i) => {
                 const linked = folders
                   .flatMap((f) => f.prompts)
