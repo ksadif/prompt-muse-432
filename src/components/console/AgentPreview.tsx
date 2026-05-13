@@ -42,6 +42,15 @@ export function AgentPreview() {
     ]);
   }
 
+  useEffect(() => {
+    const onRun = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { tab?: string } | undefined;
+      if (!detail || detail.tab === "edit") run();
+    };
+    window.addEventListener("console:run", onRun);
+    return () => window.removeEventListener("console:run", onRun);
+  });
+
   const triggers: { k: Exclude<DialogKind, null>; icon: typeof ImageIcon; title: string; badge: number }[] = [
     { k: "image", icon: ImageIcon, title: "上传图片", badge: images.length },
     { k: "note", icon: FileText, title: "附加笔记", badge: note.trim() ? 1 : 0 },
