@@ -1,5 +1,6 @@
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
-import { Plus, ChevronDown, Play } from "lucide-react";
+import { Plus, ChevronDown, Play, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import type { Folder, PromptItem } from "./types";
 import { initialEvalRows, testSets, type EvalRow } from "./mockData";
 
@@ -176,6 +177,118 @@ function SwitchRow({
   );
 }
 
+function buildExportRows(
+  rows: EvalRow[],
+  versions: PromptItem[],
+  extraKeys: string[],
+) {
+  return rows.map((r) => {
+    const obj: Record<string, unknown> = { 编号: r.id, 输入文字: r.input };
+    for (const k of extraKeys) obj[k] = r.extras[k] ?? "";
+    versions.forEach((p, vi) => {
+      const v = r.versions[vi];
+      const tag = `v${vi + 1}_${p.name}`;
+      obj[`${tag}_输出`] = v?.output ?? "";
+      obj[`${tag}_分数`] = v?.score ?? "";
+      obj[`${tag}_问题类型`] = v?.issueType ?? "";
+      obj[`${tag}_备注`] = v?.note ?? "";
+    });
+    return obj;
+  });
+}
+
+function ExportMenu({
+  getRows,
+  versions,
+  extraKeys,
+  testSetName,
+}: {
+  getRows: () => EvalRow[];
+  versions: PromptItem[];
+  extraKeys: string[];
+  testSetName: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  function stamp() {
+    const d = new Date();
+    const p = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`;
+  }
+
+  function exportJSON() {
+    const rows = getRows();
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      testSet: testSetName,
+      versions: versions.map((p, vi) => ({ index: vi + 1, id: p.id, name: p.name })),
+      rows: rows.map((r) => ({
+        id: r.id,
+        input: r.input,
+        extras: r.extras,
+        versions: r.versions,
+      })),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `评估结果_${testSetName}_${stamp()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setOpen(false);
+  }
+
+  function exportExcel() {
+    const data = buildExportRows(getRows(), versions, extraKeys);
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "评估结果");
+    XLSX.writeFile(wb, `评估结果_${testSetName}_${stamp()}.xlsx`);
+    setOpen(false);
+  }
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm hover:bg-accent"
+      >
+        <Download className="h-3.5 w-3.5" />
+        导出
+        <ChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-20 min-w-[160px] rounded-md border border-border bg-background shadow-lg p-1">
+          <button
+            onClick={exportJSON}
+            className="w-full text-left rounded px-2 py-1.5 text-xs hover:bg-accent"
+          >
+            导出为 JSON
+          </button>
+          <button
+            onClick={exportExcel}
+            className="w-full text-left rounded px-2 py-1.5 text-xs hover:bg-accent"
+          >
+            导出为 Excel
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function EvalTable({
   folders,
   currentPrompt,
@@ -304,13 +417,21 @@ export function EvalTable({
 
         <SwitchRow label="显示测试集字段" checked={showExtras} onChange={setShowExtras} />
 
-        <button
-          onClick={() => filtered.forEach((r) => allVersions.forEach((_, vi) => runRow(r.id, vi)))}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
-        >
-          <Play className="h-3 w-3 fill-current" />
-          运行测试
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          <ExportMenu
+            getRows={() => filtered}
+            versions={allVersions}
+            extraKeys={extraKeys}
+            testSetName={testSets.find((t) => t.id === testSetId)?.name ?? "测试集"}
+          />
+          <button
+            onClick={() => filtered.forEach((r) => allVersions.forEach((_, vi) => runRow(r.id, vi)))}
+            className="inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
+          >
+            <Play className="h-3 w-3 fill-current" />
+            运行测试
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-border bg-background">
