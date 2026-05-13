@@ -68,7 +68,7 @@ export function NewPromptDialog({
               onClick={() =>
                 onCreate({ name: name.trim(), description: desc.trim(), folderId })
               }
-              className="px-4 py-1.5 text-sm rounded-md bg-[var(--console-orange)] text-white hover:opacity-90 disabled:opacity-40"
+              className="px-4 py-1.5 text-sm rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-40"
             >
               创建
             </button>
