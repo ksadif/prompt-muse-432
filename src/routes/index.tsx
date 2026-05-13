@@ -178,7 +178,7 @@ function PromptPage() {
                   </div>
                 }
                 rightSlot={
-                  tab === "test" ? (
+                  tab === "edit" ? (
                     <button
                       onClick={() => window.dispatchEvent(new CustomEvent("console:run", { detail: { tab } }))}
                       className="inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
