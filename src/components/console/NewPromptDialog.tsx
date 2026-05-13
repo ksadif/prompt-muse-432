@@ -21,7 +21,7 @@ export function NewPromptDialog({
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>新建 Prompt</DialogTitle>
+          <DialogTitle>新建 Agent</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
