@@ -25,11 +25,11 @@ export function NewPromptDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-medium text-muted-foreground">Prompt 名称</label>
+            <label className="text-xs font-medium text-muted-foreground">Agent 名称</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="给你的 Prompt 起个名字"
+              placeholder="给你的 Agent 起个名字"
               className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)]"
             />
           </div>
@@ -38,7 +38,7 @@ export function NewPromptDialog({
             <textarea
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
-              placeholder="简要说明该 Prompt 的用途"
+              placeholder="简要说明该 Agent 的用途"
               className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] min-h-[72px] resize-none"
             />
           </div>
