@@ -105,9 +105,8 @@ export function PromptEditorBlock({
         {/* 模型 */}
         <div className="relative">
           <button
-            disabled={disabled}
             onClick={() => setOpenMenu(openMenu === "model" ? null : "model")}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 hover:bg-accent disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 hover:bg-accent"
           >
             <Settings2 className="h-3 w-3" />
             {block.model}
@@ -135,9 +134,8 @@ export function PromptEditorBlock({
         {/* 工具（多选） */}
         <div className="relative">
           <button
-            disabled={disabled}
             onClick={() => setOpenMenu(openMenu === "tools" ? null : "tools")}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 hover:bg-accent disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 hover:bg-accent"
           >
             <Wrench className="h-3 w-3" />
             {block.tools.length}
