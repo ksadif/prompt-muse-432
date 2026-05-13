@@ -267,8 +267,9 @@ function PromptPage() {
                       <div className="text-[11px] text-muted-foreground truncate">
                         {b.model}
                       </div>
-                      <div className="mt-1.5 flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
-                        <span>工具 {b.tools.length}</span>
+                      <div className="mt-1.5 flex items-center gap-1 text-[10.5px] text-muted-foreground">
+                        <Wrench className="h-3 w-3" />
+                        <span>{b.tools.length}</span>
                       </div>
                     </button>
                     {i < blocks.length - 1 && (
