@@ -7,8 +7,10 @@ import { NewPromptDialog } from "@/components/console/NewPromptDialog";
 import { RightDrawer } from "@/components/console/RightDrawer";
 import { initialFolders, versionHistory } from "@/components/console/mockData";
 import type { Folder, PromptItem } from "@/components/console/types";
-import { Plus, ListTree, Variable, Hash } from "lucide-react";
+import { Plus, ListTree, Variable, Hash, BookOpen, Sparkles } from "lucide-react";
 import { PromptCodeEditor } from "@/components/console/PromptCodeEditor";
+import { JinjaReference } from "@/components/console/JinjaReference";
+import { PromptAssistant } from "@/components/console/PromptAssistant";
 
 function EditorCard({
   label,
@@ -73,6 +75,8 @@ function PromptWorkbenchPage() {
   const [listOpen, setListOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [jinjaOpen, setJinjaOpen] = useState(false);
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   const selectedPrompt = useMemo(() => {
     for (const f of folders) {
@@ -168,6 +172,26 @@ function PromptWorkbenchPage() {
                 onDuplicate={duplicatePrompt}
                 onDelete={deletePrompt}
                 onSave={() => {}}
+                rightSlot={
+                  <>
+                    <button
+                      onClick={() => setJinjaOpen(true)}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent"
+                      title="Jinja2 占位符参考"
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      占位符
+                    </button>
+                    <button
+                      onClick={() => setAssistantOpen(true)}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent"
+                      title="Prompt 写作助手"
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-[var(--console-orange)]" />
+                      写作助手
+                    </button>
+                  </>
+                }
               />
             </div>
           )}
@@ -239,6 +263,24 @@ function PromptWorkbenchPage() {
             </div>
           ))}
         </div>
+      </RightDrawer>
+
+      <RightDrawer
+        open={jinjaOpen}
+        title="Jinja2 占位符参考"
+        onClose={() => setJinjaOpen(false)}
+        width={420}
+      >
+        <JinjaReference />
+      </RightDrawer>
+
+      <RightDrawer
+        open={assistantOpen}
+        title="Prompt 写作助手"
+        onClose={() => setAssistantOpen(false)}
+        width={460}
+      >
+        <PromptAssistant />
       </RightDrawer>
     </div>
   );
