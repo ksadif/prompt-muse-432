@@ -404,7 +404,7 @@ export function EvalTable({
         </div>
 
         <div className="inline-flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">预览模式</span>
+          
           <div className="inline-flex items-center rounded-full bg-muted/50 p-0.5">
             {([
               { v: "single", label: "单条" },
