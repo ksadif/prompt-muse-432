@@ -10,6 +10,7 @@ export function PromptInfoBar({
   onDelete,
   onSave,
   centerSlot,
+  rightSlot,
 }: {
   prompt: PromptItem;
   onRename: (newName: string) => void;
@@ -18,6 +19,7 @@ export function PromptInfoBar({
   onDelete: () => void;
   onSave: () => void;
   centerSlot?: React.ReactNode;
+  rightSlot?: React.ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
@@ -93,6 +95,7 @@ export function PromptInfoBar({
           {centerSlot}
         </div>
       )}
+      {rightSlot && <div className="ml-auto flex items-center gap-2">{rightSlot}</div>}
     </div>
   );
 }

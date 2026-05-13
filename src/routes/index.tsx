@@ -17,7 +17,7 @@ import {
   type Folder,
   type PromptItem,
 } from "@/components/console/types";
-import { Plus, ListTree } from "lucide-react";
+import { Plus, ListTree, Play } from "lucide-react";
 import { NewPromptDialog } from "@/components/console/NewPromptDialog";
 
 export const Route = createFileRoute("/")({
@@ -197,6 +197,15 @@ function PromptPage() {
                   </button>
                 ))}
               </div>
+            }
+            rightSlot={
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent("console:run", { detail: { tab } }))}
+                className="inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
+              >
+                <Play className="h-3 w-3 fill-current" />
+                运行测试
+              </button>
             }
           />
         )}

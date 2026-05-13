@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { Image as ImageIcon, FileText, FileSpreadsheet, Play, Bot, User, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Image as ImageIcon, FileText, FileSpreadsheet, Bot, User, X } from "lucide-react";
 
 type Step = { role: "user" | "agent" | "tool"; content: string; meta?: string };
 type Attachment = { name: string; url?: string; kind: "image" | "excel" };
@@ -42,6 +42,15 @@ export function AgentPreview() {
     ]);
   }
 
+  useEffect(() => {
+    const onRun = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { tab?: string } | undefined;
+      if (!detail || detail.tab === "edit") run();
+    };
+    window.addEventListener("console:run", onRun);
+    return () => window.removeEventListener("console:run", onRun);
+  });
+
   const triggers: { k: Exclude<DialogKind, null>; icon: typeof ImageIcon; title: string; badge: number }[] = [
     { k: "image", icon: ImageIcon, title: "上传图片", badge: images.length },
     { k: "note", icon: FileText, title: "附加笔记", badge: note.trim() ? 1 : 0 },
@@ -79,13 +88,6 @@ export function AgentPreview() {
               );
             })}
           </div>
-          <button
-            onClick={run}
-            className="inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-xs hover:opacity-90"
-          >
-            <Play className="h-3 w-3 fill-current" />
-            运行测试
-          </button>
         </div>
       </div>
 
