@@ -108,18 +108,176 @@ export function PromptCodeEditor({
     if (gutterRef.current) gutterRef.current.scrollTop = t;
   };
 
+  const setSelection = (ta: HTMLTextAreaElement, start: number, end = start) => {
+    requestAnimationFrame(() => {
+      ta.selectionStart = start;
+      ta.selectionEnd = end;
+      updateActiveLine();
+    });
+  };
+
+  // 取得选区覆盖的整行范围
+  const getLineRange = (val: string, s: number, e: number) => {
+    const start = val.lastIndexOf("\n", s - 1) + 1;
+    const endIdx = val.indexOf("\n", e);
+    const end = endIdx === -1 ? val.length : endIdx;
+    return { start, end };
+  };
+
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const ta = e.currentTarget;
+    const s = ta.selectionStart;
+    const en = ta.selectionEnd;
+    const isMod = e.metaKey || e.ctrlKey;
+
+    // Cmd/Ctrl + ] / [  → 行级缩进 / 反缩进
+    if (isMod && (e.key === "]" || e.key === "[")) {
+      e.preventDefault();
+      const { start, end } = getLineRange(value, s, en);
+      const block = value.slice(start, end);
+      const lines = block.split("\n");
+      let delta = 0;
+      const newLines = lines.map((ln) => {
+        if (e.key === "]") {
+          delta += 2;
+          return "  " + ln;
+        }
+        const m = /^( {1,2}|\t)/.exec(ln);
+        if (m) {
+          delta -= m[0].length;
+          return ln.slice(m[0].length);
+        }
+        return ln;
+      });
+      const next = value.slice(0, start) + newLines.join("\n") + value.slice(end);
+      onChange(next);
+      setSelection(ta, s + (lines.length ? (e.key === "]" ? 2 : -Math.min(2, lines[0].length - newLines[0].length === 0 ? 0 : 2)) : 0), en + delta);
+      return;
+    }
+
     if (e.key === "Tab") {
       e.preventDefault();
-      const ta = e.currentTarget;
-      const s = ta.selectionStart;
-      const en = ta.selectionEnd;
+      // 多行选区 → 整块缩进 / Shift+Tab 反缩进
+      if (s !== en && value.slice(s, en).includes("\n")) {
+        const { start, end } = getLineRange(value, s, en);
+        const lines = value.slice(start, end).split("\n");
+        let head = 0;
+        let total = 0;
+        const newLines = lines.map((ln, i) => {
+          if (e.shiftKey) {
+            const m = /^( {1,2}|\t)/.exec(ln);
+            if (m) {
+              if (i === 0) head -= m[0].length;
+              total -= m[0].length;
+              return ln.slice(m[0].length);
+            }
+            return ln;
+          }
+          if (i === 0) head += 2;
+          total += 2;
+          return "  " + ln;
+        });
+        const next = value.slice(0, start) + newLines.join("\n") + value.slice(end);
+        onChange(next);
+        setSelection(ta, s + head, en + total);
+        return;
+      }
+      if (e.shiftKey) {
+        // 单行 Shift+Tab：去掉行首两空格
+        const lineStart = value.lastIndexOf("\n", s - 1) + 1;
+        const head = value.slice(lineStart, lineStart + 2);
+        if (head === "  ") {
+          const next = value.slice(0, lineStart) + value.slice(lineStart + 2);
+          onChange(next);
+          setSelection(ta, Math.max(lineStart, s - 2));
+        }
+        return;
+      }
       const next = value.slice(0, s) + "  " + value.slice(en);
       onChange(next);
-      requestAnimationFrame(() => {
-        ta.selectionStart = ta.selectionEnd = s + 2;
-        updateActiveLine();
-      });
+      setSelection(ta, s + 2);
+      return;
+    }
+
+    // Enter：自动延续缩进 / 列表 / 引用 / 标题降级
+    if (e.key === "Enter" && !e.shiftKey && !isMod) {
+      const lineStart = value.lastIndexOf("\n", s - 1) + 1;
+      const lineEnd = value.indexOf("\n", s);
+      const curLine = value.slice(lineStart, lineEnd === -1 ? value.length : lineEnd);
+      const indentMatch = /^(\s*)/.exec(curLine);
+      const indent = indentMatch ? indentMatch[1] : "";
+
+      // 列表：- / * / 1.
+      const bullet = /^(\s*)([-*])\s(\[[ xX]\]\s)?(.*)$/.exec(curLine);
+      const ordered = /^(\s*)(\d+)\.\s(.*)$/.exec(curLine);
+
+      if (bullet) {
+        const [, ind, mark, task, body] = bullet;
+        // 空项 → 退出列表
+        if (!body.trim()) {
+          e.preventDefault();
+          const next = value.slice(0, lineStart) + value.slice(s);
+          onChange(next);
+          setSelection(ta, lineStart);
+          return;
+        }
+        e.preventDefault();
+        const insert = "\n" + ind + mark + " " + (task ? "[ ] " : "");
+        const next = value.slice(0, s) + insert + value.slice(en);
+        onChange(next);
+        setSelection(ta, s + insert.length);
+        return;
+      }
+      if (ordered) {
+        const [, ind, num, body] = ordered;
+        if (!body.trim()) {
+          e.preventDefault();
+          const next = value.slice(0, lineStart) + value.slice(s);
+          onChange(next);
+          setSelection(ta, lineStart);
+          return;
+        }
+        e.preventDefault();
+        const insert = "\n" + ind + (parseInt(num, 10) + 1) + ". ";
+        const next = value.slice(0, s) + insert + value.slice(en);
+        onChange(next);
+        setSelection(ta, s + insert.length);
+        return;
+      }
+      // 引用 >
+      if (/^>\s?/.test(curLine)) {
+        if (!curLine.replace(/^>\s?/, "").trim()) {
+          e.preventDefault();
+          const next = value.slice(0, lineStart) + value.slice(s);
+          onChange(next);
+          setSelection(ta, lineStart);
+          return;
+        }
+        e.preventDefault();
+        const insert = "\n" + (curLine.startsWith("> ") ? "> " : ">");
+        const next = value.slice(0, s) + insert + value.slice(en);
+        onChange(next);
+        setSelection(ta, s + insert.length);
+        return;
+      }
+      // 标题：回车后回到正文
+      if (/^#{1,6}\s/.test(curLine)) {
+        e.preventDefault();
+        const insert = "\n" + indent;
+        const next = value.slice(0, s) + insert + value.slice(en);
+        onChange(next);
+        setSelection(ta, s + insert.length);
+        return;
+      }
+      // 普通行：保留缩进
+      if (indent) {
+        e.preventDefault();
+        const insert = "\n" + indent;
+        const next = value.slice(0, s) + insert + value.slice(en);
+        onChange(next);
+        setSelection(ta, s + insert.length);
+        return;
+      }
     }
   };
 
