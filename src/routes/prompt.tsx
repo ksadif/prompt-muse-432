@@ -172,6 +172,26 @@ function PromptWorkbenchPage() {
                 onDuplicate={duplicatePrompt}
                 onDelete={deletePrompt}
                 onSave={() => {}}
+                rightSlot={
+                  <>
+                    <button
+                      onClick={() => setJinjaOpen(true)}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent"
+                      title="Jinja2 占位符参考"
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      占位符
+                    </button>
+                    <button
+                      onClick={() => setAssistantOpen(true)}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent"
+                      title="Prompt 写作助手"
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-[var(--console-orange)]" />
+                      写作助手
+                    </button>
+                  </>
+                }
               />
             </div>
           )}
