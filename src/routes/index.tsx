@@ -131,22 +131,64 @@ function PromptPage() {
     <div className="min-h-screen flex bg-background text-foreground">
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col relative">
-        <div className="px-3 h-12 flex items-center gap-2 border-b border-border bg-background">
-          <button
-            onClick={() => setListOpen((v) => !v)}
-            className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent"
-            title="Prompt 列表"
-          >
-            <ListTree className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setNewPromptOpen(true)}
-            className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border text-[var(--console-orange)] hover:bg-accent"
-            title="新建 Prompt"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-
+        <div className="px-3 flex items-stretch gap-2 border-b border-border bg-background">
+          <div className="flex items-center gap-2 py-2">
+            <button
+              onClick={() => setListOpen((v) => !v)}
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent"
+              title="Agent 列表"
+            >
+              <ListTree className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setNewPromptOpen(true)}
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border text-[var(--console-orange)] hover:bg-accent"
+              title="新建 Agent"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+          {selectedPrompt && (
+            <div className="flex-1 min-w-0">
+              <PromptInfoBar
+                prompt={selectedPrompt}
+                onRename={renamePrompt}
+                onShowHistory={() => setDrawer({ kind: "history" })}
+                onDuplicate={duplicatePrompt}
+                onDelete={deletePrompt}
+                onSave={() => {}}
+                centerSlot={
+                  <div className="inline-flex items-center rounded-full bg-[var(--console-active)] p-0.5">
+                    {[
+                      { k: "edit", label: "Agent 调试" },
+                      { k: "test", label: "效果测试" },
+                    ].map((t) => (
+                      <button
+                        key={t.k}
+                        onClick={() => setTab(t.k as "edit" | "test")}
+                        className={`px-4 py-1 text-sm rounded-full transition ${
+                          tab === t.k
+                            ? "bg-background text-foreground shadow-sm font-medium"
+                            : "text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                }
+                rightSlot={
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent("console:run", { detail: { tab } }))}
+                    className="inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
+                  >
+                    <Play className="h-3 w-3 fill-current" />
+                    运行测试
+                  </button>
+                }
+              />
+            </div>
+          )}
         </div>
 
         <PromptListPanel
@@ -172,46 +214,6 @@ function PromptPage() {
             setNewPromptOpen(false);
           }}
         />
-
-        {selectedPrompt && (
-          <PromptInfoBar
-            prompt={selectedPrompt}
-            onRename={renamePrompt}
-            onShowHistory={() => setDrawer({ kind: "history" })}
-            onDuplicate={duplicatePrompt}
-            onDelete={deletePrompt}
-            onSave={() => {}}
-            centerSlot={
-              <div className="inline-flex items-center rounded-full bg-[var(--console-active)] p-0.5">
-                {[
-                  { k: "edit", label: "Agent 调试" },
-                  { k: "test", label: "效果测试" },
-                ].map((t) => (
-                  <button
-                    key={t.k}
-                    onClick={() => setTab(t.k as "edit" | "test")}
-                    className={`px-4 py-1 text-sm rounded-full transition ${
-                      tab === t.k
-                        ? "bg-background text-foreground shadow-sm font-medium"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
-            }
-            rightSlot={
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent("console:run", { detail: { tab } }))}
-                className="inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
-              >
-                <Play className="h-3 w-3 fill-current" />
-                运行测试
-              </button>
-            }
-          />
-        )}
 
         {tab === "edit" ? (
           <div className="grid grid-cols-[280px_1fr] flex-1 min-h-0">
