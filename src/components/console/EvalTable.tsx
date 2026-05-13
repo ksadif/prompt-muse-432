@@ -305,13 +305,21 @@ export function EvalTable({
 
         <SwitchRow label="显示测试集字段" checked={showExtras} onChange={setShowExtras} />
 
-        <button
-          onClick={() => filtered.forEach((r) => allVersions.forEach((_, vi) => runRow(r.id, vi)))}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
-        >
-          <Play className="h-3 w-3 fill-current" />
-          运行测试
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          <ExportMenu
+            getRows={() => filtered}
+            versions={allVersions}
+            extraKeys={extraKeys}
+            testSetName={testSets.find((t) => t.id === testSetId)?.name ?? "测试集"}
+          />
+          <button
+            onClick={() => filtered.forEach((r) => allVersions.forEach((_, vi) => runRow(r.id, vi)))}
+            className="inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
+          >
+            <Play className="h-3 w-3 fill-current" />
+            运行测试
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-border bg-background">
