@@ -196,32 +196,22 @@ function PromptWorkbenchPage() {
         />
 
 
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 max-w-3xl w-full mx-auto">
-          <div className="rounded-lg border border-border bg-background">
-            <div className="px-4 py-2.5 border-b border-border text-sm font-medium">
-              System Prompt
-            </div>
-            <textarea
-              value={content.system}
-              onChange={(e) => setContent({ system: e.target.value })}
-              placeholder="定义角色、语气或上下文（选填）"
-              className="w-full text-sm bg-transparent outline-none resize-none min-h-[200px] placeholder:text-muted-foreground p-4"
-            />
-          </div>
-
-          <div className="rounded-lg border border-border bg-background">
-            <div className="px-4 py-2.5 border-b border-border text-sm font-medium">
-              User Prompt
-            </div>
-            <textarea
-              value={content.user}
-              onChange={(e) => setContent({ user: e.target.value })}
-              placeholder="输入用户指令，可使用 {{变量}}"
-              className="w-full text-sm bg-transparent outline-none resize-none min-h-[160px] placeholder:text-muted-foreground p-4"
-            />
-          </div>
+        <div className="flex-1 min-h-0 grid grid-rows-2 gap-4 px-6 py-5 bg-muted/30">
+          <EditorCard
+            label="System Prompt"
+            hint="定义角色 / 任务 / 输出格式"
+            value={content.system}
+            onChange={(v) => setContent({ system: v })}
+            placeholder={"# 角色\n你是一个专业的 {{角色}}\n\n## 任务\n- 第一步...\n- 第二步...\n\n## 输出格式\n使用 **Markdown** 输出结果"}
+          />
+          <EditorCard
+            label="User Prompt"
+            hint="本轮用户输入，可使用 {{变量}}"
+            value={content.user}
+            onChange={(v) => setContent({ user: v })}
+            placeholder={"请帮我处理以下内容：{{输入}}"}
+          />
         </div>
-      </div>
 
       <RightDrawer
         open={historyOpen}
