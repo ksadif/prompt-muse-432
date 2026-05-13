@@ -146,27 +146,6 @@ function PromptPage() {
             <Plus className="h-4 w-4" />
           </button>
 
-          <div className="flex-1 flex justify-center">
-            <div className="inline-flex items-center rounded-full bg-[var(--console-active)] p-0.5">
-              {[
-                { k: "edit", label: "Prompt 编辑" },
-                { k: "test", label: "效果测试" },
-              ].map((t) => (
-                <button
-                  key={t.k}
-                  onClick={() => setTab(t.k as "edit" | "test")}
-                  className={`px-4 py-1.5 text-sm rounded-full transition ${
-                    tab === t.k
-                      ? "bg-background text-foreground shadow-sm font-medium"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
         </div>
 
         <PromptListPanel
@@ -199,6 +178,26 @@ function PromptPage() {
             onDuplicate={duplicatePrompt}
             onDelete={deletePrompt}
             onSave={() => {}}
+            centerSlot={
+              <div className="inline-flex items-center rounded-full bg-[var(--console-active)] p-0.5">
+                {[
+                  { k: "edit", label: "Prompt 编辑" },
+                  { k: "test", label: "效果测试" },
+                ].map((t) => (
+                  <button
+                    key={t.k}
+                    onClick={() => setTab(t.k as "edit" | "test")}
+                    className={`px-4 py-1 text-sm rounded-full transition ${
+                      tab === t.k
+                        ? "bg-background text-foreground shadow-sm font-medium"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            }
           />
         )}
 

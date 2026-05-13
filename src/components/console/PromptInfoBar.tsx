@@ -9,6 +9,7 @@ export function PromptInfoBar({
   onDuplicate,
   onDelete,
   onSave,
+  centerSlot,
 }: {
   prompt: PromptItem;
   onRename: (newName: string) => void;
@@ -16,6 +17,7 @@ export function PromptInfoBar({
   onDuplicate: () => void;
   onDelete: () => void;
   onSave: () => void;
+  centerSlot?: React.ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
@@ -33,7 +35,7 @@ export function PromptInfoBar({
   }, []);
 
   return (
-    <div className="px-5 py-3 border-b border-border bg-background flex items-center gap-3">
+    <div className="relative px-5 py-3 border-b border-border bg-background flex items-center gap-3">
       <div className="relative" ref={ref}>
         {renaming ? (
           <input
@@ -86,6 +88,11 @@ export function PromptInfoBar({
         )}
       </div>
       <span className="text-xs text-muted-foreground">最近编辑：{prompt.updatedAt}</span>
+      {centerSlot && (
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          {centerSlot}
+        </div>
+      )}
     </div>
   );
 }
