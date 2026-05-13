@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Settings2, Wrench, Link2, Trash2, ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Settings2, Wrench, Link2, Trash2, ChevronDown, Check } from "lucide-react";
 import type { EditorBlock, Folder } from "./types";
+import { ALL_MODELS, ALL_TOOLS } from "./types";
 
 export function PromptEditorBlock({
   block,
@@ -9,9 +10,6 @@ export function PromptEditorBlock({
   removable,
   onChange,
   onRemove,
-  onOpenModelPicker,
-  onOpenToolPicker,
-  onOpenMemoryPicker,
 }: {
   block: EditorBlock;
   folders: Folder[];
@@ -19,16 +17,33 @@ export function PromptEditorBlock({
   removable: boolean;
   onChange: (next: EditorBlock) => void;
   onRemove: () => void;
-  onOpenModelPicker: () => void;
-  onOpenToolPicker: () => void;
-  onOpenMemoryPicker: () => void;
+  onOpenModelPicker?: () => void;
+  onOpenToolPicker?: () => void;
+  onOpenMemoryPicker?: () => void;
 }) {
-  const [linkOpen, setLinkOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState<null | "link" | "model" | "tools">(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const allPrompts = folders.flatMap((f) => f.prompts);
   const linked = block.linkedPromptId
     ? allPrompts.find((p) => p.id === block.linkedPromptId)
     : null;
   const disabled = !!block.linkedPromptId;
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpenMenu(null);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  function toggleTool(t: string) {
+    const has = block.tools.includes(t);
+    onChange({
+      ...block,
+      tools: has ? block.tools.filter((x) => x !== t) : [...block.tools, t],
+    });
+  }
 
   return (
     <div className="rounded-lg border border-border bg-background mb-4">
@@ -48,61 +63,104 @@ export function PromptEditorBlock({
       </div>
 
       {/* 工具条 */}
-      <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-border text-xs">
+      <div ref={wrapRef} className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-border text-xs">
         {/* 关联其他 Prompt */}
         <div className="relative">
           <button
-            onClick={() => setLinkOpen((v) => !v)}
+            onClick={() => setOpenMenu(openMenu === "link" ? null : "link")}
             className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 hover:bg-accent"
           >
             <Link2 className="h-3 w-3" />
             {linked ? `关联：${linked.name}` : "不关联"}
             <ChevronDown className="h-3 w-3 text-muted-foreground" />
           </button>
-          {linkOpen && (
+          {openMenu === "link" && (
             <div className="absolute left-0 top-full mt-1 z-20 w-64 rounded-md border border-border bg-background shadow-lg p-2 max-h-60 overflow-y-auto">
               <button
                 onClick={() => {
                   onChange({ ...block, linkedPromptId: null });
-                  setLinkOpen(false);
+                  setOpenMenu(null);
                 }}
-                className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
+                className="w-full text-left px-2 py-1.5 rounded hover:bg-accent flex items-center justify-between"
               >
-                不关联
+                不关联 {!linked && <Check className="h-3 w-3 text-[var(--console-orange)]" />}
               </button>
               {allPrompts.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => {
                     onChange({ ...block, linkedPromptId: p.id });
-                    setLinkOpen(false);
+                    setOpenMenu(null);
                   }}
-                  className="w-full text-left px-2 py-1.5 rounded hover:bg-accent"
+                  className="w-full text-left px-2 py-1.5 rounded hover:bg-accent flex items-center justify-between"
                 >
-                  {p.name}
+                  <span className="truncate">{p.name}</span>
+                  {linked?.id === p.id && <Check className="h-3 w-3 text-[var(--console-orange)] shrink-0" />}
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        <button
-          disabled={disabled}
-          onClick={onOpenModelPicker}
-          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 hover:bg-accent disabled:opacity-50"
-        >
-          <Settings2 className="h-3 w-3" />
-          {block.model}
-        </button>
+        {/* 模型 */}
+        <div className="relative">
+          <button
+            disabled={disabled}
+            onClick={() => setOpenMenu(openMenu === "model" ? null : "model")}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 hover:bg-accent disabled:opacity-50"
+          >
+            <Settings2 className="h-3 w-3" />
+            {block.model}
+            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          </button>
+          {openMenu === "model" && (
+            <div className="absolute left-0 top-full mt-1 z-20 w-56 rounded-md border border-border bg-background shadow-lg p-2 max-h-60 overflow-y-auto">
+              {ALL_MODELS.map((m) => (
+                <button
+                  key={m}
+                  onClick={() => {
+                    onChange({ ...block, model: m });
+                    setOpenMenu(null);
+                  }}
+                  className="w-full text-left px-2 py-1.5 rounded hover:bg-accent flex items-center justify-between"
+                >
+                  <span className="truncate">{m}</span>
+                  {block.model === m && <Check className="h-3 w-3 text-[var(--console-orange)] shrink-0" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
-        <button
-          disabled={disabled}
-          onClick={onOpenToolPicker}
-          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 hover:bg-accent disabled:opacity-50"
-        >
-          <Wrench className="h-3 w-3" />
-          工具 ({block.tools.length})
-        </button>
+        {/* 工具（多选） */}
+        <div className="relative">
+          <button
+            disabled={disabled}
+            onClick={() => setOpenMenu(openMenu === "tools" ? null : "tools")}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 hover:bg-accent disabled:opacity-50"
+          >
+            <Wrench className="h-3 w-3" />
+            {block.tools.length}
+            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          </button>
+          {openMenu === "tools" && (
+            <div className="absolute left-0 top-full mt-1 z-20 w-56 rounded-md border border-border bg-background shadow-lg p-2 max-h-60 overflow-y-auto">
+              {ALL_TOOLS.map((t) => {
+                const active = block.tools.includes(t);
+                return (
+                  <button
+                    key={t}
+                    onClick={() => toggleTool(t)}
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-accent flex items-center justify-between"
+                  >
+                    <span className="truncate">{t}</span>
+                    {active && <Check className="h-3 w-3 text-[var(--console-orange)] shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* System Prompt */}
