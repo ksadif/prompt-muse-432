@@ -7,7 +7,55 @@ import { NewPromptDialog } from "@/components/console/NewPromptDialog";
 import { RightDrawer } from "@/components/console/RightDrawer";
 import { initialFolders, versionHistory } from "@/components/console/mockData";
 import type { Folder, PromptItem } from "@/components/console/types";
-import { Plus, ListTree } from "lucide-react";
+import { Plus, ListTree, Variable, Hash } from "lucide-react";
+import { PromptCodeEditor } from "@/components/console/PromptCodeEditor";
+
+function EditorCard({
+  label,
+  hint,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  hint: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  const lines = value ? value.split("\n").length : 0;
+  const chars = value.length;
+  const vars = Array.from(value.matchAll(/\{\{([^}]+)\}\}/g)).map((m) => m[1].trim());
+  const uniqueVars = Array.from(new Set(vars));
+  return (
+    <div className="rounded-xl border border-border bg-background shadow-sm flex flex-col min-h-0 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/40">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 text-sm font-semibold">
+            <Hash className="h-3.5 w-3.5 text-[var(--console-orange)]" />
+            {label}
+          </span>
+          <span className="text-[11px] text-muted-foreground">{hint}</span>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          {uniqueVars.length > 0 && (
+            <span className="inline-flex items-center gap-1 rounded bg-[var(--console-orange)]/10 text-[var(--console-orange)] px-1.5 py-0.5">
+              <Variable className="h-3 w-3" />
+              {uniqueVars.length} 变量
+            </span>
+          )}
+          <span>{lines} 行</span>
+          <span>·</span>
+          <span>{chars} 字符</span>
+        </div>
+      </div>
+      <div className="flex-1 min-h-0 overflow-auto">
+        <PromptCodeEditor value={value} onChange={onChange} placeholder={placeholder} />
+      </div>
+    </div>
+  );
+}
+
 
 export const Route = createFileRoute("/prompt")({
   head: () => ({ meta: [{ title: "Prompt 工作台 · Claude Console" }] }),
@@ -148,30 +196,21 @@ function PromptWorkbenchPage() {
         />
 
 
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 max-w-3xl w-full mx-auto">
-          <div className="rounded-lg border border-border bg-background">
-            <div className="px-4 py-2.5 border-b border-border text-sm font-medium">
-              System Prompt
-            </div>
-            <textarea
-              value={content.system}
-              onChange={(e) => setContent({ system: e.target.value })}
-              placeholder="定义角色、语气或上下文（选填）"
-              className="w-full text-sm bg-transparent outline-none resize-none min-h-[200px] placeholder:text-muted-foreground p-4"
-            />
-          </div>
-
-          <div className="rounded-lg border border-border bg-background">
-            <div className="px-4 py-2.5 border-b border-border text-sm font-medium">
-              User Prompt
-            </div>
-            <textarea
-              value={content.user}
-              onChange={(e) => setContent({ user: e.target.value })}
-              placeholder="输入用户指令，可使用 {{变量}}"
-              className="w-full text-sm bg-transparent outline-none resize-none min-h-[160px] placeholder:text-muted-foreground p-4"
-            />
-          </div>
+        <div className="flex-1 min-h-0 grid grid-rows-2 gap-4 px-6 py-5 bg-muted/30">
+          <EditorCard
+            label="System Prompt"
+            hint="定义角色 / 任务 / 输出格式"
+            value={content.system}
+            onChange={(v) => setContent({ system: v })}
+            placeholder={"# 角色\n你是一个专业的 {{角色}}\n\n## 任务\n- 第一步...\n- 第二步...\n\n## 输出格式\n使用 **Markdown** 输出结果"}
+          />
+          <EditorCard
+            label="User Prompt"
+            hint="本轮用户输入，可使用 {{变量}}"
+            value={content.user}
+            onChange={(v) => setContent({ user: v })}
+            placeholder={"请帮我处理以下内容：{{输入}}"}
+          />
         </div>
       </div>
 
