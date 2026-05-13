@@ -368,6 +368,19 @@ export function EvalTable({
     });
   }
 
+  function runAll() {
+    filtered.forEach((r) => allVersions.forEach((_, vi) => runRow(r.id, vi)));
+  }
+
+  useEffect(() => {
+    const onRun = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { tab?: string } | undefined;
+      if (!detail || detail.tab === "test") runAll();
+    };
+    window.addEventListener("console:run", onRun);
+    return () => window.removeEventListener("console:run", onRun);
+  });
+
   function addCompare() {
     if (comparePrompts.length >= 2) return; // 最多 3 个版本（含当前）
     onPickComparePrompt((p) => setComparePrompts((cs) => [...cs, p]));
