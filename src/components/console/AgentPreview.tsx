@@ -85,47 +85,84 @@ export function AgentPreview() {
         )}
       </div>
 
-      {/* 底部输入：左附件按钮 + 右输入框 */}
-      <div className="border-t border-border p-3 bg-background">
-        <div className="flex items-end gap-2 rounded-lg border border-border focus-within:border-[var(--console-orange)] bg-background px-2 py-1.5">
-          <div className="flex items-center gap-0.5 pb-1 text-muted-foreground">
-            {triggers.map((t) => {
-              const Icon = t.icon;
-              return (
-                <button
-                  key={t.k}
-                  onClick={() => setDialog(t.k)}
-                  className="relative h-7 w-7 inline-flex items-center justify-center rounded hover:bg-accent hover:text-foreground"
-                  title={t.title}
+      {/* 底部输入：现代 chat 样式 */}
+      <div className="px-4 pt-2 pb-4 bg-background">
+        <div className="mx-auto max-w-3xl">
+          {/* 附件预览条 */}
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {attachments.map((a, i) => (
+                <div
+                  key={i}
+                  className="group flex items-center gap-1.5 rounded-full bg-muted/60 pl-2 pr-1 py-1 text-[11px]"
                 >
-                  <Icon className="h-3.5 w-3.5" />
-                  {t.badge > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 h-3.5 min-w-3.5 px-1 rounded-full bg-[var(--console-orange)] text-white text-[9px] inline-flex items-center justify-center">
-                      {t.badge}
-                    </span>
+                  {a.kind === "image" ? (
+                    <ImageIcon className="h-3 w-3 text-[var(--console-orange)]" />
+                  ) : (
+                    <FileSpreadsheet className="h-3 w-3 text-[var(--console-orange)]" />
                   )}
+                  <span className="max-w-[140px] truncate">{a.name}</span>
+                  <button
+                    onClick={() => setAttachments((arr) => arr.filter((x) => x !== a))}
+                    className="h-4 w-4 rounded-full hover:bg-background inline-flex items-center justify-center"
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="rounded-2xl border border-border bg-background shadow-[0_2px_12px_-4px_rgba(0,0,0,0.08)] focus-within:border-[var(--console-orange)]/60 focus-within:shadow-[0_4px_20px_-6px_rgba(0,0,0,0.12)] transition">
+            <textarea
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  run();
+                }
+              }}
+              placeholder="请输入要测试的内容…"
+              rows={1}
+              className="w-full bg-transparent outline-none text-sm resize-none px-4 pt-3 pb-1 min-h-[52px] max-h-[200px] placeholder:text-muted-foreground/70"
+            />
+            <div className="flex items-center justify-between px-2 pb-2">
+              <div className="flex items-center gap-0.5 text-muted-foreground">
+                {triggers.map((t) => {
+                  const Icon = t.icon;
+                  return (
+                    <button
+                      key={t.k}
+                      onClick={() => setDialog(t.k)}
+                      className="relative h-8 w-8 inline-flex items-center justify-center rounded-lg hover:bg-accent hover:text-foreground transition"
+                      title={t.title}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {t.badge > 0 && (
+                        <span className="absolute top-1 right-1 h-3.5 min-w-3.5 px-1 rounded-full bg-[var(--console-orange)] text-white text-[9px] font-medium inline-flex items-center justify-center">
+                          {t.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10.5px] text-muted-foreground/70 hidden sm:block">
+                  ⌘ / Ctrl + Enter
+                </span>
+                <button
+                  onClick={run}
+                  disabled={!query.trim() && !attachments.length && !note.trim()}
+                  className="shrink-0 inline-flex items-center justify-center h-8 w-8 rounded-full bg-foreground text-background hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                  title="运行"
+                >
+                  <ArrowUp className="h-4 w-4" />
                 </button>
-              );
-            })}
+              </div>
+            </div>
           </div>
-          <textarea
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                run();
-              }
-            }}
-            placeholder="请输入要测试的内容...（⌘/Ctrl + Enter 运行）"
-            className="flex-1 bg-transparent outline-none text-sm resize-none py-1 min-h-[36px] max-h-[160px]"
-          />
-          <button
-            onClick={run}
-            className="shrink-0 inline-flex items-center justify-center h-8 px-3 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] text-xs hover:opacity-90"
-          >
-            运行
-          </button>
         </div>
       </div>
 
