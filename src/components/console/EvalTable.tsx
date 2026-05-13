@@ -1,5 +1,6 @@
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
-import { Plus, ChevronDown, Play } from "lucide-react";
+import { Plus, ChevronDown, Play, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import type { Folder, PromptItem } from "./types";
 import { initialEvalRows, testSets, type EvalRow } from "./mockData";
 
