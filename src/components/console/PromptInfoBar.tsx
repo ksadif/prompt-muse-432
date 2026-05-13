@@ -19,6 +19,7 @@ export function PromptInfoBar({
   onDelete: () => void;
   onSave: () => void;
   centerSlot?: React.ReactNode;
+  rightSlot?: React.ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
