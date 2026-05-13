@@ -7,8 +7,10 @@ import { NewPromptDialog } from "@/components/console/NewPromptDialog";
 import { RightDrawer } from "@/components/console/RightDrawer";
 import { initialFolders, versionHistory } from "@/components/console/mockData";
 import type { Folder, PromptItem } from "@/components/console/types";
-import { Plus, ListTree, Variable, Hash } from "lucide-react";
+import { Plus, ListTree, Variable, Hash, BookOpen, Sparkles } from "lucide-react";
 import { PromptCodeEditor } from "@/components/console/PromptCodeEditor";
+import { JinjaReference } from "@/components/console/JinjaReference";
+import { PromptAssistant } from "@/components/console/PromptAssistant";
 
 function EditorCard({
   label,
