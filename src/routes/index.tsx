@@ -142,10 +142,10 @@ function PromptPage() {
             </button>
             <button
               onClick={() => setNewPromptOpen(true)}
-              className="inline-flex items-center gap-1 h-8 px-2.5 rounded-md border border-border text-[var(--console-orange)] hover:bg-accent text-sm"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border text-[var(--console-orange)] hover:bg-accent"
               title="新建 Agent"
             >
-              <Plus className="h-4 w-4" /> 新建 Agent
+              <Plus className="h-4 w-4" />
             </button>
           </div>
           {selectedPrompt && (
