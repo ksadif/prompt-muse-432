@@ -68,7 +68,7 @@ export function AgentPreview() {
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
         {steps.length === 0 ? (
           <div className="text-xs text-muted-foreground py-10 text-center">
-            点击"运行测试"，将在此展示 Agent 历史轨迹
+            将在此展示运行的 Agent 历史轨迹
           </div>
         ) : (
           steps.map((s, i) => (
