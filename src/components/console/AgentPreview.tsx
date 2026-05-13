@@ -59,38 +59,12 @@ export function AgentPreview() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-border">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-sm font-semibold">Agent 效果预览</div>
-          <div className="flex items-center gap-1 text-muted-foreground">
-            {triggers.map((t) => {
-              const Icon = t.icon;
-              return (
-                <button
-                  key={t.k}
-                  onClick={() => setDialog(t.k)}
-                  className="relative h-7 w-7 inline-flex items-center justify-center rounded hover:bg-accent"
-                  title={t.title}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {t.badge > 0 && (
-                    <span className="absolute -top-1 -right-1 h-3.5 min-w-3.5 px-1 rounded-full bg-[var(--console-orange)] text-white text-[9px] inline-flex items-center justify-center">
-                      {t.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <textarea
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="请输入要测试的内容..."
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] resize-none min-h-[72px]"
-        />
+      {/* 标题栏 */}
+      <div className="px-4 py-3 border-b border-border text-sm font-semibold">
+        Agent 效果预览
       </div>
 
+      {/* 历史轨迹 */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
         {steps.length === 0 ? (
           <div className="text-xs text-muted-foreground py-10 text-center">
@@ -109,6 +83,50 @@ export function AgentPreview() {
             </div>
           ))
         )}
+      </div>
+
+      {/* 底部输入：左附件按钮 + 右输入框 */}
+      <div className="border-t border-border p-3 bg-background">
+        <div className="flex items-end gap-2 rounded-lg border border-border focus-within:border-[var(--console-orange)] bg-background px-2 py-1.5">
+          <div className="flex items-center gap-0.5 pb-1 text-muted-foreground">
+            {triggers.map((t) => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.k}
+                  onClick={() => setDialog(t.k)}
+                  className="relative h-7 w-7 inline-flex items-center justify-center rounded hover:bg-accent hover:text-foreground"
+                  title={t.title}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {t.badge > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 h-3.5 min-w-3.5 px-1 rounded-full bg-[var(--console-orange)] text-white text-[9px] inline-flex items-center justify-center">
+                      {t.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <textarea
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                run();
+              }
+            }}
+            placeholder="请输入要测试的内容...（⌘/Ctrl + Enter 运行）"
+            className="flex-1 bg-transparent outline-none text-sm resize-none py-1 min-h-[36px] max-h-[160px]"
+          />
+          <button
+            onClick={run}
+            className="shrink-0 inline-flex items-center justify-center h-8 px-3 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] text-xs hover:opacity-90"
+          >
+            运行
+          </button>
+        </div>
       </div>
 
       <input
