@@ -141,13 +141,6 @@ export function PromptEditorBlock({
         </div>
       )}
 
-      <ImprovePromptDialog
-        open={improveOpen}
-        onClose={() => setImproveOpen(false)}
-        onApply={(s) =>
-          onChange({ ...block, systemPrompt: block.systemPrompt + "\n\n" + s })
-        }
-      />
     </div>
   );
 }
