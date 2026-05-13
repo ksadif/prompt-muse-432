@@ -138,7 +138,9 @@ export function PromptEditorBlock({
             className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 hover:bg-accent"
           >
             <Wrench className="h-3 w-3" />
-            {block.tools.length}
+            <span className="max-w-[200px] truncate">
+              {block.tools.length === 0 ? "选择工具" : block.tools.join("、")}
+            </span>
             <ChevronDown className="h-3 w-3 text-muted-foreground" />
           </button>
           {openMenu === "tools" && (
