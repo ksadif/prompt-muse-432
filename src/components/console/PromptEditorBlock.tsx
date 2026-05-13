@@ -23,7 +23,6 @@ export function PromptEditorBlock({
   onOpenToolPicker: () => void;
   onOpenMemoryPicker: () => void;
 }) {
-  const [improveOpen, setImproveOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const allPrompts = folders.flatMap((f) => f.prompts);
   const linked = block.linkedPromptId
