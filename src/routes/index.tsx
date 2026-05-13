@@ -17,7 +17,7 @@ import {
   type Folder,
   type PromptItem,
 } from "@/components/console/types";
-import { Plus, ListTree, Play } from "lucide-react";
+import { Plus, ListTree, Play, ArrowDown, Trash2 } from "lucide-react";
 import { NewPromptDialog } from "@/components/console/NewPromptDialog";
 
 export const Route = createFileRoute("/")({
