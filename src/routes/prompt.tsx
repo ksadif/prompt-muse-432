@@ -264,6 +264,24 @@ function PromptWorkbenchPage() {
           ))}
         </div>
       </RightDrawer>
+
+      <RightDrawer
+        open={jinjaOpen}
+        title="Jinja2 占位符参考"
+        onClose={() => setJinjaOpen(false)}
+        width={420}
+      >
+        <JinjaReference />
+      </RightDrawer>
+
+      <RightDrawer
+        open={assistantOpen}
+        title="Prompt 写作助手"
+        onClose={() => setAssistantOpen(false)}
+        width={460}
+      >
+        <PromptAssistant />
+      </RightDrawer>
     </div>
   );
 }
