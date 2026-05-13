@@ -101,26 +101,17 @@ export function PromptAssistant() {
 
 function Welcome({ onPick }: { onPick: (s: string) => void }) {
   return (
-    <div className="h-full flex flex-col items-center justify-center text-center px-2 py-8">
-      <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-[var(--console-orange)] to-amber-400 flex items-center justify-center shadow-lg shadow-[var(--console-orange)]/20">
-        <Sparkles className="h-6 w-6 text-white" />
-      </div>
-      <div className="mt-3 text-[15px] font-semibold">Prompt 写作助手</div>
-      <p className="mt-1 text-xs text-muted-foreground max-w-[260px] leading-relaxed">
-        审查结构、找出潜在问题、给出改写建议。试试下面的操作开始：
-      </p>
-      <div className="mt-5 grid grid-cols-2 gap-2 w-full max-w-[300px]">
+    <div className="h-full flex flex-col items-center justify-center text-center px-4">
+      <p className="text-sm text-muted-foreground mb-3">想从哪里开始？</p>
+      <div className="flex flex-wrap justify-center gap-1.5 max-w-[320px]">
         {QUICK_ACTIONS.map((q) => (
           <button
             key={q.label}
             onClick={() => onPick(q.prompt)}
-            className="group flex flex-col items-start gap-1.5 rounded-xl border border-border bg-background p-3 text-left hover:border-[var(--console-orange)] hover:bg-[var(--console-orange)]/[0.03] transition"
+            className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-2.5 py-1 text-[11px] text-muted-foreground hover:border-[var(--console-orange)] hover:text-[var(--console-orange)] transition"
           >
-            <q.icon className="h-4 w-4 text-[var(--console-orange)]" />
-            <span className="text-xs font-medium">{q.label}</span>
-            <span className="text-[10px] text-muted-foreground line-clamp-2">
-              {q.prompt}
-            </span>
+            <q.icon className="h-3 w-3" />
+            {q.label}
           </button>
         ))}
       </div>
