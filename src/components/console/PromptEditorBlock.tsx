@@ -71,7 +71,7 @@ export function PromptEditorBlock({
             className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 hover:bg-accent"
           >
             <Link2 className="h-3 w-3" />
-            {linked ? `关联：${linked.name}` : "不关联"}
+            {linked ? `关联：${linked.name}` : "关联 Prompt"}
             <ChevronDown className="h-3 w-3 text-muted-foreground" />
           </button>
           {openMenu === "link" && (
