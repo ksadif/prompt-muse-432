@@ -650,6 +650,14 @@ export function EvalTable({
           testSetName={testSets.find((t) => t.id === testSetId)?.name ?? "测试集"}
         />
 
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("console:run", { detail: { tab: "test" } }))}
+          className="inline-flex items-center gap-1 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-2.5 py-1 text-xs hover:opacity-90"
+        >
+          <Play className="h-3 w-3 fill-current" />
+          运行测试
+        </button>
+
         <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
           <span>每页</span>
           <select
