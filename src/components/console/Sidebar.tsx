@@ -26,7 +26,8 @@ const sections: Section[] = [
     icon: Wrench,
     label: "构建",
     items: [
-      { label: "Prompt 工作台", to: "/" },
+      { label: "Prompt 工作台", to: "/prompt" },
+      { label: "Agent 编排", to: "/" },
       { label: "测试集管理", to: "/evaluate" },
       { label: "文件" },
       { label: "技能" },
