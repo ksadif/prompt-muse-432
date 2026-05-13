@@ -245,8 +245,8 @@ function PromptPage() {
                           <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded bg-[var(--console-orange)]/10 text-[var(--console-orange)] text-[10.5px] font-semibold">
                             {i === 0 ? "主" : `#${i}`}
                           </span>
-                          <span className="text-[13px] font-medium">
-                            {i === 0 ? "主 Prompt" : `后处理 ${i}`}
+                          <span className="text-[13px] font-medium truncate max-w-[160px]">
+                            {linked ? linked.name : i === 0 ? "主 Prompt" : `后处理 ${i}`}
                           </span>
                         </div>
                         {i > 0 && (
@@ -264,11 +264,6 @@ function PromptPage() {
                           </span>
                         )}
                       </div>
-                      {linked && (
-                        <div className="text-[11px] text-[var(--console-orange)] mb-1 truncate">
-                          关联：{linked.name}
-                        </div>
-                      )}
                       <div className="text-[11px] text-muted-foreground truncate">
                         {b.model}
                       </div>
