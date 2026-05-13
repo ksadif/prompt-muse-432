@@ -94,21 +94,35 @@ function PromptWorkbenchPage() {
     <div className="min-h-screen flex bg-background text-foreground">
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col relative">
-        <div className="px-3 h-12 flex items-center gap-2 border-b border-border bg-background">
-          <button
-            onClick={() => setListOpen((v) => !v)}
-            className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent"
-            title="Prompt 列表"
-          >
-            <ListTree className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setNewOpen(true)}
-            className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border text-[var(--console-orange)] hover:bg-accent"
-            title="新建 Prompt"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+        <div className="px-3 flex items-stretch gap-2 border-b border-border bg-background">
+          <div className="flex items-center gap-2 py-2">
+            <button
+              onClick={() => setListOpen((v) => !v)}
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent"
+              title="Prompt 列表"
+            >
+              <ListTree className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setNewOpen(true)}
+              className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border text-[var(--console-orange)] hover:bg-accent"
+              title="新建 Prompt"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+          {selectedPrompt && (
+            <div className="flex-1 min-w-0">
+              <PromptInfoBar
+                prompt={selectedPrompt}
+                onRename={renamePrompt}
+                onShowHistory={() => setHistoryOpen(true)}
+                onDuplicate={duplicatePrompt}
+                onDelete={deletePrompt}
+                onSave={() => {}}
+              />
+            </div>
+          )}
         </div>
 
         <PromptListPanel
@@ -133,16 +147,6 @@ function PromptWorkbenchPage() {
           }}
         />
 
-        {selectedPrompt && (
-          <PromptInfoBar
-            prompt={selectedPrompt}
-            onRename={renamePrompt}
-            onShowHistory={() => setHistoryOpen(true)}
-            onDuplicate={duplicatePrompt}
-            onDelete={deletePrompt}
-            onSave={() => {}}
-          />
-        )}
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 max-w-3xl w-full mx-auto">
           <div className="rounded-lg border border-border bg-background">
