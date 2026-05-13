@@ -10,9 +10,6 @@ export function PromptEditorBlock({
   removable,
   onChange,
   onRemove,
-  onOpenModelPicker,
-  onOpenToolPicker,
-  onOpenMemoryPicker,
 }: {
   block: EditorBlock;
   folders: Folder[];
@@ -20,16 +17,33 @@ export function PromptEditorBlock({
   removable: boolean;
   onChange: (next: EditorBlock) => void;
   onRemove: () => void;
-  onOpenModelPicker: () => void;
-  onOpenToolPicker: () => void;
-  onOpenMemoryPicker: () => void;
+  onOpenModelPicker?: () => void;
+  onOpenToolPicker?: () => void;
+  onOpenMemoryPicker?: () => void;
 }) {
-  const [linkOpen, setLinkOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState<null | "link" | "model" | "tools">(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const allPrompts = folders.flatMap((f) => f.prompts);
   const linked = block.linkedPromptId
     ? allPrompts.find((p) => p.id === block.linkedPromptId)
     : null;
   const disabled = !!block.linkedPromptId;
+
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpenMenu(null);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  function toggleTool(t: string) {
+    const has = block.tools.includes(t);
+    onChange({
+      ...block,
+      tools: has ? block.tools.filter((x) => x !== t) : [...block.tools, t],
+    });
+  }
 
   return (
     <div className="rounded-lg border border-border bg-background mb-4">
