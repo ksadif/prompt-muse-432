@@ -430,6 +430,14 @@ export function EvalTable({
 
         <SwitchRow label="显示测试集字段" checked={showExtras} onChange={setShowExtras} />
 
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("console:run", { detail: { tab: "test" } }))}
+          className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
+        >
+          <Play className="h-3 w-3 fill-current" />
+          运行测试
+        </button>
+
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-border bg-background">
