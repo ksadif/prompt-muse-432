@@ -174,6 +174,7 @@ function PromptWorkbenchPage() {
         </div>
 
         <PromptListPanel
+          variant="prompt"
           open={listOpen}
           onClose={() => setListOpen(false)}
           folders={folders}

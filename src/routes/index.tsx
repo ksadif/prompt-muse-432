@@ -149,6 +149,7 @@ function PromptPage() {
         </div>
 
         <PromptListPanel
+          variant="agent"
           open={listOpen}
           onClose={() => setListOpen(false)}
           folders={folders}
