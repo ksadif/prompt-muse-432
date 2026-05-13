@@ -35,23 +35,23 @@ export function WorkbenchHeader({
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="inline-flex rounded-full bg-[var(--console-active)] p-1 text-sm">
+          <div className="inline-flex rounded-full bg-muted/70 p-0.5 text-xs">
             <Link
               to="/"
-              className={`px-4 py-1.5 rounded-full transition ${
+              className={`px-3 py-1 rounded-full transition ${
                 pathname === "/"
-                  ? "bg-background shadow-sm font-medium"
-                  : "text-muted-foreground"
+                  ? "bg-background shadow-sm font-medium text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Prompt
             </Link>
             <Link
               to="/evaluate"
-              className={`px-4 py-1.5 rounded-full transition ${
+              className={`px-3 py-1 rounded-full transition ${
                 pathname === "/evaluate"
-                  ? "bg-background shadow-sm font-medium"
-                  : "text-muted-foreground"
+                  ? "bg-background shadow-sm font-medium text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Evaluate
