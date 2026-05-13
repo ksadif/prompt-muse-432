@@ -63,8 +63,8 @@ export function PromptListPanel({
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-black/20" onClick={onClose} />
-      <aside className="fixed left-0 top-0 z-50 h-screen w-[420px] bg-background border-r border-border shadow-2xl flex flex-col">
+      <div className="absolute inset-0 z-40 bg-black/20" onClick={onClose} />
+      <aside className="absolute left-0 top-0 z-50 h-full w-[380px] bg-background border-r border-border shadow-2xl flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <h3 className="text-lg font-semibold tracking-tight">{v.title}</h3>
