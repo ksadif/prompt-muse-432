@@ -34,7 +34,7 @@ export function PromptInfoBar({
   }, []);
 
   return (
-    <div className="px-5 py-3 border-b border-border bg-background flex items-center gap-3">
+    <div className="relative px-5 py-3 border-b border-border bg-background flex items-center gap-3">
       <div className="relative" ref={ref}>
         {renaming ? (
           <input
