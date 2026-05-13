@@ -212,6 +212,7 @@ function PromptWorkbenchPage() {
             placeholder={"请帮我处理以下内容：{{输入}}"}
           />
         </div>
+      </div>
 
       <RightDrawer
         open={historyOpen}
