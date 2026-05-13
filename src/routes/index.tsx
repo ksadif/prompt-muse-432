@@ -268,8 +268,8 @@ function PromptPage() {
                         {b.model}
                       </div>
                       <div className="mt-1.5 flex items-center gap-1 text-[10.5px] text-muted-foreground">
-                        <Wrench className="h-3 w-3" />
-                        <span>{b.tools.length}</span>
+                        <Wrench className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{b.tools.length === 0 ? "无工具" : b.tools.join("、")}</span>
                       </div>
                     </button>
                     {i < blocks.length - 1 && (
