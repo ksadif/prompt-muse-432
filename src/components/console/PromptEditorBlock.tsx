@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Settings2, Wrench, Brain, Sparkles, Link2, Trash2, ChevronDown } from "lucide-react";
+import { Settings2, Wrench, Link2, Trash2, ChevronDown } from "lucide-react";
 import type { EditorBlock, Folder } from "./types";
-import { ImprovePromptDialog } from "./ImprovePromptDialog";
 
 export function PromptEditorBlock({
   block,
