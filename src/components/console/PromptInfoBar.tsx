@@ -16,6 +16,7 @@ export function PromptInfoBar({
   onDuplicate: () => void;
   onDelete: () => void;
   onSave: () => void;
+  centerSlot?: React.ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
