@@ -9,6 +9,7 @@ export function PromptInfoBar({
   onDuplicate,
   onDelete,
   onSave,
+  centerSlot,
 }: {
   prompt: PromptItem;
   onRename: (newName: string) => void;
