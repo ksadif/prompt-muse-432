@@ -43,6 +43,7 @@ type DrawerKind =
   | { kind: "model"; blockIdx: number }
   | { kind: "tools"; blockIdx: number }
   | { kind: "memory"; blockIdx: number }
+  | { kind: "edit"; blockIdx: number }
   | { kind: "history" }
   | { kind: "compare"; cb: (p: PromptItem) => void }
   | null;
