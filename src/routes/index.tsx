@@ -274,10 +274,6 @@ function PromptPage() {
                       </div>
                       <div className="mt-1.5 flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
                         <span>工具 {b.tools.length}</span>
-                        <span>·</span>
-                        <span>记忆 {b.memories.length}</span>
-                        <span>·</span>
-                        <span>轮次 {b.maxTurns}</span>
                       </div>
                     </button>
                     {i < blocks.length - 1 && (
