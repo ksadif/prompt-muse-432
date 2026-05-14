@@ -434,16 +434,18 @@ function TestSetPage() {
 
 function NewTestSetDialog({
   open,
+  folders,
   onClose,
   onCreate,
 }: {
   open: boolean;
+  folders: Folder[];
   onClose: () => void;
-  onCreate: (name: string, count: number) => void;
+  onCreate: (name: string, count: number, folderId: string) => void;
 }) {
   const [mode, setMode] = useState<"manual" | "upload">("manual");
   const [name, setName] = useState("");
-  const [scope, setScope] = useState("社区助手");
+  const [folderId, setFolderId] = useState(folders[0]?.id ?? "");
   const [activeExtras, setActiveExtras] = useState<string[]>([]);
   const [count, setCount] = useState(10);
   const [file, setFile] = useState<File | null>(null);
