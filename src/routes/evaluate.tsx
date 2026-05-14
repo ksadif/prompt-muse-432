@@ -66,61 +66,54 @@ function TestSetPage() {
 
   return (
     <ConsoleShell>
-      <div className="flex flex-col h-full">
-        <div className="px-6 pt-5 pb-3 flex items-center justify-between border-b border-border">
-          <div className="min-w-0">
-            <h1 className="text-base font-semibold tracking-tight">测试集管理</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              上方为测试集列表，点击任一测试集查看详细样本内容。
+      <div className="flex h-full min-h-0">
+        {/* 左：测试集列表 */}
+        <aside className="w-72 shrink-0 border-r border-border flex flex-col min-h-0">
+          <div className="px-4 pt-4 pb-3 border-b border-border">
+            <h1 className="text-sm font-semibold tracking-tight">测试集管理</h1>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              选择左侧测试集查看详情
             </p>
+            <button
+              onClick={() => setOpen(true)}
+              className="mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-xs hover:opacity-90"
+            >
+              <Plus className="h-3.5 w-3.5" /> 新建测试集
+            </button>
           </div>
-          <button
-            onClick={() => setOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
-          >
-            <Plus className="h-3.5 w-3.5" /> 新建测试集
-          </button>
-        </div>
-
-        {/* 上：测试集列表 */}
-        <div className="px-6 py-4 border-b border-border">
-          <div className="text-xs font-medium text-muted-foreground mb-2">测试集列表</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="flex-1 overflow-y-auto p-2">
             {sets.map((t) => {
               const active = t.id === selectedId;
               return (
                 <button
                   key={t.id}
                   onClick={() => setSelectedId(t.id)}
-                  className={`text-left rounded-lg border p-3 transition ${
+                  className={`w-full text-left rounded-md px-3 py-2 mb-1 transition flex items-start gap-2 ${
                     active
-                      ? "border-[var(--console-orange)] bg-[var(--console-orange)]/5 shadow-sm"
-                      : "border-border bg-background hover:shadow-sm hover:border-foreground/20"
+                      ? "bg-[var(--console-orange)]/10 text-foreground"
+                      : "hover:bg-muted text-foreground/90"
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <FileSpreadsheet
-                      className={`h-4 w-4 ${active ? "text-[var(--console-orange)]" : "text-muted-foreground"}`}
-                    />
-                    <ChevronRight
-                      className={`h-3.5 w-3.5 ${active ? "text-[var(--console-orange)]" : "text-muted-foreground/60"}`}
-                    />
-                  </div>
-                  <div className="mt-2 text-sm font-medium truncate">{t.name}</div>
-                  <div className="mt-0.5 text-[11px] text-muted-foreground">
-                    创建于 2026-05-01 · yz
+                  <FileSpreadsheet
+                    className={`h-4 w-4 mt-0.5 shrink-0 ${active ? "text-[var(--console-orange)]" : "text-muted-foreground"}`}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium truncate">{t.name}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      2026-05-01 · yz
+                    </div>
                   </div>
                 </button>
               );
             })}
           </div>
-        </div>
+        </aside>
 
-        {/* 下：详细内容 */}
-        <div className="flex-1 min-h-0 px-6 py-4 overflow-auto">
+        {/* 右：详细内容 */}
+        <div className="flex-1 min-w-0 flex flex-col min-h-0">
           {selected ? (
             <>
-              <div className="flex items-center justify-between mb-3 gap-3">
+              <div className="px-6 pt-4 pb-3 border-b border-border flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-sm font-semibold truncate">{selected.name}</div>
                   <div className="text-[11px] text-muted-foreground mt-0.5">
@@ -146,48 +139,50 @@ function TestSetPage() {
                 </div>
               </div>
 
-              <div className="rounded-md border border-border overflow-auto">
-                <table className="w-full text-xs">
-                  <thead className="bg-muted/60 text-muted-foreground sticky top-0">
-                    <tr>
-                      <th className="w-12 px-3 py-2 text-left font-medium">#</th>
-                      <th className="px-3 py-2 text-left font-medium min-w-[200px]">输入 Query</th>
-                      {MOCK_DETAIL_FIELDS.map((f) => (
-                        <th key={f} className="px-3 py-2 text-left font-medium whitespace-nowrap">
-                          {f}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredRows.map((r) => (
-                      <tr key={r.id} className="border-t border-border hover:bg-muted/30">
-                        <td className="px-3 py-2 text-muted-foreground">{r.no}</td>
-                        <td className="px-3 py-2">{r.query}</td>
+              <div className="flex-1 min-h-0 overflow-auto px-6 py-4">
+                <div className="rounded-md border border-border overflow-auto">
+                  <table className="w-full text-xs">
+                    <thead className="bg-muted/60 text-muted-foreground sticky top-0">
+                      <tr>
+                        <th className="w-12 px-3 py-2 text-left font-medium">#</th>
+                        <th className="px-3 py-2 text-left font-medium min-w-[200px]">输入 Query</th>
                         {MOCK_DETAIL_FIELDS.map((f) => (
-                          <td key={f} className="px-3 py-2 text-muted-foreground whitespace-nowrap">
-                            {r.extras[f]}
-                          </td>
+                          <th key={f} className="px-3 py-2 text-left font-medium whitespace-nowrap">
+                            {f}
+                          </th>
                         ))}
                       </tr>
-                    ))}
-                    {filteredRows.length === 0 && (
-                      <tr>
-                        <td
-                          colSpan={2 + MOCK_DETAIL_FIELDS.length}
-                          className="px-3 py-8 text-center text-muted-foreground"
-                        >
-                          没有匹配的样本
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {filteredRows.map((r) => (
+                        <tr key={r.id} className="border-t border-border hover:bg-muted/30">
+                          <td className="px-3 py-2 text-muted-foreground">{r.no}</td>
+                          <td className="px-3 py-2">{r.query}</td>
+                          {MOCK_DETAIL_FIELDS.map((f) => (
+                            <td key={f} className="px-3 py-2 text-muted-foreground whitespace-nowrap">
+                              {r.extras[f]}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                      {filteredRows.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={2 + MOCK_DETAIL_FIELDS.length}
+                            className="px-3 py-8 text-center text-muted-foreground"
+                          >
+                            没有匹配的样本
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </>
           ) : (
-            <div className="text-sm text-muted-foreground text-center py-12">
-              请选择上方任一测试集查看详细内容
+            <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
+              请选择左侧任一测试集查看详细内容
             </div>
           )}
         </div>
