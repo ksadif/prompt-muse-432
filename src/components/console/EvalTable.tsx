@@ -332,10 +332,7 @@ export function EvalTable({
               {/* 当前样本信息 */}
               <div className="rounded-lg border border-border bg-background p-3 mb-4">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded bg-muted text-[11px] text-muted-foreground font-medium">
-                    #{selectedRow.id}
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">输入文字</span>
+                  <span className="text-[11px] text-muted-foreground">Query</span>
                   <button
                     onClick={() => runAllForRow(selectedRow.id)}
                     className="ml-auto inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs hover:bg-accent"
@@ -353,16 +350,6 @@ export function EvalTable({
                   placeholder="输入测试内容..."
                   className="w-full bg-transparent text-sm outline-none border border-transparent focus:border-[var(--console-orange)] rounded px-2 py-1"
                 />
-                {showExtras && (
-                  <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
-                    {extraKeys.map((k) => (
-                      <div key={k} className="flex gap-1.5 truncate">
-                        <span className="text-muted-foreground/70 shrink-0">{k}：</span>
-                        <span className="truncate text-foreground/80">{selectedRow.extras[k] ?? "-"}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
 
               {/* 对比环境列 */}
