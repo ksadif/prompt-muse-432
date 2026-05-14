@@ -336,33 +336,13 @@ function TestSetPage() {
                   </thead>
                   <tbody>
                      {filteredRows.map((r) => {
-                       const isEditing = editingRowId === r.id;
-                       const cellBase =
-                         "w-full rounded border px-2 py-1 outline-none transition-colors";
-                       const cellCls = isEditing
-                         ? `${cellBase} border-[var(--console-orange)] bg-background`
-                         : `${cellBase} border-transparent bg-transparent cursor-default select-text`;
+                       const cellCls =
+                         "w-full rounded border border-transparent bg-transparent px-2 py-1 outline-none transition-colors hover:border-border focus:border-[var(--console-orange)] focus:bg-background";
                        return (
-                       <tr
-                         key={r.id}
-                         className="group border-t border-border hover:bg-muted/30"
-                         onBlur={(e) => {
-                           if (
-                             isEditing &&
-                             !e.currentTarget.contains(e.relatedTarget as Node | null)
-                           ) {
-                             setEditingRowId(null);
-                           }
-                         }}
-                       >
+                       <tr key={r.id} className="group border-t border-border hover:bg-muted/30">
                          <td className="px-3 py-2 text-muted-foreground">{r.no}</td>
                          <td className="px-2 py-1.5">
                            <input
-                             key={isEditing ? "edit" : "view"}
-                             autoFocus={isEditing}
-                             readOnly={!isEditing}
-                             tabIndex={isEditing ? 0 : -1}
-                             onFocus={(e) => isEditing && e.currentTarget.select()}
                              value={r.query}
                              onChange={(e) => updateCell(r.id, "query", e.target.value)}
                              className={cellCls}
@@ -371,11 +351,9 @@ function TestSetPage() {
                          {MOCK_DETAIL_FIELDS.map((f) => (
                            <td key={f} className="px-2 py-1.5">
                              <input
-                               readOnly={!isEditing}
-                               tabIndex={isEditing ? 0 : -1}
                                value={r.extras[f] ?? ""}
                                onChange={(e) => updateCell(r.id, f, e.target.value)}
-                               className={`${cellCls} ${isEditing ? "" : "text-muted-foreground"}`}
+                               className={cellCls}
                              />
                            </td>
                          ))}
@@ -390,12 +368,6 @@ function TestSetPage() {
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-28 p-1">
-                              <DropdownMenuItem
-                                onClick={() => setEditingRowId(r.id)}
-                                className="text-xs py-1 px-2 cursor-pointer"
-                              >
-                                <Pencil className="h-3 w-3 mr-1.5" /> 编辑
-                              </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => deleteRow(r.id)}
                                 className="text-xs py-1 px-2 cursor-pointer text-destructive focus:text-destructive"
