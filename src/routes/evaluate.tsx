@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
-import { Plus, Upload, FileSpreadsheet, Trash2, PencilLine, FileUp, Search, MoreHorizontal, Pencil, ListTree, ChevronDown, X } from "lucide-react";
-import { testSets as initialTestSets } from "@/components/console/mockData";
+import { Plus, Upload, Trash2, PencilLine, FileUp, Search, MoreHorizontal, Pencil, ListTree, ChevronDown } from "lucide-react";
+import { testSetFolders as initialFolders } from "@/components/console/mockData";
+import { PromptListPanel } from "@/components/console/PromptListPanel";
+import type { Folder } from "@/components/console/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -58,9 +60,10 @@ function genDetailRows(setId: string, name: string) {
 type ExtraSample = { id: string; no: number; query: string; extras: Record<string, string> };
 
 function TestSetPage() {
-  const [sets, setSets] = useState(initialTestSets);
+  const [folders, setFolders] = useState<Folder[]>(initialFolders);
+  const sets = useMemo(() => folders.flatMap((f) => f.prompts), [folders]);
   const [open, setOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(initialTestSets[0]?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(sets[0]?.id ?? null);
   const [search, setSearch] = useState("");
   const [extraRows, setExtraRows] = useState<Record<string, ExtraSample[]>>({});
   const [deletedRowIds, setDeletedRowIds] = useState<Record<string, Set<string>>>({});
@@ -120,7 +123,12 @@ function TestSetPage() {
   const renameSet = (id: string, currentName: string) => {
     const next = window.prompt("重命名测试集", currentName);
     if (!next || !next.trim() || next === currentName) return;
-    setSets((s) => s.map((x) => (x.id === id ? { ...x, name: next.trim() } : x)));
+    setFolders((fs) =>
+      fs.map((f) => ({
+        ...f,
+        prompts: f.prompts.map((p) => (p.id === id ? { ...p, name: next.trim() } : p)),
+      })),
+    );
     markDirty(id);
   };
 
@@ -157,9 +165,11 @@ function TestSetPage() {
   };
 
   const deleteSet = (id: string) => {
-    const remaining = sets.filter((x) => x.id !== id);
-    setSets(remaining);
-    if (selectedId === id) setSelectedId(remaining[0]?.id ?? null);
+    setFolders((fs) => fs.map((f) => ({ ...f, prompts: f.prompts.filter((p) => p.id !== id) })));
+    if (selectedId === id) {
+      const remaining = sets.filter((x) => x.id !== id);
+      setSelectedId(remaining[0]?.id ?? null);
+    }
   };
   const deleteRow = (rowId: string) => {
     if (!selected) return;
@@ -262,43 +272,14 @@ function TestSetPage() {
           )}
         </div>
 
-        {/* 测试集列表覆盖面板 */}
-        {listOpen && (
-          <>
-            <div className="absolute inset-0 z-40 bg-black/20" onClick={() => setListOpen(false)} />
-            <aside className="absolute left-0 top-0 z-50 h-full w-[320px] bg-background border-r border-border shadow-2xl flex flex-col">
-              <div className="flex items-center justify-between px-5 pt-5 pb-3">
-                <h3 className="text-lg font-semibold tracking-tight">测试集列表</h3>
-                <button
-                  onClick={() => setListOpen(false)}
-                  className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto p-2">
-                {sets.map((t) => {
-                  const active = t.id === selectedId;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => {
-                        setSelectedId(t.id);
-                        setListOpen(false);
-                      }}
-                      className={`w-full text-left rounded mb-1 px-2.5 py-2.5 flex items-center gap-2 transition ${
-                        active ? "bg-muted" : "hover:bg-muted/60"
-                      }`}
-                    >
-                      <FileSpreadsheet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                      <div className="text-xs truncate">{t.name}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </aside>
-          </>
-        )}
+        <PromptListPanel
+          open={listOpen}
+          onClose={() => setListOpen(false)}
+          folders={folders}
+          selectedId={selectedId}
+          onSelect={(id) => setSelectedId(id)}
+          variant="testset"
+        />
 
 
         {/* 详细内容 */}
@@ -421,12 +402,29 @@ function TestSetPage() {
 
       <NewTestSetDialog
         open={open}
+        folders={folders}
         onClose={() => setOpen(false)}
-        onCreate={(name, count) => {
-          setSets((s) => [
-            ...s,
-            { id: `ts-${Date.now()}`, name: `${name}（${count} 条）` },
-          ]);
+        onCreate={(name, count, folderId) => {
+          const newId = `ts-${Date.now()}`;
+          setFolders((fs) =>
+            fs.map((f) =>
+              f.id === folderId
+                ? {
+                    ...f,
+                    prompts: [
+                      ...f.prompts,
+                      {
+                        id: newId,
+                        name: `${name}（${count} 条）`,
+                        updatedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
+                        owner: "yz",
+                      },
+                    ],
+                  }
+                : f,
+            ),
+          );
+          setSelectedId(newId);
           setOpen(false);
         }}
       />
@@ -436,16 +434,18 @@ function TestSetPage() {
 
 function NewTestSetDialog({
   open,
+  folders,
   onClose,
   onCreate,
 }: {
   open: boolean;
+  folders: Folder[];
   onClose: () => void;
-  onCreate: (name: string, count: number) => void;
+  onCreate: (name: string, count: number, folderId: string) => void;
 }) {
   const [mode, setMode] = useState<"manual" | "upload">("manual");
   const [name, setName] = useState("");
-  const [scope, setScope] = useState("社区助手");
+  const [folderId, setFolderId] = useState(folders[0]?.id ?? "");
   const [activeExtras, setActiveExtras] = useState<string[]>([]);
   const [count, setCount] = useState(10);
   const [file, setFile] = useState<File | null>(null);
@@ -485,15 +485,17 @@ function NewTestSetDialog({
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground">所属业务</label>
+              <label className="text-xs font-medium text-muted-foreground">所属文件夹</label>
               <select
-                value={scope}
-                onChange={(e) => setScope(e.target.value)}
+                value={folderId}
+                onChange={(e) => setFolderId(e.target.value)}
                 className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)]"
               >
-                <option>社区助手</option>
-                <option>客服机器人</option>
-                <option>通用</option>
+                {folders.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -583,7 +585,7 @@ function NewTestSetDialog({
               disabled={!canCreate}
               onClick={() => {
                 const c = mode === "manual" ? count : Math.floor(Math.random() * 50) + 10;
-                onCreate(name.trim(), c);
+                onCreate(name.trim(), c, folderId);
                 reset();
               }}
               className="px-4 py-1.5 text-sm rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-40"
