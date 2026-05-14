@@ -375,26 +375,6 @@ function TestSetPage() {
           setOpen(false);
         }}
       />
-
-
-      <AddSampleDialog
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        onAdd={(query, extras) => {
-          if (!selected) return;
-          setExtraRows((m) => {
-            const list = m[selected.id] ?? [];
-            const next: ExtraSample = {
-              id: `${selected.id}-x${list.length + 1}-${Date.now()}`,
-              no: baseRows.length + list.length + 1,
-              query,
-              extras,
-            };
-            return { ...m, [selected.id]: [...list, next] };
-          });
-          setAddOpen(false);
-        }}
-      />
     </ConsoleShell>
   );
 }
