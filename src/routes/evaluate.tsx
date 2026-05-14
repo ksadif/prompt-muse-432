@@ -165,9 +165,11 @@ function TestSetPage() {
   };
 
   const deleteSet = (id: string) => {
-    const remaining = sets.filter((x) => x.id !== id);
-    setSets(remaining);
-    if (selectedId === id) setSelectedId(remaining[0]?.id ?? null);
+    setFolders((fs) => fs.map((f) => ({ ...f, prompts: f.prompts.filter((p) => p.id !== id) })));
+    if (selectedId === id) {
+      const remaining = sets.filter((x) => x.id !== id);
+      setSelectedId(remaining[0]?.id ?? null);
+    }
   };
   const deleteRow = (rowId: string) => {
     if (!selected) return;
