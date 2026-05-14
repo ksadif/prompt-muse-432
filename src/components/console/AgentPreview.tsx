@@ -142,6 +142,23 @@ export function AgentPreview() {
                     </button>
                   );
                 })}
+                <div className="mx-1 h-4 w-px bg-border" />
+                <input
+                  value={randomUid ? "" : userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                  disabled={randomUid}
+                  placeholder={randomUid ? "随机 userid" : "用户 ID"}
+                  className="h-7 w-[110px] bg-transparent text-[11px] outline-none disabled:opacity-50 placeholder:text-muted-foreground/60"
+                />
+                <label className="inline-flex items-center gap-1 cursor-pointer select-none text-[11px] px-1.5 h-7 rounded-md hover:bg-accent">
+                  <input
+                    type="checkbox"
+                    checked={randomUid}
+                    onChange={(e) => setRandomUid(e.target.checked)}
+                    className="h-3 w-3 accent-[var(--console-orange)]"
+                  />
+                  <span>随机</span>
+                </label>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10.5px] text-muted-foreground/70 hidden sm:block">
