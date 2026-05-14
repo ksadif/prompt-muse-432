@@ -171,7 +171,6 @@ export function EvalTable({
   onPickComparePrompt: (cb: (p: PromptItem) => void) => void;
 }) {
   const [testSetId, setTestSetId] = useState(testSets[0].id);
-  const [showExtras, setShowExtras] = useState(false);
   const [rows, setRows] = useState<EvalRow[]>(initialEvalRows);
   const [comparePrompts, setComparePrompts] = useState<PromptItem[]>([]);
   const [selectedId, setSelectedId] = useState<number>(initialEvalRows[0]?.id ?? 0);
@@ -259,7 +258,15 @@ export function EvalTable({
           </select>
         </div>
 
-        <SwitchRow label="显示测试集字段" checked={showExtras} onChange={setShowExtras} />
+        <button
+          onClick={addCompare}
+          disabled={comparePrompts.length >= 2}
+          className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-xs hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <Plus className="h-3 w-3" />
+          增加 Agent 对比
+          <span className="text-[10px] text-muted-foreground">（{allVersions.length}/3）</span>
+        </button>
 
         <ExportMenu
           getRows={() => rows}
@@ -309,30 +316,9 @@ export function EvalTable({
                       : "border-transparent bg-background/60 hover:border-border hover:bg-background"
                   }`}
                 >
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="inline-flex items-center justify-center min-w-5 h-4 px-1 rounded bg-muted text-[10px] text-muted-foreground font-medium">
-                      #{r.id}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground truncate">
-                      {r.extras["输入时间"] ?? "—"}
-                    </span>
-                  </div>
                   <div className="text-xs text-foreground line-clamp-2">
                     {r.input || <span className="text-muted-foreground">（空输入）</span>}
                   </div>
-                  {showExtras && (
-                    <div className="mt-1.5 space-y-0.5 text-[10.5px] text-muted-foreground">
-                      {extraKeys
-                        .filter((k) => k !== "输入时间" && r.extras[k] && r.extras[k] !== "-")
-                        .slice(0, 3)
-                        .map((k) => (
-                          <div key={k} className="truncate">
-                            <span className="text-muted-foreground/70">{k}：</span>
-                            {r.extras[k]}
-                          </div>
-                        ))}
-                    </div>
-                  )}
                 </button>
               );
             })}
@@ -346,10 +332,7 @@ export function EvalTable({
               {/* 当前样本信息 */}
               <div className="rounded-lg border border-border bg-background p-3 mb-4">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded bg-muted text-[11px] text-muted-foreground font-medium">
-                    #{selectedRow.id}
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">输入文字</span>
+                  <span className="text-[11px] text-muted-foreground">Query</span>
                   <button
                     onClick={() => runAllForRow(selectedRow.id)}
                     className="ml-auto inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-xs hover:bg-accent"
@@ -367,23 +350,13 @@ export function EvalTable({
                   placeholder="输入测试内容..."
                   className="w-full bg-transparent text-sm outline-none border border-transparent focus:border-[var(--console-orange)] rounded px-2 py-1"
                 />
-                {showExtras && (
-                  <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
-                    {extraKeys.map((k) => (
-                      <div key={k} className="flex gap-1.5 truncate">
-                        <span className="text-muted-foreground/70 shrink-0">{k}：</span>
-                        <span className="truncate text-foreground/80">{selectedRow.extras[k] ?? "-"}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
 
               {/* 对比环境列 */}
               <div
                 className="grid gap-3"
                 style={{
-                  gridTemplateColumns: `repeat(${allVersions.length + (comparePrompts.length < 2 ? 1 : 0)}, minmax(280px, 1fr))`,
+                  gridTemplateColumns: `repeat(${allVersions.length}, minmax(320px, 1fr))`,
                 }}
               >
                 {allVersions.map((p, vi) => {
@@ -489,19 +462,6 @@ export function EvalTable({
                   );
                 })}
 
-                {/* 增加对比 */}
-                {comparePrompts.length < 2 && (
-                  <button
-                    onClick={addCompare}
-                    className="rounded-lg border border-dashed border-border bg-background/40 hover:bg-background hover:border-[var(--console-orange)]/50 hover:text-[var(--console-orange)] text-muted-foreground transition flex flex-col items-center justify-center gap-1.5 py-10 text-xs"
-                  >
-                    <Plus className="h-4 w-4" />
-                    增加 Prompt 对比
-                    <span className="text-[10px] text-muted-foreground">
-                      最多 3 个环境
-                    </span>
-                  </button>
-                )}
               </div>
             </div>
           ) : (
