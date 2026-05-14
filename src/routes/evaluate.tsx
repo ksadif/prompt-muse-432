@@ -103,6 +103,12 @@ function TestSetPage() {
     search.trim() ? r.query.toLowerCase().includes(search.trim().toLowerCase()) : true,
   );
 
+  const PAGE_SIZE = 10;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedRows = filteredRows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   const markDirty = (sid: string) =>
     setDirtySets((d) => {
       if (d.has(sid)) return d;
@@ -335,7 +341,7 @@ function TestSetPage() {
                     </tr>
                   </thead>
                   <tbody>
-                     {filteredRows.map((r) => {
+                     {pagedRows.map((r) => {
                        const cellCls =
                          "w-full rounded border border-transparent bg-transparent px-2 py-1 outline-none transition-colors hover:border-border focus:border-[var(--console-orange)] focus:bg-background";
                        return (
@@ -393,12 +399,34 @@ function TestSetPage() {
                   </tbody>
                 </table>
               </div>
-              <button
-                onClick={addBlankRow}
-                className="mt-2 inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-[var(--console-orange)] hover:bg-muted"
-              >
-                <Plus className="h-3 w-3" /> 新增一行
-              </button>
+              <div className="mt-2 flex items-center justify-between">
+                <button
+                  onClick={addBlankRow}
+                  className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-[var(--console-orange)] hover:bg-muted"
+                >
+                  <Plus className="h-3 w-3" /> 新增一行
+                </button>
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <span>共 {filteredRows.length} 条</span>
+                  <button
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage <= 1}
+                    className="px-2 py-1 rounded border border-border hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    上一页
+                  </button>
+                  <span>
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                    className="px-2 py-1 rounded border border-border hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    下一页
+                  </button>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="flex-1" />
