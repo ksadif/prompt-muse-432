@@ -450,6 +450,12 @@ function TestSetPage() {
         </div>
       </div>
 
+      <SampleComposerDialog
+        open={composerOpen}
+        onClose={() => setComposerOpen(false)}
+        onConfirm={addSampleFromComposer}
+      />
+
       <NewTestSetDialog
         open={open}
         folders={folders}
