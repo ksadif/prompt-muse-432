@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { X, Search, Lock, Box, Bot, FileSpreadsheet, ChevronDown, ChevronRight, Folder as FolderIcon } from "lucide-react";
+import { X, Search, Lock, Box, Bot, FileSpreadsheet, ChevronDown, ChevronRight, Folder as FolderIcon, FolderPlus, Check } from "lucide-react";
 import type { Folder } from "./types";
 
 type Variant = "agent" | "prompt" | "testset";
@@ -40,6 +40,7 @@ export function PromptListPanel({
   folders,
   selectedId,
   onSelect,
+  onAddFolder,
   variant = "prompt",
 }: {
   open: boolean;
@@ -56,6 +57,8 @@ export function PromptListPanel({
   const [query, setQuery] = useState("");
   const [onlyMine, setOnlyMine] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [addingFolder, setAddingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
 
   const filteredFolders = useMemo(() => {
     return folders
@@ -67,7 +70,7 @@ export function PromptListPanel({
           return true;
         }),
       }))
-      .filter((f) => f.prompts.length > 0);
+      .filter((f) => f.prompts.length > 0 || (!query && !onlyMine));
   }, [folders, query, onlyMine]);
 
   if (!open) return null;
@@ -117,7 +120,57 @@ export function PromptListPanel({
             />
           </button>
           <span className="text-[13px] text-muted-foreground">{v.onlyMineLabel}</span>
+          {onAddFolder && (
+            <button
+              onClick={() => {
+                setNewFolderName("");
+                setAddingFolder(true);
+              }}
+              className="ml-auto inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground"
+            >
+              <FolderPlus className="h-3.5 w-3.5" />
+              新建文件夹
+            </button>
+          )}
         </div>
+
+        {addingFolder && (
+          <div className="px-5 pb-2 flex items-center gap-2">
+            <FolderIcon className={`h-3.5 w-3.5 ${v.accent}`} />
+            <input
+              autoFocus
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const n = newFolderName.trim();
+                  if (n && onAddFolder) onAddFolder(n);
+                  setAddingFolder(false);
+                } else if (e.key === "Escape") {
+                  setAddingFolder(false);
+                }
+              }}
+              placeholder="文件夹名称"
+              className="flex-1 rounded border border-border bg-background px-2 py-1 text-xs outline-none focus:border-[var(--console-orange)]"
+            />
+            <button
+              onClick={() => {
+                const n = newFolderName.trim();
+                if (n && onAddFolder) onAddFolder(n);
+                setAddingFolder(false);
+              }}
+              className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
+            >
+              <Check className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => setAddingFolder(false)}
+              className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
 
         {/* Folder list */}
         <div className="flex-1 overflow-y-auto px-2 pb-3">

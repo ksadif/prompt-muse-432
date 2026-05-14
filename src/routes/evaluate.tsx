@@ -164,6 +164,28 @@ function TestSetPage() {
     if (selected) markDirty(selected.id);
   };
 
+  const duplicateSet = (id: string) => {
+    let newId = "";
+    setFolders((fs) =>
+      fs.map((f) => {
+        const idx = f.prompts.findIndex((p) => p.id === id);
+        if (idx < 0) return f;
+        const src = f.prompts[idx];
+        newId = `ts-${Date.now()}`;
+        const copy = {
+          ...src,
+          id: newId,
+          name: `${src.name} 副本`,
+          updatedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
+        };
+        const next = [...f.prompts];
+        next.splice(idx + 1, 0, copy);
+        return { ...f, prompts: next };
+      }),
+    );
+    if (newId) setSelectedId(newId);
+  };
+
   const deleteSet = (id: string) => {
     setFolders((fs) => fs.map((f) => ({ ...f, prompts: f.prompts.filter((p) => p.id !== id) })));
     if (selectedId === id) {
@@ -235,6 +257,15 @@ function TestSetPage() {
                     <button
                       onClick={() => {
                         setNameMenuOpen(false);
+                        duplicateSet(selected.id);
+                      }}
+                      className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent"
+                    >
+                      <Plus className="h-3.5 w-3.5" /> 创建副本
+                    </button>
+                    <button
+                      onClick={() => {
+                        setNameMenuOpen(false);
                         navigate({ to: "/" });
                       }}
                       className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent"
@@ -278,6 +309,9 @@ function TestSetPage() {
           folders={folders}
           selectedId={selectedId}
           onSelect={(id) => setSelectedId(id)}
+          onAddFolder={(name) =>
+            setFolders((fs) => [...fs, { id: `tsf-${Date.now()}`, name, prompts: [] }])
+          }
           variant="testset"
         />
 
@@ -302,33 +336,13 @@ function TestSetPage() {
                   </thead>
                   <tbody>
                      {filteredRows.map((r) => {
-                       const isEditing = editingRowId === r.id;
-                       const cellBase =
-                         "w-full rounded border px-2 py-1 outline-none transition-colors";
-                       const cellCls = isEditing
-                         ? `${cellBase} border-[var(--console-orange)] bg-background`
-                         : `${cellBase} border-transparent bg-transparent cursor-default select-text`;
+                       const cellCls =
+                         "w-full rounded border border-transparent bg-transparent px-2 py-1 outline-none transition-colors hover:border-border focus:border-[var(--console-orange)] focus:bg-background";
                        return (
-                       <tr
-                         key={r.id}
-                         className="group border-t border-border hover:bg-muted/30"
-                         onBlur={(e) => {
-                           if (
-                             isEditing &&
-                             !e.currentTarget.contains(e.relatedTarget as Node | null)
-                           ) {
-                             setEditingRowId(null);
-                           }
-                         }}
-                       >
+                       <tr key={r.id} className="group border-t border-border hover:bg-muted/30">
                          <td className="px-3 py-2 text-muted-foreground">{r.no}</td>
                          <td className="px-2 py-1.5">
                            <input
-                             key={isEditing ? "edit" : "view"}
-                             autoFocus={isEditing}
-                             readOnly={!isEditing}
-                             tabIndex={isEditing ? 0 : -1}
-                             onFocus={(e) => isEditing && e.currentTarget.select()}
                              value={r.query}
                              onChange={(e) => updateCell(r.id, "query", e.target.value)}
                              className={cellCls}
@@ -337,11 +351,9 @@ function TestSetPage() {
                          {MOCK_DETAIL_FIELDS.map((f) => (
                            <td key={f} className="px-2 py-1.5">
                              <input
-                               readOnly={!isEditing}
-                               tabIndex={isEditing ? 0 : -1}
                                value={r.extras[f] ?? ""}
                                onChange={(e) => updateCell(r.id, f, e.target.value)}
-                               className={`${cellCls} ${isEditing ? "" : "text-muted-foreground"}`}
+                               className={cellCls}
                              />
                            </td>
                          ))}
@@ -356,12 +368,6 @@ function TestSetPage() {
                               </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-28 p-1">
-                              <DropdownMenuItem
-                                onClick={() => setEditingRowId(r.id)}
-                                className="text-xs py-1 px-2 cursor-pointer"
-                              >
-                                <Pencil className="h-3 w-3 mr-1.5" /> 编辑
-                              </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => deleteRow(r.id)}
                                 className="text-xs py-1 px-2 cursor-pointer text-destructive focus:text-destructive"
