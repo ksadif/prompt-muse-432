@@ -544,6 +544,33 @@ export function EvalTable({
                           >
                             <Play className="h-3 w-3" />
                           </button>
+                          {vi > 0 && (
+                            <button
+                              onClick={() => {
+                                setComparePrompts((cs) => cs.filter((_, i) => i !== vi - 1));
+                                setRows((rs) =>
+                                  rs.map((r) => ({
+                                    ...r,
+                                    versions: r.versions.filter((_, i) => i !== vi),
+                                  })),
+                                );
+                                setTrajectories((t) => {
+                                  const next: typeof t = {};
+                                  for (const k of Object.keys(t)) {
+                                    const [rid, idx] = k.split("-").map(Number);
+                                    if (idx === vi) continue;
+                                    const newIdx = idx > vi ? idx - 1 : idx;
+                                    next[`${rid}-${newIdx}`] = t[k];
+                                  }
+                                  return next;
+                                });
+                              }}
+                              className="text-muted-foreground hover:text-destructive p-1 rounded hover:bg-accent"
+                              title="移除此对比"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          )}
                         </div>
 
                         {/* 对话区（可滑动）：用户输入 → 工具/Agent 轨迹 → 最终结果 */}
