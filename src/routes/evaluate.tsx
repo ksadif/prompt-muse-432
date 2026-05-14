@@ -353,8 +353,9 @@ function TestSetPage() {
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </td>
-                        </tr>
-                      ))}
+                         </tr>
+                         );
+                       })}
                       {filteredRows.length === 0 && (
                         <tr>
                           <td
