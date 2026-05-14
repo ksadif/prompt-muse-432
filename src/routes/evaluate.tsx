@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
-import { Plus, Upload, FileSpreadsheet, Trash2, PencilLine, FileUp, Search, MoreHorizontal, Pencil, ListTree, ChevronDown, X } from "lucide-react";
-import { testSets as initialTestSets } from "@/components/console/mockData";
+import { Plus, Upload, Trash2, PencilLine, FileUp, Search, MoreHorizontal, Pencil, ListTree, ChevronDown } from "lucide-react";
+import { testSetFolders as initialFolders } from "@/components/console/mockData";
+import { PromptListPanel } from "@/components/console/PromptListPanel";
+import type { Folder } from "@/components/console/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
