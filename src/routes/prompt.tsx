@@ -228,6 +228,7 @@ function PromptWorkbenchPage() {
         />
 
         <NewPromptDialog
+          variant="prompt"
           open={newOpen}
           folders={folders}
           onClose={() => setNewOpen(false)}
