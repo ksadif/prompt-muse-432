@@ -21,11 +21,9 @@ export function AgentPreview() {
   const [dialog, setDialog] = useState<DialogKind>(null);
   const [userId, setUserId] = useState("");
   const [randomUid, setRandomUid] = useState(false);
-  const [traceTab, setTraceTab] = useState<TraceTab>("trace");
   const [onlineTrace, setOnlineTrace] = useState("");
   const imgRef = useRef<HTMLInputElement>(null);
   const traceRef = useRef<HTMLInputElement>(null);
-  const jsonlRef = useRef<HTMLInputElement>(null);
 
   function onFiles(e: React.ChangeEvent<HTMLInputElement>, kind: "image" | "trace") {
     const files = Array.from(e.target.files ?? []);
