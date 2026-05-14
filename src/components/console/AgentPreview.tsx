@@ -7,11 +7,29 @@ import {
   UserRound,
   Activity,
   Upload,
+  Share2,
+  StickyNote,
+  MessageSquare,
+  Highlighter,
+  ShoppingBag,
+  User as UserIcon,
+  MapPin,
 } from "lucide-react";
 import { TrajectoryView, buildDemoTrajectory, type TrajectoryStep } from "./TrajectoryView";
 
-type Attachment = { name: string; url?: string; kind: "image" | "trace" };
-type DialogKind = null | "image" | "note" | "trace" | "user";
+type AttachKind = "image" | "share" | "bulk-note" | "bulk-image";
+type Attachment = { name: string; url?: string; kind: AttachKind };
+type DialogKind = null | "image" | "note" | "share" | "bulk" | "user";
+
+type ShareKind = "note" | "comment" | "highlight" | "goods" | "user" | "poi";
+const SHARE_OPTIONS: { k: ShareKind; label: string; icon: typeof StickyNote }[] = [
+  { k: "note", label: "笔记", icon: StickyNote },
+  { k: "comment", label: "评论", icon: MessageSquare },
+  { k: "highlight", label: "划词", icon: Highlighter },
+  { k: "goods", label: "商品", icon: ShoppingBag },
+  { k: "user", label: "用户", icon: UserIcon },
+  { k: "poi", label: "POI", icon: MapPin },
+];
 
 export function AgentPreview() {
   const [query, setQuery] = useState("");
@@ -21,23 +39,75 @@ export function AgentPreview() {
   const [dialog, setDialog] = useState<DialogKind>(null);
   const [userId, setUserId] = useState("");
   const [randomUid, setRandomUid] = useState(false);
-  const [onlineTrace, setOnlineTrace] = useState("");
-  const imgRef = useRef<HTMLInputElement>(null);
-  const traceRef = useRef<HTMLInputElement>(null);
 
-  function onFiles(e: React.ChangeEvent<HTMLInputElement>, kind: "image" | "trace") {
+  // share form
+  const [shareKind, setShareKind] = useState<ShareKind>("note");
+  const [shareFields, setShareFields] = useState<Record<string, string>>({});
+
+  // bulk form
+  const [bulkTab, setBulkTab] = useState<"note" | "image">("note");
+  const [bulkNoteIds, setBulkNoteIds] = useState("");
+  const [bulkImageUrls, setBulkImageUrls] = useState("");
+
+  const imgRef = useRef<HTMLInputElement>(null);
+
+  function onLocalImage(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     const next: Attachment[] = files.map((f) => ({
       name: f.name,
-      kind,
-      url: kind === "image" ? URL.createObjectURL(f) : undefined,
+      kind: "image",
+      url: URL.createObjectURL(f),
     }));
     setAttachments((a) => [...a, ...next]);
     e.target.value = "";
   }
 
+  function splitIds(s: string) {
+    return s
+      .split(/[\n,，]+/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+  }
+
+  function addShare() {
+    const labelObj = SHARE_OPTIONS.find((o) => o.k === shareKind)!;
+    const summary = Object.entries(shareFields)
+      .filter(([, v]) => v?.trim())
+      .map(([k, v]) => `${k}=${v}`)
+      .join(" / ");
+    if (!summary) return;
+    setAttachments((a) => [
+      ...a,
+      { name: `${labelObj.label} · ${summary}`, kind: "share" },
+    ]);
+    setShareFields({});
+    setDialog(null);
+  }
+
+  function addBulk() {
+    if (bulkTab === "note") {
+      const ids = splitIds(bulkNoteIds);
+      if (!ids.length) return;
+      setAttachments((a) => [
+        ...a,
+        ...ids.map<Attachment>((id) => ({ name: `笔记 ${id}`, kind: "bulk-note" })),
+      ]);
+      setBulkNoteIds("");
+    } else {
+      const urls = splitIds(bulkImageUrls);
+      if (!urls.length) return;
+      setAttachments((a) => [
+        ...a,
+        ...urls.map<Attachment>((u) => ({ name: u, url: u, kind: "bulk-image" })),
+      ]);
+      setBulkImageUrls("");
+    }
+    setDialog(null);
+  }
+
   const images = attachments.filter((a) => a.kind === "image");
-  const traces = attachments.filter((a) => a.kind === "trace");
+  const shares = attachments.filter((a) => a.kind === "share");
+  const bulks = attachments.filter((a) => a.kind === "bulk-note" || a.kind === "bulk-image");
 
   function run() {
     if (!query.trim() && !note.trim() && !attachments.length) return;
@@ -49,11 +119,18 @@ export function AgentPreview() {
         content: `[图片] ${images.map((a) => a.name).join("、")}`,
       });
     }
-    if (traces.length) {
+    if (shares.length) {
       trajectory.push({
         kind: "user-attachment",
         icon: "note",
-        content: `[轨迹] ${traces.map((a) => a.name).join("、")}`,
+        content: `[分享] ${shares.map((a) => a.name).join("；")}`,
+      });
+    }
+    if (bulks.length) {
+      trajectory.push({
+        kind: "user-attachment",
+        icon: "note",
+        content: `[上传内容] ${bulks.map((a) => a.name).join("、")}`,
       });
     }
     if (note.trim()) {
@@ -74,11 +151,35 @@ export function AgentPreview() {
 
   const userBadge = randomUid || userId.trim() ? 1 : 0;
   const triggers: { k: Exclude<DialogKind, null>; icon: typeof ImageIcon; title: string; badge: number }[] = [
-    { k: "image", icon: ImageIcon, title: "上传图片", badge: images.length },
+    { k: "image", icon: ImageIcon, title: "上传图片（本地）", badge: images.length },
     { k: "note", icon: FileText, title: "附加笔记", badge: note.trim() ? 1 : 0 },
-    { k: "trace", icon: Activity, title: "导入轨迹 (trace / jsonl / online)", badge: traces.length },
+    { k: "share", icon: Share2, title: "拖拽 / 分享内容", badge: shares.length },
+    { k: "bulk", icon: Upload, title: "上传内容（笔记 ID / 图片 URL）", badge: bulks.length },
     { k: "user", icon: UserRound, title: "用户记忆 ID", badge: userBadge },
   ];
+
+  // share field schemas
+  const shareSchema: Record<ShareKind, { key: string; label: string; placeholder?: string }[]> = {
+    note: [{ key: "笔记ID", label: "笔记 ID" }],
+    comment: [
+      { key: "评论ID", label: "评论 ID" },
+      { key: "笔记ID", label: "所属笔记 ID" },
+    ],
+    highlight: [
+      { key: "笔记ID", label: "笔记 ID" },
+      { key: "选中内容", label: "划词选中内容" },
+      { key: "开始位置", label: "开始位置（字符索引）" },
+    ],
+    goods: [{ key: "商品ID", label: "商品 ID" }],
+    user: [{ key: "用户ID", label: "用户 ID" }],
+    poi: [{ key: "POI", label: "POI ID" }],
+  };
+
+  function attachIcon(kind: AttachKind) {
+    if (kind === "image" || kind === "bulk-image") return ImageIcon;
+    if (kind === "share") return Share2;
+    return FileText;
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -90,31 +191,28 @@ export function AgentPreview() {
         <TrajectoryView steps={steps} emptyHint="将在此展示运行的 Agent 历史轨迹" />
       </div>
 
-      {/* 底部输入：现代 chat 样式 */}
       <div className="px-4 pt-2 pb-4 bg-background">
         <div className="mx-auto max-w-3xl">
-          {/* 附件预览条 */}
           {attachments.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2">
-              {attachments.map((a, i) => (
-                <div
-                  key={i}
-                  className="group flex items-center gap-1.5 rounded-full bg-muted/60 pl-2 pr-1 py-1 text-[11px]"
-                >
-                  {a.kind === "image" ? (
-                    <ImageIcon className="h-3 w-3 text-[var(--console-orange)]" />
-                  ) : (
-                    <Activity className="h-3 w-3 text-[var(--console-orange)]" />
-                  )}
-                  <span className="max-w-[140px] truncate">{a.name}</span>
-                  <button
-                    onClick={() => setAttachments((arr) => arr.filter((x) => x !== a))}
-                    className="h-4 w-4 rounded-full hover:bg-background inline-flex items-center justify-center"
+              {attachments.map((a, i) => {
+                const Ico = attachIcon(a.kind);
+                return (
+                  <div
+                    key={i}
+                    className="group flex items-center gap-1.5 rounded-full bg-muted/60 pl-2 pr-1 py-1 text-[11px]"
                   >
-                    <X className="h-2.5 w-2.5" />
-                  </button>
-                </div>
-              ))}
+                    <Ico className="h-3 w-3 text-[var(--console-orange)]" />
+                    <span className="max-w-[180px] truncate">{a.name}</span>
+                    <button
+                      onClick={() => setAttachments((arr) => arr.filter((x) => x !== a))}
+                      className="h-4 w-4 rounded-full hover:bg-background inline-flex items-center justify-center"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -139,7 +237,13 @@ export function AgentPreview() {
                   return (
                     <button
                       key={t.k}
-                      onClick={() => setDialog(t.k)}
+                      onClick={() => {
+                        if (t.k === "image") {
+                          imgRef.current?.click();
+                        } else {
+                          setDialog(t.k);
+                        }
+                      }}
                       className="relative h-8 w-8 inline-flex items-center justify-center rounded-lg hover:bg-accent hover:text-foreground transition"
                       title={t.title}
                     >
@@ -177,15 +281,7 @@ export function AgentPreview() {
         accept="image/*"
         multiple
         className="hidden"
-        onChange={(e) => onFiles(e, "image")}
-      />
-      <input
-        ref={traceRef}
-        type="file"
-        accept=".trace,.jsonl,.json"
-        multiple
-        className="hidden"
-        onChange={(e) => onFiles(e, "trace")}
+        onChange={onLocalImage}
       />
 
       {dialog && (
@@ -195,14 +291,15 @@ export function AgentPreview() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-[480px] max-w-[92vw] rounded-lg bg-background border border-border shadow-xl"
+            className="w-[520px] max-w-[92vw] rounded-lg bg-background border border-border shadow-xl"
           >
             <div className="px-4 py-3 border-b border-border flex items-center justify-between">
               <div className="text-sm font-semibold">
-                {dialog === "image" && "上传图片"}
                 {dialog === "note" && "附加笔记"}
-                {dialog === "trace" && "导入历史轨迹"}
+                {dialog === "share" && "拖拽 / 分享内容"}
+                {dialog === "bulk" && "上传内容"}
                 {dialog === "user" && "用户记忆 ID"}
+                {dialog === "image" && "上传图片"}
               </div>
               <button onClick={() => setDialog(null)} className="p-1 rounded hover:bg-accent">
                 <X className="h-3.5 w-3.5 text-muted-foreground" />
@@ -210,32 +307,6 @@ export function AgentPreview() {
             </div>
 
             <div className="p-4 space-y-3">
-              {dialog === "image" && (
-                <>
-                  <button
-                    onClick={() => imgRef.current?.click()}
-                    className="w-full rounded-md border border-dashed border-border py-8 text-xs text-muted-foreground hover:bg-accent"
-                  >
-                    点击选择图片，或拖拽到此处（支持多张）
-                  </button>
-                  {images.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2">
-                      {images.map((a, i) => (
-                        <div key={i} className="relative rounded-md border border-border overflow-hidden">
-                          <img src={a.url} alt={a.name} className="w-full h-20 object-cover" />
-                          <button
-                            onClick={() => setAttachments((arr) => arr.filter((x) => x !== a))}
-                            className="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-background/90 inline-flex items-center justify-center"
-                          >
-                            <X className="h-2.5 w-2.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-
               {dialog === "note" && (
                 <textarea
                   autoFocus
@@ -246,60 +317,110 @@ export function AgentPreview() {
                 />
               )}
 
-              {dialog === "trace" && (
+              {dialog === "share" && (
                 <>
-                  <div className="space-y-2">
-                    <label className="text-[11px] text-muted-foreground block">历史轨迹</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        autoFocus
-                        value={onlineTrace}
-                        onChange={(e) => setOnlineTrace(e.target.value)}
-                        placeholder="输入 hash_id"
-                        className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)]"
-                      />
-                      <button
-                        onClick={() => {
-                          if (!onlineTrace.trim()) return;
-                          setAttachments((a) => [
-                            ...a,
-                            { name: `hash: ${onlineTrace.trim()}`, kind: "trace" },
-                          ]);
-                          setOnlineTrace("");
-                        }}
-                        disabled={!onlineTrace.trim()}
-                        className="px-4 py-2 text-xs rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-40"
-                      >
-                        加载
-                      </button>
+                  <div>
+                    <label className="text-[11px] text-muted-foreground mb-1.5 block">
+                      内容类型
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {SHARE_OPTIONS.map((o) => {
+                        const Icon = o.icon;
+                        const active = shareKind === o.k;
+                        return (
+                          <button
+                            key={o.k}
+                            onClick={() => {
+                              setShareKind(o.k);
+                              setShareFields({});
+                            }}
+                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs transition ${
+                              active
+                                ? "border-[var(--console-orange)] bg-[var(--console-orange)]/10 text-foreground"
+                                : "border-border hover:bg-accent"
+                            }`}
+                          >
+                            <Icon className="h-3.5 w-3.5" />
+                            {o.label}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[11px] text-muted-foreground block">上传文件</label>
-                    <button
-                      onClick={() => traceRef.current?.click()}
-                      className="w-full rounded-md border border-dashed border-border py-6 text-xs text-muted-foreground hover:bg-accent flex flex-col items-center gap-1.5"
-                    >
-                      <Upload className="h-4 w-4" />
-                      点击选择 .trace / .jsonl / .json 文件（支持多个）
-                    </button>
+                  <div className="space-y-2 pt-1">
+                    {shareSchema[shareKind].map((f) => (
+                      <div key={f.key}>
+                        <label className="text-[11px] text-muted-foreground mb-1 block">
+                          {f.label}
+                        </label>
+                        {f.key === "选中内容" ? (
+                          <textarea
+                            value={shareFields[f.key] ?? ""}
+                            onChange={(e) =>
+                              setShareFields((s) => ({ ...s, [f.key]: e.target.value }))
+                            }
+                            placeholder={f.placeholder}
+                            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] resize-none min-h-[60px]"
+                          />
+                        ) : (
+                          <input
+                            value={shareFields[f.key] ?? ""}
+                            onChange={(e) =>
+                              setShareFields((s) => ({ ...s, [f.key]: e.target.value }))
+                            }
+                            placeholder={f.placeholder}
+                            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)]"
+                          />
+                        )}
+                      </div>
+                    ))}
                   </div>
+                </>
+              )}
 
-                  {traces.length > 0 && (
-                    <div className="space-y-1">
-                      {traces.map((a, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5 text-xs"
-                        >
-                          <Activity className="h-3.5 w-3.5 text-[var(--console-orange)]" />
-                          <span className="flex-1 truncate">{a.name}</span>
-                          <button onClick={() => setAttachments((arr) => arr.filter((x) => x !== a))}>
-                            <X className="h-3 w-3 text-muted-foreground" />
-                          </button>
-                        </div>
-                      ))}
+              {dialog === "bulk" && (
+                <>
+                  <div className="flex border-b border-border">
+                    {(["note", "image"] as const).map((t) => (
+                      <button
+                        key={t}
+                        onClick={() => setBulkTab(t)}
+                        className={`px-3 py-1.5 text-xs -mb-px border-b-2 transition ${
+                          bulkTab === t
+                            ? "border-[var(--console-orange)] text-foreground"
+                            : "border-transparent text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {t === "note" ? "笔记" : "图片"}
+                      </button>
+                    ))}
+                  </div>
+                  {bulkTab === "note" ? (
+                    <div>
+                      <label className="text-[11px] text-muted-foreground mb-1 block">
+                        笔记 ID（多个用换行或逗号隔开）
+                      </label>
+                      <textarea
+                        autoFocus
+                        value={bulkNoteIds}
+                        onChange={(e) => setBulkNoteIds(e.target.value)}
+                        placeholder={"例如：\n6512abc...\n6512def...,6512ghi..."}
+                        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] resize-none min-h-[140px] font-mono"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="text-[11px] text-muted-foreground mb-1 block">
+                        图片 URL（多个用换行或逗号隔开）
+                      </label>
+                      <textarea
+                        autoFocus
+                        value={bulkImageUrls}
+                        onChange={(e) => setBulkImageUrls(e.target.value)}
+                        placeholder={"例如：\nhttps://.../a.jpg\nhttps://.../b.jpg"}
+                        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] resize-none min-h-[140px] font-mono"
+                      />
                     </div>
                   )}
                 </>
@@ -339,10 +460,14 @@ export function AgentPreview() {
                 取消
               </button>
               <button
-                onClick={() => setDialog(null)}
+                onClick={() => {
+                  if (dialog === "share") addShare();
+                  else if (dialog === "bulk") addBulk();
+                  else setDialog(null);
+                }}
                 className="px-3 py-1.5 text-xs rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90"
               >
-                确定
+                {dialog === "share" || dialog === "bulk" ? "添加" : "确定"}
               </button>
             </div>
           </div>
