@@ -172,213 +172,263 @@ function TestSetPage() {
 
   return (
     <ConsoleShell>
-      <div className="flex h-full min-h-0">
-        {/* 左：测试集列表 */}
-        <aside className="w-64 shrink-0 border-r border-border flex flex-col min-h-0">
-          <div className="px-3 pt-3 pb-2 border-b border-border flex items-center justify-between min-h-[40px]">
-            <h1 className="text-xs font-medium text-muted-foreground">测试集</h1>
-            <button
-              onClick={() => setOpen(true)}
-              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted"
-              title="新建测试集"
-            >
-              <Plus className="h-3 w-3" /> 新建
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-2">
-            {sets.map((t) => {
-              const active = t.id === selectedId;
-              return (
-                <div
-                  key={t.id}
-                  className={`group relative rounded mb-1 transition flex items-center ${
-                    active ? "bg-muted" : "hover:bg-muted/60"
-                  }`}
-                >
-                  <button
-                    onClick={() => setSelectedId(t.id)}
-                    className="flex-1 min-w-0 text-left pl-2.5 pr-8 py-2.5 flex items-center gap-2"
-                  >
-                    <FileSpreadsheet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                    <div className="text-xs truncate">{t.name}</div>
-                  </button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+      <div className="flex flex-col h-full min-h-0 relative">
+        {/* 顶部工具条 */}
+        <div className="px-3 flex items-center gap-2 border-b border-border bg-background py-2 min-h-[52px]">
+          <button
+            onClick={() => setListOpen((v) => !v)}
+            className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent"
+            title="测试集列表"
+          >
+            <ListTree className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setOpen(true)}
+            className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border text-[var(--console-orange)] hover:bg-accent"
+            title="新建测试集"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+          {selected && (
+            <div className="relative">
+              <button
+                onClick={() => setNameMenuOpen((v) => !v)}
+                className="flex items-center gap-1 text-[16px] font-semibold tracking-tight px-2 py-1 rounded hover:bg-accent"
+              >
+                {selected.name}
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </button>
+              {nameMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setNameMenuOpen(false)} />
+                  <div className="absolute left-0 top-full mt-1 z-40 w-64 max-h-80 overflow-auto rounded-md border border-border bg-background shadow-lg py-1">
+                    {sets.map((t) => (
                       <button
-                        className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 hover:bg-background hover:text-foreground"
-                        aria-label="更多"
+                        key={t.id}
+                        onClick={() => {
+                          setSelectedId(t.id);
+                          setNameMenuOpen(false);
+                        }}
+                        className={`w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent ${
+                          t.id === selectedId ? "bg-muted" : ""
+                        }`}
                       >
-                        <MoreHorizontal className="h-3.5 w-3.5" />
+                        <FileSpreadsheet className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="truncate">{t.name}</span>
                       </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-28 p-1">
-                      <DropdownMenuItem
-                        onClick={() => renameSet(t.id, t.name)}
-                        className="text-xs py-1 px-2 cursor-pointer"
-                      >
-                        <Pencil className="h-3 w-3 mr-1.5" /> 重命名
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => deleteSet(t.id)}
-                        className="text-xs py-1 px-2 cursor-pointer text-destructive focus:text-destructive"
-                      >
-                        <Trash2 className="h-3 w-3 mr-1.5" /> 删除
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              );
-            })}
-          </div>
-        </aside>
-
-        {/* 右：详细内容 */}
-        <div className="flex-1 min-w-0 flex flex-col min-h-0">
-          {selected ? (
-            <>
-              <div className="px-6 pt-4 pb-3 border-b border-border flex items-center justify-between gap-3">
-                <div className="min-w-0 flex items-baseline gap-2">
-                  <div className="text-sm font-medium truncate">{selected.name}</div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {detailRows.length} 条
+                    ))}
                   </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                    <input
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="搜索 Query"
-                      className="pl-6 pr-2 py-1.5 text-xs rounded border border-border bg-background outline-none focus:border-[var(--console-orange)] w-44"
-                    />
-                  </div>
-                  <button
-                    onClick={saveSelected}
-                    disabled={!isDirty}
-                    className="inline-flex items-center gap-1 rounded bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    保存{isDirty ? " ·" : ""}
-                  </button>
-                  <Link
-                    to="/"
-                    className="text-xs text-muted-foreground hover:text-foreground shrink-0"
-                  >
-                    在 Prompt 工作台中使用 →
-                  </Link>
-                </div>
+                </>
+              )}
+            </div>
+          )}
+          {selected && (
+            <div className="ml-auto flex items-center gap-2 shrink-0">
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="搜索 Query"
+                  className="pl-6 pr-2 py-1.5 text-xs rounded border border-border bg-background outline-none focus:border-[var(--console-orange)] w-44"
+                />
               </div>
+              <span className="text-[11px] text-muted-foreground">{detailRows.length} 条</span>
+              <button
+                onClick={saveSelected}
+                disabled={!isDirty}
+                className="inline-flex items-center gap-1 rounded bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                保存{isDirty ? " ·" : ""}
+              </button>
+              <Link
+                to="/"
+                className="text-xs text-muted-foreground hover:text-foreground shrink-0"
+              >
+                在 Prompt 工作台中使用 →
+              </Link>
+            </div>
+          )}
+        </div>
 
-              <div className="flex-1 min-h-0 overflow-auto px-6 py-4">
-                <div className="rounded border border-border overflow-auto">
-                  <table className="w-full text-xs">
-                    <thead className="bg-muted/40 text-muted-foreground sticky top-0">
-                      <tr>
-                        <th className="w-10 px-3 py-3 text-left font-normal">#</th>
-                        <th className="px-4 py-3 text-left font-normal min-w-[200px]">输入 Query</th>
-                        {MOCK_DETAIL_FIELDS.map((f) => (
-                          <th key={f} className="px-4 py-3 text-left font-normal whitespace-nowrap">
-                            {f}
-                          </th>
-                        ))}
-                        <th className="w-8 px-2 py-3" />
-                      </tr>
-                    </thead>
-                    <tbody>
-                       {filteredRows.map((r) => {
-                         const isEditing = editingRowId === r.id;
-                         const cellBase =
-                           "w-full rounded border px-2 py-1 outline-none transition-colors";
-                         const cellCls = isEditing
-                           ? `${cellBase} border-[var(--console-orange)] bg-background`
-                           : `${cellBase} border-transparent bg-transparent cursor-default select-text`;
-                         return (
-                         <tr
-                           key={r.id}
-                           className="group border-t border-border hover:bg-muted/30"
-                           onBlur={(e) => {
-                             if (
-                               isEditing &&
-                               !e.currentTarget.contains(e.relatedTarget as Node | null)
-                             ) {
-                               setEditingRowId(null);
-                             }
-                           }}
-                         >
-                           <td className="px-3 py-2 text-muted-foreground">{r.no}</td>
-                           <td className="px-2 py-1.5">
-                             <input
-                               key={isEditing ? "edit" : "view"}
-                               autoFocus={isEditing}
-                               readOnly={!isEditing}
-                               tabIndex={isEditing ? 0 : -1}
-                               onFocus={(e) => isEditing && e.currentTarget.select()}
-                               value={r.query}
-                               onChange={(e) => updateCell(r.id, "query", e.target.value)}
-                               className={cellCls}
-                             />
-                           </td>
-                           {MOCK_DETAIL_FIELDS.map((f) => (
-                             <td key={f} className="px-2 py-1.5">
-                               <input
-                                 readOnly={!isEditing}
-                                 tabIndex={isEditing ? 0 : -1}
-                                 value={r.extras[f] ?? ""}
-                                 onChange={(e) => updateCell(r.id, f, e.target.value)}
-                                 className={`${cellCls} ${isEditing ? "" : "text-muted-foreground"}`}
-                               />
-                             </td>
-                           ))}
-                          <td className="px-1 py-1.5 text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <button
-                                  className="p-1 rounded text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 hover:bg-background hover:text-foreground"
-                                  aria-label="更多"
-                                >
-                                  <MoreHorizontal className="h-3.5 w-3.5" />
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-28 p-1">
-                                <DropdownMenuItem
-                                  onClick={() => setEditingRowId(r.id)}
-                                  className="text-xs py-1 px-2 cursor-pointer"
-                                >
-                                  <Pencil className="h-3 w-3 mr-1.5" /> 编辑
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => deleteRow(r.id)}
-                                  className="text-xs py-1 px-2 cursor-pointer text-destructive focus:text-destructive"
-                                >
-                                  <Trash2 className="h-3 w-3 mr-1.5" /> 删除
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </td>
-                         </tr>
-                         );
-                       })}
-                      {filteredRows.length === 0 && (
-                        <tr>
-                          <td
-                            colSpan={3 + MOCK_DETAIL_FIELDS.length}
-                            className="px-3 py-8 text-center text-muted-foreground"
-                          >
-                            没有匹配的样本
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+        {/* 列表覆盖面板 */}
+        {listOpen && (
+          <>
+            <div className="absolute inset-0 z-40 bg-black/20" onClick={() => setListOpen(false)} />
+            <aside className="absolute left-0 top-0 z-50 h-full w-[320px] bg-background border-r border-border shadow-2xl flex flex-col">
+              <div className="flex items-center justify-between px-5 pt-5 pb-3">
+                <h3 className="text-lg font-semibold tracking-tight">测试集列表</h3>
                 <button
-                  onClick={addBlankRow}
-                  className="mt-2 inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-[var(--console-orange)] hover:bg-muted"
+                  onClick={() => setListOpen(false)}
+                  className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
                 >
-                  <Plus className="h-3 w-3" /> 新增一行
+                  <X className="h-4 w-4" />
                 </button>
               </div>
-            </>
+              <div className="flex-1 overflow-y-auto p-2">
+                {sets.map((t) => {
+                  const active = t.id === selectedId;
+                  return (
+                    <div
+                      key={t.id}
+                      className={`group relative rounded mb-1 transition flex items-center ${
+                        active ? "bg-muted" : "hover:bg-muted/60"
+                      }`}
+                    >
+                      <button
+                        onClick={() => {
+                          setSelectedId(t.id);
+                          setListOpen(false);
+                        }}
+                        className="flex-1 min-w-0 text-left pl-2.5 pr-8 py-2.5 flex items-center gap-2"
+                      >
+                        <FileSpreadsheet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        <div className="text-xs truncate">{t.name}</div>
+                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 hover:bg-background hover:text-foreground"
+                            aria-label="更多"
+                          >
+                            <MoreHorizontal className="h-3.5 w-3.5" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-28 p-1">
+                          <DropdownMenuItem
+                            onClick={() => renameSet(t.id, t.name)}
+                            className="text-xs py-1 px-2 cursor-pointer"
+                          >
+                            <Pencil className="h-3 w-3 mr-1.5" /> 重命名
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => deleteSet(t.id)}
+                            className="text-xs py-1 px-2 cursor-pointer text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-3 w-3 mr-1.5" /> 删除
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  );
+                })}
+              </div>
+            </aside>
+          </>
+        )}
+
+        {/* 详细内容 */}
+        <div className="flex-1 min-w-0 flex flex-col min-h-0">
+          {selected ? (
+            <div className="flex-1 min-h-0 overflow-auto px-6 py-4">
+              <div className="rounded border border-border overflow-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/40 text-muted-foreground sticky top-0">
+                    <tr>
+                      <th className="w-10 px-3 py-3 text-left font-normal">#</th>
+                      <th className="px-4 py-3 text-left font-normal min-w-[200px]">输入 Query</th>
+                      {MOCK_DETAIL_FIELDS.map((f) => (
+                        <th key={f} className="px-4 py-3 text-left font-normal whitespace-nowrap">
+                          {f}
+                        </th>
+                      ))}
+                      <th className="w-8 px-2 py-3" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                     {filteredRows.map((r) => {
+                       const isEditing = editingRowId === r.id;
+                       const cellBase =
+                         "w-full rounded border px-2 py-1 outline-none transition-colors";
+                       const cellCls = isEditing
+                         ? `${cellBase} border-[var(--console-orange)] bg-background`
+                         : `${cellBase} border-transparent bg-transparent cursor-default select-text`;
+                       return (
+                       <tr
+                         key={r.id}
+                         className="group border-t border-border hover:bg-muted/30"
+                         onBlur={(e) => {
+                           if (
+                             isEditing &&
+                             !e.currentTarget.contains(e.relatedTarget as Node | null)
+                           ) {
+                             setEditingRowId(null);
+                           }
+                         }}
+                       >
+                         <td className="px-3 py-2 text-muted-foreground">{r.no}</td>
+                         <td className="px-2 py-1.5">
+                           <input
+                             key={isEditing ? "edit" : "view"}
+                             autoFocus={isEditing}
+                             readOnly={!isEditing}
+                             tabIndex={isEditing ? 0 : -1}
+                             onFocus={(e) => isEditing && e.currentTarget.select()}
+                             value={r.query}
+                             onChange={(e) => updateCell(r.id, "query", e.target.value)}
+                             className={cellCls}
+                           />
+                         </td>
+                         {MOCK_DETAIL_FIELDS.map((f) => (
+                           <td key={f} className="px-2 py-1.5">
+                             <input
+                               readOnly={!isEditing}
+                               tabIndex={isEditing ? 0 : -1}
+                               value={r.extras[f] ?? ""}
+                               onChange={(e) => updateCell(r.id, f, e.target.value)}
+                               className={`${cellCls} ${isEditing ? "" : "text-muted-foreground"}`}
+                             />
+                           </td>
+                         ))}
+                        <td className="px-1 py-1.5 text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button
+                                className="p-1 rounded text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 hover:bg-background hover:text-foreground"
+                                aria-label="更多"
+                              >
+                                <MoreHorizontal className="h-3.5 w-3.5" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-28 p-1">
+                              <DropdownMenuItem
+                                onClick={() => setEditingRowId(r.id)}
+                                className="text-xs py-1 px-2 cursor-pointer"
+                              >
+                                <Pencil className="h-3 w-3 mr-1.5" /> 编辑
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => deleteRow(r.id)}
+                                className="text-xs py-1 px-2 cursor-pointer text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="h-3 w-3 mr-1.5" /> 删除
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                       </tr>
+                       );
+                     })}
+                    {filteredRows.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={3 + MOCK_DETAIL_FIELDS.length}
+                          className="px-3 py-8 text-center text-muted-foreground"
+                        >
+                          没有匹配的样本
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <button
+                onClick={addBlankRow}
+                className="mt-2 inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-[var(--console-orange)] hover:bg-muted"
+              >
+                <Plus className="h-3 w-3" /> 新增一行
+              </button>
+            </div>
           ) : (
             <div className="flex-1" />
           )}
