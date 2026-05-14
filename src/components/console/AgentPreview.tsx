@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Image as ImageIcon, FileText, FileSpreadsheet, Bot, User, X, ArrowUp } from "lucide-react";
+import { Image as ImageIcon, FileText, FileSpreadsheet, X, ArrowUp } from "lucide-react";
+import { TrajectoryView, buildDemoTrajectory, type TrajectoryStep } from "./TrajectoryView";
 
-type Step = { role: "user" | "agent" | "tool"; content: string; meta?: string };
 type Attachment = { name: string; url?: string; kind: "image" | "excel" };
 type DialogKind = null | "image" | "note" | "excel";
 
@@ -9,7 +9,7 @@ export function AgentPreview() {
   const [query, setQuery] = useState("");
   const [note, setNote] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [steps, setSteps] = useState<Step[]>([]);
+  const [steps, setSteps] = useState<TrajectoryStep[]>([]);
   const [dialog, setDialog] = useState<DialogKind>(null);
   const imgRef = useRef<HTMLInputElement>(null);
   const xlsRef = useRef<HTMLInputElement>(null);
@@ -30,16 +30,26 @@ export function AgentPreview() {
 
   function run() {
     if (!query.trim() && !note.trim() && !attachments.length) return;
-    const parts: string[] = [];
-    if (query.trim()) parts.push(query);
-    if (images.length) parts.push(`[图片] ${images.map((a) => a.name).join("、")}`);
-    if (excels.length) parts.push(`[Excel] ${excels.map((a) => a.name).join("、")}`);
-    if (note.trim()) parts.push(`备注：${note}`);
-    setSteps([
-      { role: "user", content: parts.join("\n") },
-      { role: "tool", content: "调用工具：知识库检索", meta: "命中 3 条相关文档" },
-      { role: "agent", content: "我是点点，你的社区助手。可以告诉我具体的问题吗？" },
-    ]);
+    const trajectory: TrajectoryStep[] = [{ kind: "user-text", content: query }];
+    if (images.length) {
+      trajectory.push({
+        kind: "user-attachment",
+        icon: "image",
+        content: `[图片] ${images.map((a) => a.name).join("、")}`,
+      });
+    }
+    if (excels.length) {
+      trajectory.push({
+        kind: "user-attachment",
+        icon: "note",
+        content: `[Excel] ${excels.map((a) => a.name).join("、")}`,
+      });
+    }
+    if (note.trim()) {
+      trajectory.push({ kind: "user-attachment", icon: "note", content: `备注：${note}` });
+    }
+    trajectory.push(...buildDemoTrajectory(query, "点点"));
+    setSteps(trajectory);
   }
 
   useEffect(() => {
@@ -59,30 +69,12 @@ export function AgentPreview() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* 标题栏 */}
       <div className="px-4 py-3 border-b border-border text-sm font-semibold">
         Agent 效果预览
       </div>
 
-      {/* 历史轨迹 */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
-        {steps.length === 0 ? (
-          <div className="text-xs text-muted-foreground py-10 text-center">
-            将在此展示运行的 Agent 历史轨迹
-          </div>
-        ) : (
-          steps.map((s, i) => (
-            <div key={i} className="rounded-md border border-border bg-background p-3">
-              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-1">
-                {s.role === "user" && <><User className="h-3 w-3" /> 用户</>}
-                {s.role === "agent" && <><Bot className="h-3 w-3 text-[var(--console-orange)]" /> Agent</>}
-                {s.role === "tool" && <>🔧 工具调用</>}
-                {s.meta && <span className="ml-auto">{s.meta}</span>}
-              </div>
-              <div className="text-sm leading-relaxed whitespace-pre-wrap">{s.content}</div>
-            </div>
-          ))
-        )}
+      <div className="flex-1 overflow-y-auto px-5 py-4">
+        <TrajectoryView steps={steps} emptyHint="将在此展示运行的 Agent 历史轨迹" />
       </div>
 
       {/* 底部输入：现代 chat 样式 */}

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, ChevronDown, Play, Download, Bot, Wrench, Sparkles, ImageIcon, StickyNote, X } from "lucide-react";
+import { Plus, ChevronDown, Play, Download, Sparkles, ImageIcon, StickyNote, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import type { Folder, PromptItem } from "./types";
 import { initialEvalRows, testSets, type EvalRow } from "./mockData";
+import { TrajectoryView, buildDemoTrajectory, type TrajectoryStep } from "./TrajectoryView";
 
 const ISSUE_CATEGORIES: Record<string, string[]> = {
   "无": [],
@@ -199,86 +200,13 @@ function ExportMenu({
   );
 }
 
-function buildSteps(input: string, promptName: string): Step[] {
-  return [
-    { role: "tool", content: "调用工具：知识库检索", meta: "命中 3 条相关文档" },
-    { role: "tool", content: "调用工具：意图识别", meta: "意图=咨询类" },
-    { role: "agent", content: `[${promptName}] 模拟输出 - ${input}` },
-  ];
-}
-
-function StepCard({ s }: { s: Step }) {
-  // tool call — neutral inline note
-  if (s.role === "tool") {
-    return (
-      <div className="flex justify-center">
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[10.5px] text-muted-foreground">
-          <Wrench className="h-3 w-3" />
-          <span>{s.content}</span>
-          {s.meta && <span className="text-muted-foreground/70">· {s.meta}</span>}
-        </div>
-      </div>
-    );
-  }
-  // agent — left bubble
-  return (
-    <div className="flex gap-2">
-      <div className="shrink-0 h-6 w-6 rounded-full bg-[var(--console-orange)]/15 flex items-center justify-center">
-        <Bot className="h-3.5 w-3.5 text-[var(--console-orange)]" />
-      </div>
-      <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-muted/60 px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words">
-        {s.content}
-      </div>
-    </div>
-  );
-}
-
-function UserBubble({
-  icon: Icon,
-  children,
-  onRemove,
-}: {
-  icon?: typeof ImageIcon;
-  children: React.ReactNode;
-  onRemove?: () => void;
-}) {
-  return (
-    <div className="flex justify-end group/bubble">
-      {onRemove && (
-        <button
-          onClick={onRemove}
-          className="self-center mr-1 opacity-0 group-hover/bubble:opacity-100 text-muted-foreground hover:text-destructive transition"
-          title="移除"
-        >
-          <X className="h-3 w-3" />
-        </button>
-      )}
-      <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-2 text-xs leading-relaxed shadow-sm flex items-start gap-1.5">
-        {Icon && <Icon className="h-3 w-3 mt-0.5 shrink-0 opacity-80" />}
-        <div className="min-w-0 flex-1 break-words whitespace-pre-wrap">{children}</div>
-      </div>
-    </div>
-  );
-}
-
-function ChatInputBubbles({
-  row,
-}: {
-  row: EvalRow;
-  onChange?: (patch: Partial<EvalRow>) => void;
-}) {
+function buildRowInputSteps(row: EvalRow): TrajectoryStep[] {
   const image = row.extras["输入图片"] && row.extras["输入图片"] !== "-" ? row.extras["输入图片"] : "";
   const note = row.extras["输入笔记"] && row.extras["输入笔记"] !== "-" ? row.extras["输入笔记"] : "";
-
-  return (
-    <div className="space-y-2">
-      <UserBubble>
-        {row.input || <span className="opacity-60">（无输入文本）</span>}
-      </UserBubble>
-      {image ? <UserBubble icon={ImageIcon}>{image}</UserBubble> : null}
-      {note ? <UserBubble icon={StickyNote}>{note}</UserBubble> : null}
-    </div>
-  );
+  const steps: TrajectoryStep[] = [{ kind: "user-text", content: row.input }];
+  if (image) steps.push({ kind: "user-attachment", icon: "image", content: image });
+  if (note) steps.push({ kind: "user-attachment", icon: "note", content: note });
+  return steps;
 }
 
 export function EvalTable({
@@ -294,7 +222,7 @@ export function EvalTable({
   const [rows, setRows] = useState<EvalRow[]>(initialEvalRows);
   const [comparePrompts, setComparePrompts] = useState<PromptItem[]>([]);
   const [selectedId, setSelectedId] = useState<number>(initialEvalRows[0]?.id ?? 0);
-  const [trajectories, setTrajectories] = useState<Record<string, Step[]>>({});
+  const [trajectories, setTrajectories] = useState<Record<string, TrajectoryStep[]>>({});
 
   const allVersions = useMemo(
     () => [currentPrompt, ...comparePrompts],
@@ -331,10 +259,11 @@ export function EvalTable({
   function runRow(rowId: number, vIndex: number) {
     const r = rows.find((x) => x.id === rowId);
     if (!r) return;
-    const steps = buildSteps(r.input, allVersions[vIndex].name);
-    setTrajectories((t) => ({ ...t, [`${rowId}-${vIndex}`]: steps }));
+    const demo = buildDemoTrajectory(r.input, allVersions[vIndex].name);
+    setTrajectories((t) => ({ ...t, [`${rowId}-${vIndex}`]: demo }));
+    const lastAgent = [...demo].reverse().find((s) => s.kind === "agent");
     updateVersion(rowId, vIndex, {
-      output: steps[steps.length - 1].content,
+      output: lastAgent && lastAgent.kind === "agent" ? lastAgent.content : "",
       score: Math.floor(Math.random() * 5) + 1,
     });
   }
@@ -519,45 +448,28 @@ export function EvalTable({
                         </div>
 
                         {/* 对话区（可滑动）：用户输入 → 工具/Agent 轨迹 → 最终结果 */}
-                        <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2.5">
-                          <ChatInputBubbles
-                            row={selectedRow}
-                            onChange={(patch) =>
-                              setRows((rs) => rs.map((x) => (x.id === selectedRow.id ? { ...x, ...patch } : x)))
-                            }
-                          />
+                        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
                           {steps ? (
+                            <TrajectoryView steps={[...buildRowInputSteps(selectedRow), ...steps]} />
+                          ) : v?.output ? (
+                            <TrajectoryView
+                              steps={[
+                                ...buildRowInputSteps(selectedRow),
+                                { kind: "agent", content: v.output },
+                              ]}
+                            />
+                          ) : (
                             <>
-                              {steps.slice(0, -1).map((s, i) => (
-                                <StepCard key={i} s={s} />
-                              ))}
-                              <div className="flex gap-2">
-                                <div className="shrink-0 h-6 w-6 rounded-full bg-[var(--console-orange)]/15 flex items-center justify-center">
-                                  <Bot className="h-3.5 w-3.5 text-[var(--console-orange)]" />
-                                </div>
-                                <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words">
-                                  {steps[steps.length - 1].content}
-                                </div>
+                              <TrajectoryView steps={buildRowInputSteps(selectedRow)} />
+                              <div className="mt-4 flex items-center justify-center py-6 border border-dashed border-border rounded-md">
+                                <button
+                                  onClick={() => runRow(selectedRow.id, vi)}
+                                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                                >
+                                  <Play className="h-3 w-3" /> 运行
+                                </button>
                               </div>
                             </>
-                          ) : v?.output ? (
-                            <div className="flex gap-2">
-                              <div className="shrink-0 h-6 w-6 rounded-full bg-[var(--console-orange)]/15 flex items-center justify-center">
-                                <Bot className="h-3.5 w-3.5 text-[var(--console-orange)]" />
-                              </div>
-                              <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words">
-                                {v.output}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-center py-6 border border-dashed border-border rounded-md">
-                              <button
-                                onClick={() => runRow(selectedRow.id, vi)}
-                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-                              >
-                                <Play className="h-3 w-3" /> 运行
-                              </button>
-                            </div>
                           )}
                         </div>
 
