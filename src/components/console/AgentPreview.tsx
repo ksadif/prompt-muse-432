@@ -303,12 +303,13 @@ export function AgentPreview() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                   e.preventDefault();
                   run();
                 }
               }}
-              placeholder="请输入要测试的内容…"
+              onPaste={onPasteImage}
+              placeholder="输入消息与 Agent 对话... (Enter 发送, Shift+Enter 换行, Ctrl+V 可粘贴截图)"
               rows={1}
               className="w-full bg-transparent outline-none text-sm resize-none px-4 pt-3 pb-1 min-h-[52px] max-h-[200px] placeholder:text-muted-foreground/70"
             />
