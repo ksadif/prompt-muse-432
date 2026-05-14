@@ -164,6 +164,28 @@ function TestSetPage() {
     if (selected) markDirty(selected.id);
   };
 
+  const duplicateSet = (id: string) => {
+    let newId = "";
+    setFolders((fs) =>
+      fs.map((f) => {
+        const idx = f.prompts.findIndex((p) => p.id === id);
+        if (idx < 0) return f;
+        const src = f.prompts[idx];
+        newId = `ts-${Date.now()}`;
+        const copy = {
+          ...src,
+          id: newId,
+          name: `${src.name} 副本`,
+          updatedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
+        };
+        const next = [...f.prompts];
+        next.splice(idx + 1, 0, copy);
+        return { ...f, prompts: next };
+      }),
+    );
+    if (newId) setSelectedId(newId);
+  };
+
   const deleteSet = (id: string) => {
     setFolders((fs) => fs.map((f) => ({ ...f, prompts: f.prompts.filter((p) => p.id !== id) })));
     if (selectedId === id) {
