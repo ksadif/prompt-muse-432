@@ -504,15 +504,6 @@ export function EvalTable({
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); runAllForRow(r.id); }}
-                    className={`shrink-0 p-1 rounded hover:bg-accent text-muted-foreground hover:text-[var(--console-orange)] transition ${
-                      active ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                    }`}
-                    title="运行此样本"
-                  >
-                    <Play className="h-3 w-3" />
-                  </button>
                 </div>
               );
             })}
