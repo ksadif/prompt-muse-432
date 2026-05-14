@@ -515,16 +515,8 @@ export function EvalTable({
         <div className="flex-1 min-w-0 flex flex-col">
           {selectedRow ? (
             <>
-              {/* 当前样本输入（紧凑） */}
-              <SampleHeader
-                row={selectedRow}
-                onChange={(patch) =>
-                  setRows((rs) => rs.map((x) => (x.id === selectedRow.id ? { ...x, ...patch } : x)))
-                }
-              />
-
               {/* 对比列：每列内部滑动，评估固定底部 */}
-              <div className="flex-1 min-h-0 px-3 pb-3 pt-2">
+              <div className="flex-1 min-h-0 px-3 pb-3 pt-3">
                 <div
                   className="h-full grid gap-3"
                   style={{ gridTemplateColumns: `repeat(${allVersions.length}, minmax(320px, 1fr))` }}
@@ -554,35 +546,39 @@ export function EvalTable({
                           </button>
                         </div>
 
-                        {/* 运行结果（可滑动） */}
-                        <div className="flex-1 min-h-0 overflow-y-auto p-2.5 space-y-2">
+                        {/* 对话区（可滑动）：用户输入 → 工具/Agent 轨迹 → 最终结果 */}
+                        <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2.5">
+                          <ChatInputBubbles
+                            row={selectedRow}
+                            onChange={(patch) =>
+                              setRows((rs) => rs.map((x) => (x.id === selectedRow.id ? { ...x, ...patch } : x)))
+                            }
+                          />
                           {steps ? (
                             <>
-                              <div className="text-[10.5px] text-muted-foreground">历史轨迹</div>
                               {steps.slice(0, -1).map((s, i) => (
                                 <StepCard key={i} s={s} />
                               ))}
-                              <div className="text-[10.5px] text-muted-foreground pt-1">最终结果</div>
-                              <div className="rounded-md border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 p-2.5">
-                                <div className="flex items-center gap-1.5 text-[11px] text-[var(--console-orange)] mb-1">
-                                  <Bot className="h-3 w-3" /> Agent
+                              <div className="flex gap-2">
+                                <div className="shrink-0 h-6 w-6 rounded-full bg-[var(--console-orange)]/15 flex items-center justify-center">
+                                  <Bot className="h-3.5 w-3.5 text-[var(--console-orange)]" />
                                 </div>
-                                <div className="text-xs leading-relaxed whitespace-pre-wrap break-words">
+                                <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words">
                                   {steps[steps.length - 1].content}
                                 </div>
                               </div>
                             </>
                           ) : v?.output ? (
-                            <div className="rounded-md border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 p-2.5">
-                              <div className="flex items-center gap-1.5 text-[11px] text-[var(--console-orange)] mb-1">
-                                <Bot className="h-3 w-3" /> Agent
+                            <div className="flex gap-2">
+                              <div className="shrink-0 h-6 w-6 rounded-full bg-[var(--console-orange)]/15 flex items-center justify-center">
+                                <Bot className="h-3.5 w-3.5 text-[var(--console-orange)]" />
                               </div>
-                              <div className="text-xs leading-relaxed whitespace-pre-wrap break-words">
+                              <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words">
                                 {v.output}
                               </div>
                             </div>
                           ) : (
-                            <div className="flex items-center justify-center py-8 border border-dashed border-border rounded-md">
+                            <div className="flex items-center justify-center py-6 border border-dashed border-border rounded-md">
                               <button
                                 onClick={() => runRow(selectedRow.id, vi)}
                                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
