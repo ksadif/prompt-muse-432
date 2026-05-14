@@ -2,19 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import {
   Image as ImageIcon,
   FileText,
-  FileJson,
   X,
   ArrowUp,
   UserRound,
   Activity,
-  Globe,
   Upload,
 } from "lucide-react";
 import { TrajectoryView, buildDemoTrajectory, type TrajectoryStep } from "./TrajectoryView";
 
 type Attachment = { name: string; url?: string; kind: "image" | "trace" };
 type DialogKind = null | "image" | "note" | "trace" | "user";
-type TraceTab = "trace" | "jsonl" | "online";
 
 export function AgentPreview() {
   const [query, setQuery] = useState("");
