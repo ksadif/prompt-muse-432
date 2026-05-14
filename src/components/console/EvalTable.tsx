@@ -356,7 +356,7 @@ export function EvalTable({
               <div
                 className="grid gap-3"
                 style={{
-                  gridTemplateColumns: `repeat(${allVersions.length + (comparePrompts.length < 2 ? 1 : 0)}, minmax(280px, 1fr))`,
+                  gridTemplateColumns: `repeat(${allVersions.length}, minmax(320px, 1fr))`,
                 }}
               >
                 {allVersions.map((p, vi) => {
