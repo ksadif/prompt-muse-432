@@ -339,48 +339,6 @@ export function AgentPreview() {
                     </button>
                   );
                 })}
-
-                <div className="relative">
-                  <button
-                    onClick={() => setHistoryOpen((v) => !v)}
-                    className={`relative h-8 px-2 inline-flex items-center gap-1 rounded-lg hover:bg-accent hover:text-foreground transition ${historyHash.trim() ? "text-[var(--console-orange)]" : ""}`}
-                    title="加载历史轨迹"
-                  >
-                    <History className="h-4 w-4" />
-                    <span className="text-[11px]">历史</span>
-                  </button>
-                  {historyOpen && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setHistoryOpen(false)} />
-                      <div className="absolute bottom-full left-0 mb-2 z-50 w-[280px] rounded-lg border border-border bg-background shadow-lg p-2 flex items-center gap-1.5">
-                        <input
-                          autoFocus
-                          value={historyHash}
-                          onChange={(e) => setHistoryHash(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              loadHistory();
-                              setHistoryOpen(false);
-                            }
-                          }}
-                          placeholder="输入 hash_id"
-                          className="flex-1 h-7 rounded-md border border-border bg-background px-2 text-xs outline-none focus:border-[var(--console-orange)] placeholder:text-muted-foreground/70"
-                        />
-                        <button
-                          onClick={() => {
-                            loadHistory();
-                            setHistoryOpen(false);
-                          }}
-                          disabled={!historyHash.trim()}
-                          className="shrink-0 h-7 px-3 rounded-md bg-foreground text-background text-xs hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
-                        >
-                          加载
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10.5px] text-muted-foreground/70 hidden sm:block">
