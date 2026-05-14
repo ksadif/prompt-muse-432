@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
-import { Plus, Upload, FileSpreadsheet, Trash2, PencilLine, FileUp } from "lucide-react";
+import { Plus, Upload, FileSpreadsheet, Trash2, PencilLine, FileUp, Search, ChevronRight } from "lucide-react";
 import { testSets as initialTestSets } from "@/components/console/mockData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
