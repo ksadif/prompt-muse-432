@@ -18,27 +18,44 @@ function EditorCard({
   value,
   onChange,
   placeholder,
+  collapsed,
+  onToggle,
 }: {
   label: string;
   hint: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  collapsed: boolean;
+  onToggle: () => void;
 }) {
   const lines = value ? value.split("\n").length : 0;
   const chars = value.length;
   const vars = Array.from(value.matchAll(/\{\{([^}]+)\}\}/g)).map((m) => m[1].trim());
   const uniqueVars = Array.from(new Set(vars));
   return (
-    <div className="rounded-xl border border-border bg-background shadow-sm flex flex-col min-h-0 overflow-hidden">
+    <div
+      className={`rounded-xl border border-border bg-background shadow-sm flex flex-col min-h-0 overflow-hidden ${
+        collapsed ? "flex-none" : "flex-1"
+      }`}
+    >
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/40">
-        <div className="flex items-center gap-2">
+        <button
+          onClick={onToggle}
+          className="flex items-center gap-2 hover:opacity-80"
+          title={collapsed ? "展开" : "折叠"}
+        >
+          {collapsed ? (
+            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          )}
           <span className="inline-flex items-center gap-1 text-sm font-semibold">
             <Hash className="h-3.5 w-3.5 text-[var(--console-orange)]" />
             {label}
           </span>
           <span className="text-[11px] text-muted-foreground">{hint}</span>
-        </div>
+        </button>
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
           {uniqueVars.length > 0 && (
             <span className="inline-flex items-center gap-1 rounded bg-[var(--console-orange)]/10 text-[var(--console-orange)] px-1.5 py-0.5">
@@ -51,9 +68,11 @@ function EditorCard({
           <span>{chars} 字符</span>
         </div>
       </div>
-      <div className="flex-1 min-h-0 overflow-auto">
-        <PromptCodeEditor value={value} onChange={onChange} placeholder={placeholder} />
-      </div>
+      {!collapsed && (
+        <div className="flex-1 min-h-0 overflow-auto">
+          <PromptCodeEditor value={value} onChange={onChange} placeholder={placeholder} />
+        </div>
+      )}
     </div>
   );
 }
