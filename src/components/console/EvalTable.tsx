@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, ChevronDown, Play, Download, Bot, Wrench, Sparkles, ImageIcon, StickyNote, X } from "lucide-react";
+import { Plus, ChevronDown, Play, Download, Sparkles, ImageIcon, StickyNote, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import type { Folder, PromptItem } from "./types";
 import { initialEvalRows, testSets, type EvalRow } from "./mockData";
+import { TrajectoryView, buildDemoTrajectory, type TrajectoryStep } from "./TrajectoryView";
 
 const ISSUE_CATEGORIES: Record<string, string[]> = {
   "无": [],
