@@ -57,6 +57,7 @@ function TestSetPage() {
   const [selectedId, setSelectedId] = useState<string | null>(initialTestSets[0]?.id ?? null);
   const [search, setSearch] = useState("");
   const [extraRows, setExtraRows] = useState<Record<string, ExtraSample[]>>({});
+  const [deletedRowIds, setDeletedRowIds] = useState<Record<string, Set<string>>>({});
   const [addOpen, setAddOpen] = useState(false);
 
   const selected = sets.find((s) => s.id === selectedId) ?? null;
@@ -67,11 +68,27 @@ function TestSetPage() {
   const detailRows = useMemo(() => {
     if (!selected) return [];
     const added = extraRows[selected.id] ?? [];
-    return [...baseRows, ...added];
-  }, [selected, baseRows, extraRows]);
+    const deleted = deletedRowIds[selected.id] ?? new Set<string>();
+    return [...baseRows, ...added].filter((r) => !deleted.has(r.id));
+  }, [selected, baseRows, extraRows, deletedRowIds]);
   const filteredRows = detailRows.filter((r) =>
     search.trim() ? r.query.toLowerCase().includes(search.trim().toLowerCase()) : true,
   );
+
+  const deleteSet = (id: string) => {
+    if (!confirm("确定删除该测试集？")) return;
+    const remaining = sets.filter((x) => x.id !== id);
+    setSets(remaining);
+    if (selectedId === id) setSelectedId(remaining[0]?.id ?? null);
+  };
+  const deleteRow = (rowId: string) => {
+    if (!selected) return;
+    setDeletedRowIds((m) => {
+      const cur = new Set(m[selected.id] ?? []);
+      cur.add(rowId);
+      return { ...m, [selected.id]: cur };
+    });
+  };
 
   return (
     <ConsoleShell>
@@ -88,22 +105,31 @@ function TestSetPage() {
               <Plus className="h-3 w-3" /> 新建
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-1.5">
+          <div className="flex-1 overflow-y-auto p-2">
             {sets.map((t) => {
               const active = t.id === selectedId;
               return (
-                <button
+                <div
                   key={t.id}
-                  onClick={() => setSelectedId(t.id)}
-                  className={`w-full text-left rounded px-2 py-1.5 mb-0.5 transition flex items-center gap-2 ${
-                    active ? "bg-muted text-foreground" : "hover:bg-muted/60 text-foreground/80"
+                  className={`group relative rounded mb-1 transition flex items-center ${
+                    active ? "bg-muted" : "hover:bg-muted/60"
                   }`}
                 >
-                  <FileSpreadsheet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
+                  <button
+                    onClick={() => setSelectedId(t.id)}
+                    className="flex-1 min-w-0 text-left px-2.5 py-2.5 flex items-center gap-2.5"
+                  >
+                    <FileSpreadsheet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                     <div className="text-xs truncate">{t.name}</div>
-                  </div>
-                </button>
+                  </button>
+                  <button
+                    onClick={() => deleteSet(t.id)}
+                    className="opacity-0 group-hover:opacity-100 transition shrink-0 mr-1.5 p-1 rounded text-muted-foreground hover:text-destructive hover:bg-background"
+                    title="删除测试集"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
               );
             })}
           </div>
@@ -113,7 +139,7 @@ function TestSetPage() {
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
           {selected ? (
             <>
-              <div className="px-5 pt-3 pb-2 border-b border-border flex items-center justify-between gap-3">
+              <div className="px-6 pt-4 pb-3 border-b border-border flex items-center justify-between gap-3">
                 <div className="min-w-0 flex items-baseline gap-2">
                   <div className="text-sm font-medium truncate">{selected.name}</div>
                   <div className="text-[11px] text-muted-foreground">
@@ -127,12 +153,12 @@ function TestSetPage() {
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="搜索 Query"
-                      className="pl-6 pr-2 py-1 text-xs rounded border border-border bg-background outline-none focus:border-[var(--console-orange)] w-44"
+                      className="pl-6 pr-2 py-1.5 text-xs rounded border border-border bg-background outline-none focus:border-[var(--console-orange)] w-44"
                     />
                   </div>
                   <button
                     onClick={() => setAddOpen(true)}
-                    className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-muted"
+                    className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1.5 text-xs text-foreground hover:bg-muted"
                   >
                     <Plus className="h-3 w-3" /> 新增样本
                   </button>
@@ -145,36 +171,46 @@ function TestSetPage() {
                 </div>
               </div>
 
-              <div className="flex-1 min-h-0 overflow-auto px-5 py-3">
+              <div className="flex-1 min-h-0 overflow-auto px-6 py-4">
                 <div className="rounded border border-border overflow-auto">
                   <table className="w-full text-xs">
                     <thead className="bg-muted/40 text-muted-foreground sticky top-0">
                       <tr>
-                        <th className="w-10 px-3 py-1.5 text-left font-normal">#</th>
-                        <th className="px-3 py-1.5 text-left font-normal min-w-[200px]">输入 Query</th>
+                        <th className="w-12 px-4 py-3 text-left font-normal">#</th>
+                        <th className="px-4 py-3 text-left font-normal min-w-[200px]">输入 Query</th>
                         {MOCK_DETAIL_FIELDS.map((f) => (
-                          <th key={f} className="px-3 py-1.5 text-left font-normal whitespace-nowrap">
+                          <th key={f} className="px-4 py-3 text-left font-normal whitespace-nowrap">
                             {f}
                           </th>
                         ))}
+                        <th className="w-10 px-2 py-3" />
                       </tr>
                     </thead>
                     <tbody>
                       {filteredRows.map((r) => (
-                        <tr key={r.id} className="border-t border-border hover:bg-muted/30">
-                          <td className="px-3 py-1.5 text-muted-foreground">{r.no}</td>
-                          <td className="px-3 py-1.5">{r.query}</td>
+                        <tr key={r.id} className="group border-t border-border hover:bg-muted/30">
+                          <td className="px-4 py-3 text-muted-foreground">{r.no}</td>
+                          <td className="px-4 py-3">{r.query}</td>
                           {MOCK_DETAIL_FIELDS.map((f) => (
-                            <td key={f} className="px-3 py-1.5 text-muted-foreground whitespace-nowrap">
+                            <td key={f} className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                               {r.extras[f]}
                             </td>
                           ))}
+                          <td className="px-2 py-3 text-right">
+                            <button
+                              onClick={() => deleteRow(r.id)}
+                              className="opacity-0 group-hover:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive hover:bg-background"
+                              title="删除样本"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </td>
                         </tr>
                       ))}
                       {filteredRows.length === 0 && (
                         <tr>
                           <td
-                            colSpan={2 + MOCK_DETAIL_FIELDS.length}
+                            colSpan={3 + MOCK_DETAIL_FIELDS.length}
                             className="px-3 py-8 text-center text-muted-foreground"
                           >
                             没有匹配的样本
