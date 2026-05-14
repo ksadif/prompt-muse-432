@@ -473,11 +473,11 @@ export function EvalTable({
                           )}
                         </div>
 
-                        {/* 人工评分 — 固定底部 */}
-                        <div className="shrink-0 border-t border-border bg-[var(--console-orange)]/[0.04] px-2.5 py-2 space-y-1.5">
-                          <div className="flex items-center gap-1.5 text-[11px]">
+                        {/* 人工评分 — 固定底部，无框极简 */}
+                        <div className="shrink-0 border-t border-border bg-[var(--console-orange)]/[0.04] px-3 py-2">
+                          <div className="flex items-center gap-1 text-[11px] flex-wrap">
                             <Sparkles className="h-3 w-3 text-[var(--console-orange)]" />
-                            <span className="font-medium text-foreground">评估</span>
+                            <span className="font-medium text-foreground mr-1">评估</span>
                             <select
                               value={v?.score ?? ""}
                               onChange={(e) =>
@@ -485,13 +485,14 @@ export function EvalTable({
                                   score: e.target.value === "" ? null : +e.target.value,
                                 })
                               }
-                              className="ml-auto w-12 rounded border border-border bg-background px-1 py-0.5 text-xs outline-none cursor-pointer text-center"
+                              className="bg-transparent text-xs outline-none cursor-pointer hover:text-[var(--console-orange)] px-0.5"
                             >
                               <option value="">—</option>
                               {[0, 1, 2, 3].map((n) => (
                                 <option key={n} value={n}>{n}</option>
                               ))}
                             </select>
+                            <span className="text-muted-foreground/40">·</span>
                             <select
                               value={v?.issueType ?? "无"}
                               onChange={(e) =>
@@ -500,31 +501,35 @@ export function EvalTable({
                                   issueSubType: "",
                                 })
                               }
-                              className="flex-1 min-w-0 rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none cursor-pointer"
+                              className="bg-transparent text-xs outline-none cursor-pointer hover:text-[var(--console-orange)] px-0.5"
                             >
                               {ISSUE_TYPES.map((it) => (
                                 <option key={it}>{it}</option>
                               ))}
                             </select>
-                            <select
-                              value={v?.issueSubType ?? ""}
-                              onChange={(e) =>
-                                updateVersion(selectedRow.id, vi, { issueSubType: e.target.value })
-                              }
-                              disabled={subTypes.length === 0}
-                              className="flex-1 min-w-0 rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none cursor-pointer disabled:opacity-40"
-                            >
-                              <option value="">{subTypes.length ? "细分…" : "—"}</option>
-                              {subTypes.map((it) => (
-                                <option key={it}>{it}</option>
-                              ))}
-                            </select>
+                            {subTypes.length > 0 && (
+                              <>
+                                <span className="text-muted-foreground/40">·</span>
+                                <select
+                                  value={v?.issueSubType ?? ""}
+                                  onChange={(e) =>
+                                    updateVersion(selectedRow.id, vi, { issueSubType: e.target.value })
+                                  }
+                                  className="bg-transparent text-xs outline-none cursor-pointer hover:text-[var(--console-orange)] px-0.5"
+                                >
+                                  <option value="">细分…</option>
+                                  {subTypes.map((it) => (
+                                    <option key={it}>{it}</option>
+                                  ))}
+                                </select>
+                              </>
+                            )}
                           </div>
                           <input
                             value={v?.note ?? ""}
                             onChange={(e) => updateVersion(selectedRow.id, vi, { note: e.target.value })}
-                            placeholder="备注…"
-                            className="w-full rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none focus:border-[var(--console-orange)]/60 placeholder:text-muted-foreground/60"
+                            placeholder="添加备注…"
+                            className="w-full bg-transparent border-0 border-b border-transparent hover:border-border focus:border-[var(--console-orange)]/60 px-0 py-1 text-xs outline-none placeholder:text-muted-foreground/50 transition-colors"
                           />
                         </div>
                       </div>
