@@ -70,7 +70,7 @@ function TestSetPage() {
   
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [dirtySets, setDirtySets] = useState<Set<string>>(new Set());
-  const [listOpen, setListOpen] = useState(false);
+  
   const [nameMenuOpen, setNameMenuOpen] = useState(false);
 
   const selected = sets.find((s) => s.id === selectedId) ?? null;
