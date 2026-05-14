@@ -448,45 +448,28 @@ export function EvalTable({
                         </div>
 
                         {/* 对话区（可滑动）：用户输入 → 工具/Agent 轨迹 → 最终结果 */}
-                        <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2.5">
-                          <ChatInputBubbles
-                            row={selectedRow}
-                            onChange={(patch) =>
-                              setRows((rs) => rs.map((x) => (x.id === selectedRow.id ? { ...x, ...patch } : x)))
-                            }
-                          />
+                        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
                           {steps ? (
+                            <TrajectoryView steps={[...buildRowInputSteps(selectedRow), ...steps]} />
+                          ) : v?.output ? (
+                            <TrajectoryView
+                              steps={[
+                                ...buildRowInputSteps(selectedRow),
+                                { kind: "agent", content: v.output },
+                              ]}
+                            />
+                          ) : (
                             <>
-                              {steps.slice(0, -1).map((s, i) => (
-                                <StepCard key={i} s={s} />
-                              ))}
-                              <div className="flex gap-2">
-                                <div className="shrink-0 h-6 w-6 rounded-full bg-[var(--console-orange)]/15 flex items-center justify-center">
-                                  <Bot className="h-3.5 w-3.5 text-[var(--console-orange)]" />
-                                </div>
-                                <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words">
-                                  {steps[steps.length - 1].content}
-                                </div>
+                              <TrajectoryView steps={buildRowInputSteps(selectedRow)} />
+                              <div className="mt-4 flex items-center justify-center py-6 border border-dashed border-border rounded-md">
+                                <button
+                                  onClick={() => runRow(selectedRow.id, vi)}
+                                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                                >
+                                  <Play className="h-3 w-3" /> 运行
+                                </button>
                               </div>
                             </>
-                          ) : v?.output ? (
-                            <div className="flex gap-2">
-                              <div className="shrink-0 h-6 w-6 rounded-full bg-[var(--console-orange)]/15 flex items-center justify-center">
-                                <Bot className="h-3.5 w-3.5 text-[var(--console-orange)]" />
-                              </div>
-                              <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words">
-                                {v.output}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-center py-6 border border-dashed border-border rounded-md">
-                              <button
-                                onClick={() => runRow(selectedRow.id, vi)}
-                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-                              >
-                                <Play className="h-3 w-3" /> 运行
-                              </button>
-                            </div>
                           )}
                         </div>
 
