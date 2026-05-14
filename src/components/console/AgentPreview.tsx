@@ -52,6 +52,7 @@ export function AgentPreview() {
 
   const imgRef = useRef<HTMLInputElement>(null);
   const [historyHash, setHistoryHash] = useState("");
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   function loadHistory() {
     const h = historyHash.trim();
