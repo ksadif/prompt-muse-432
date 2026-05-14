@@ -148,7 +148,6 @@ function ExportMenu({
 
 function buildSteps(input: string, promptName: string): Step[] {
   return [
-    { role: "user", content: input || "(空)" },
     { role: "tool", content: "调用工具：知识库检索", meta: "命中 3 条相关文档" },
     { role: "tool", content: "调用工具：意图识别", meta: "意图=咨询类" },
     { role: "agent", content: `[${promptName}] 模拟输出 - ${input}` },
@@ -156,15 +155,175 @@ function buildSteps(input: string, promptName: string): Step[] {
 }
 
 function StepCard({ s }: { s: Step }) {
-  return (
-    <div className="rounded-md border border-border bg-background p-2.5">
-      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-1">
-        {s.role === "user" && <><StickyNote className="h-3 w-3" /> 输入内容</>}
-        {s.role === "agent" && <><Bot className="h-3 w-3 text-[var(--console-orange)]" /> Agent</>}
-        {s.role === "tool" && <><Wrench className="h-3 w-3" /> 工具调用</>}
-        {s.meta && <span className="ml-auto">{s.meta}</span>}
+  // tool call — neutral inline note
+  if (s.role === "tool") {
+    return (
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[10.5px] text-muted-foreground">
+          <Wrench className="h-3 w-3" />
+          <span>{s.content}</span>
+          {s.meta && <span className="text-muted-foreground/70">· {s.meta}</span>}
+        </div>
       </div>
-      <div className="text-xs leading-relaxed whitespace-pre-wrap break-words">{s.content}</div>
+    );
+  }
+  // agent — left bubble
+  return (
+    <div className="flex gap-2">
+      <div className="shrink-0 h-6 w-6 rounded-full bg-[var(--console-orange)]/15 flex items-center justify-center">
+        <Bot className="h-3.5 w-3.5 text-[var(--console-orange)]" />
+      </div>
+      <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-muted/60 px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words">
+        {s.content}
+      </div>
+    </div>
+  );
+}
+
+function UserBubble({
+  icon: Icon,
+  children,
+  onRemove,
+}: {
+  icon?: typeof ImageIcon;
+  children: React.ReactNode;
+  onRemove?: () => void;
+}) {
+  return (
+    <div className="flex justify-end group/bubble">
+      {onRemove && (
+        <button
+          onClick={onRemove}
+          className="self-center mr-1 opacity-0 group-hover/bubble:opacity-100 text-muted-foreground hover:text-destructive transition"
+          title="移除"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
+      <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-2 text-xs leading-relaxed shadow-sm flex items-start gap-1.5">
+        {Icon && <Icon className="h-3 w-3 mt-0.5 shrink-0 opacity-80" />}
+        <div className="min-w-0 flex-1 break-words whitespace-pre-wrap">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function ChatInputBubbles({
+  row,
+  onChange,
+}: {
+  row: EvalRow;
+  onChange: (patch: Partial<EvalRow>) => void;
+}) {
+  const image = row.extras["输入图片"] && row.extras["输入图片"] !== "-" ? row.extras["输入图片"] : "";
+  const note = row.extras["输入笔记"] && row.extras["输入笔记"] !== "-" ? row.extras["输入笔记"] : "";
+  const [editing, setEditing] = useState<null | "text" | "image" | "note">(null);
+  const [draft, setDraft] = useState("");
+
+  const setExtra = (k: string, v: string) =>
+    onChange({ extras: { ...row.extras, [k]: v || "-" } });
+
+  const startEdit = (kind: "text" | "image" | "note", current: string) => {
+    setEditing(kind);
+    setDraft(current);
+  };
+  const commit = () => {
+    if (editing === "text") onChange({ input: draft });
+    else if (editing === "image") setExtra("输入图片", draft);
+    else if (editing === "note") setExtra("输入笔记", draft);
+    setEditing(null);
+  };
+
+  const editorCls =
+    "w-full rounded-2xl rounded-tr-sm bg-background border border-[var(--console-orange)] px-3 py-2 text-xs outline-none";
+
+  return (
+    <div className="space-y-2">
+      {/* 文本 */}
+      {editing === "text" ? (
+        <div className="flex justify-end">
+          <input
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(null); }}
+            className={`${editorCls} max-w-[85%]`}
+            placeholder="输入文本…"
+          />
+        </div>
+      ) : (
+        <div onClick={() => startEdit("text", row.input)} className="cursor-text">
+          <UserBubble>
+            {row.input || <span className="opacity-60">点击输入文本…</span>}
+          </UserBubble>
+        </div>
+      )}
+
+      {/* 图片 */}
+      {editing === "image" ? (
+        <div className="flex justify-end">
+          <input
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(null); }}
+            className={`${editorCls} max-w-[85%]`}
+            placeholder="图片 URL 或文件名"
+          />
+        </div>
+      ) : image ? (
+        <div onClick={() => startEdit("image", image)} className="cursor-text">
+          <UserBubble icon={ImageIcon} onRemove={() => setExtra("输入图片", "")}>
+            {image}
+          </UserBubble>
+        </div>
+      ) : null}
+
+      {/* 笔记 */}
+      {editing === "note" ? (
+        <div className="flex justify-end">
+          <textarea
+            autoFocus
+            rows={2}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => { if (e.key === "Escape") setEditing(null); }}
+            className={`${editorCls} max-w-[85%] resize-none`}
+            placeholder="笔记内容…"
+          />
+        </div>
+      ) : note ? (
+        <div onClick={() => startEdit("note", note)} className="cursor-text">
+          <UserBubble icon={StickyNote} onRemove={() => setExtra("输入笔记", "")}>
+            {note}
+          </UserBubble>
+        </div>
+      ) : null}
+
+      {/* 添加按钮 */}
+      {(!image || !note) && editing === null && (
+        <div className="flex justify-end gap-1.5">
+          {!image && (
+            <button
+              onClick={() => startEdit("image", "")}
+              className="inline-flex items-center gap-1 text-[10.5px] text-muted-foreground hover:text-foreground border border-dashed border-border rounded-full px-2 py-0.5 hover:bg-accent"
+            >
+              <ImageIcon className="h-2.5 w-2.5" /> 添加图片
+            </button>
+          )}
+          {!note && (
+            <button
+              onClick={() => startEdit("note", "")}
+              className="inline-flex items-center gap-1 text-[10.5px] text-muted-foreground hover:text-foreground border border-dashed border-border rounded-full px-2 py-0.5 hover:bg-accent"
+            >
+              <StickyNote className="h-2.5 w-2.5" /> 添加笔记
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -356,16 +515,8 @@ export function EvalTable({
         <div className="flex-1 min-w-0 flex flex-col">
           {selectedRow ? (
             <>
-              {/* 当前样本输入（紧凑） */}
-              <SampleHeader
-                row={selectedRow}
-                onChange={(patch) =>
-                  setRows((rs) => rs.map((x) => (x.id === selectedRow.id ? { ...x, ...patch } : x)))
-                }
-              />
-
               {/* 对比列：每列内部滑动，评估固定底部 */}
-              <div className="flex-1 min-h-0 px-3 pb-3 pt-2">
+              <div className="flex-1 min-h-0 px-3 pb-3 pt-3">
                 <div
                   className="h-full grid gap-3"
                   style={{ gridTemplateColumns: `repeat(${allVersions.length}, minmax(320px, 1fr))` }}
@@ -395,35 +546,39 @@ export function EvalTable({
                           </button>
                         </div>
 
-                        {/* 运行结果（可滑动） */}
-                        <div className="flex-1 min-h-0 overflow-y-auto p-2.5 space-y-2">
+                        {/* 对话区（可滑动）：用户输入 → 工具/Agent 轨迹 → 最终结果 */}
+                        <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-2.5">
+                          <ChatInputBubbles
+                            row={selectedRow}
+                            onChange={(patch) =>
+                              setRows((rs) => rs.map((x) => (x.id === selectedRow.id ? { ...x, ...patch } : x)))
+                            }
+                          />
                           {steps ? (
                             <>
-                              <div className="text-[10.5px] text-muted-foreground">历史轨迹</div>
                               {steps.slice(0, -1).map((s, i) => (
                                 <StepCard key={i} s={s} />
                               ))}
-                              <div className="text-[10.5px] text-muted-foreground pt-1">最终结果</div>
-                              <div className="rounded-md border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 p-2.5">
-                                <div className="flex items-center gap-1.5 text-[11px] text-[var(--console-orange)] mb-1">
-                                  <Bot className="h-3 w-3" /> Agent
+                              <div className="flex gap-2">
+                                <div className="shrink-0 h-6 w-6 rounded-full bg-[var(--console-orange)]/15 flex items-center justify-center">
+                                  <Bot className="h-3.5 w-3.5 text-[var(--console-orange)]" />
                                 </div>
-                                <div className="text-xs leading-relaxed whitespace-pre-wrap break-words">
+                                <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words">
                                   {steps[steps.length - 1].content}
                                 </div>
                               </div>
                             </>
                           ) : v?.output ? (
-                            <div className="rounded-md border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 p-2.5">
-                              <div className="flex items-center gap-1.5 text-[11px] text-[var(--console-orange)] mb-1">
-                                <Bot className="h-3 w-3" /> Agent
+                            <div className="flex gap-2">
+                              <div className="shrink-0 h-6 w-6 rounded-full bg-[var(--console-orange)]/15 flex items-center justify-center">
+                                <Bot className="h-3.5 w-3.5 text-[var(--console-orange)]" />
                               </div>
-                              <div className="text-xs leading-relaxed whitespace-pre-wrap break-words">
+                              <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words">
                                 {v.output}
                               </div>
                             </div>
                           ) : (
-                            <div className="flex items-center justify-center py-8 border border-dashed border-border rounded-md">
+                            <div className="flex items-center justify-center py-6 border border-dashed border-border rounded-md">
                               <button
                                 onClick={() => runRow(selectedRow.id, vi)}
                                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
@@ -505,112 +660,6 @@ export function EvalTable({
             </div>
           )}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function SampleHeader({
-  row,
-  onChange,
-}: {
-  row: EvalRow;
-  onChange: (patch: Partial<EvalRow>) => void;
-}) {
-  const image = row.extras["输入图片"] && row.extras["输入图片"] !== "-" ? row.extras["输入图片"] : "";
-  const note = row.extras["输入笔记"] && row.extras["输入笔记"] !== "-" ? row.extras["输入笔记"] : "";
-  const [showImage, setShowImage] = useState(!!image);
-  const [showNote, setShowNote] = useState(!!note);
-
-  const setExtra = (k: string, v: string) =>
-    onChange({ extras: { ...row.extras, [k]: v || "-" } });
-
-  const Field = ({
-    icon: Icon,
-    label,
-    children,
-    onRemove,
-  }: {
-    icon: typeof ImageIcon;
-    label: string;
-    children: React.ReactNode;
-    onRemove?: () => void;
-  }) => (
-    <div className="flex-1 min-w-0">
-      <div className="flex items-center gap-1 mb-1 h-4">
-        <Icon className="h-3 w-3 text-muted-foreground" />
-        <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-          {label}
-        </span>
-        {onRemove && (
-          <button
-            onClick={onRemove}
-            className="ml-auto text-muted-foreground hover:text-destructive"
-          >
-            <X className="h-2.5 w-2.5" />
-          </button>
-        )}
-      </div>
-      {children}
-    </div>
-  );
-
-  const inputCls =
-    "w-full bg-background text-xs outline-none border border-border focus:border-[var(--console-orange)] rounded px-2 py-1.5";
-
-  return (
-    <div className="shrink-0 border-b border-border px-4 py-2.5 bg-muted/20">
-      <div className="flex items-start gap-2">
-        <Field icon={StickyNote} label="文本">
-          <input
-            value={row.input}
-            onChange={(e) => onChange({ input: e.target.value })}
-            placeholder="测试 query 文本..."
-            className={inputCls}
-          />
-        </Field>
-        {showImage ? (
-          <Field
-            icon={ImageIcon}
-            label="图片"
-            onRemove={() => { setShowImage(false); setExtra("输入图片", ""); }}
-          >
-            <input
-              value={image}
-              onChange={(e) => setExtra("输入图片", e.target.value)}
-              placeholder="图片 URL 或文件名"
-              className={inputCls}
-            />
-          </Field>
-        ) : (
-          <button
-            onClick={() => setShowImage(true)}
-            className="mt-5 shrink-0 inline-flex items-center gap-1 text-[10.5px] text-muted-foreground hover:text-foreground border border-dashed border-border rounded px-2 py-1.5 hover:bg-accent"
-          >
-            <ImageIcon className="h-3 w-3" /> 添加图片
-          </button>
-        )}
-        {showNote ? (
-          <Field
-            icon={StickyNote}
-            label="笔记"
-            onRemove={() => { setShowNote(false); setExtra("输入笔记", ""); }}
-          >
-            <input
-              value={note}
-              onChange={(e) => setExtra("输入笔记", e.target.value)}
-              placeholder="补充笔记内容"
-              className={inputCls}
-            />
-          </Field>
-        ) : (
-          <button
-            onClick={() => setShowNote(true)}
-            className="mt-5 shrink-0 inline-flex items-center gap-1 text-[10.5px] text-muted-foreground hover:text-foreground border border-dashed border-border rounded px-2 py-1.5 hover:bg-accent"
-          >
-            <StickyNote className="h-3 w-3" /> 添加笔记
-          </button>
-        )}
       </div>
     </div>
   );
