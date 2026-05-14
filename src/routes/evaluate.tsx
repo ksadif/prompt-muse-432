@@ -150,6 +150,7 @@ function TestSetPage() {
       ov[rowId] = cur;
       return { ...m, [sid]: ov };
     });
+    if (selected) markDirty(selected.id);
   };
 
   const deleteSet = (id: string) => {
@@ -164,6 +165,7 @@ function TestSetPage() {
       cur.add(rowId);
       return { ...m, [selected.id]: cur };
     });
+    markDirty(selected.id);
   };
 
   return (
