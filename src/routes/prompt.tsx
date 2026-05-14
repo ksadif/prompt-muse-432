@@ -50,10 +50,7 @@ function EditorCard({
           ) : (
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           )}
-          <span className="inline-flex items-center gap-1 text-sm font-semibold">
-            <Hash className="h-3.5 w-3.5 text-[var(--console-orange)]" />
-            {label}
-          </span>
+          <span className="text-sm font-semibold">{label}</span>
           <span className="text-[11px] text-muted-foreground">{hint}</span>
         </button>
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
