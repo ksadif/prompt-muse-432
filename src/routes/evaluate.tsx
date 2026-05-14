@@ -252,10 +252,11 @@ function TestSetPage() {
                     />
                   </div>
                   <button
-                    onClick={() => setAddOpen(true)}
-                    className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1.5 text-xs text-foreground hover:bg-muted"
+                    onClick={saveSelected}
+                    disabled={!isDirty}
+                    className="inline-flex items-center gap-1 rounded bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <Plus className="h-3 w-3" /> 新增样本
+                    保存{isDirty ? " ·" : ""}
                   </button>
                   <Link
                     to="/"
