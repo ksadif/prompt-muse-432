@@ -96,6 +96,8 @@ function PromptWorkbenchPage() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [jinjaOpen, setJinjaOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [systemCollapsed, setSystemCollapsed] = useState(false);
+  const [userCollapsed, setUserCollapsed] = useState(false);
 
   const selectedPrompt = useMemo(() => {
     for (const f of folders) {
