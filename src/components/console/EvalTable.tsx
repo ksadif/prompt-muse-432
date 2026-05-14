@@ -210,99 +210,20 @@ function UserBubble({
 
 function ChatInputBubbles({
   row,
-  onChange,
 }: {
   row: EvalRow;
-  onChange: (patch: Partial<EvalRow>) => void;
+  onChange?: (patch: Partial<EvalRow>) => void;
 }) {
   const image = row.extras["输入图片"] && row.extras["输入图片"] !== "-" ? row.extras["输入图片"] : "";
   const note = row.extras["输入笔记"] && row.extras["输入笔记"] !== "-" ? row.extras["输入笔记"] : "";
-  const [editing, setEditing] = useState<null | "text" | "image" | "note">(null);
-  const [draft, setDraft] = useState("");
-
-  const setExtra = (k: string, v: string) =>
-    onChange({ extras: { ...row.extras, [k]: v || "-" } });
-
-  const startEdit = (kind: "text" | "image" | "note", current: string) => {
-    setEditing(kind);
-    setDraft(current);
-  };
-  const commit = () => {
-    if (editing === "text") onChange({ input: draft });
-    else if (editing === "image") setExtra("输入图片", draft);
-    else if (editing === "note") setExtra("输入笔记", draft);
-    setEditing(null);
-  };
-
-  const editorCls =
-    "w-full rounded-2xl rounded-tr-sm bg-background border border-[var(--console-orange)] px-3 py-2 text-xs outline-none";
 
   return (
     <div className="space-y-2">
-      {/* 文本 */}
-      {editing === "text" ? (
-        <div className="flex justify-end">
-          <input
-            autoFocus
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={commit}
-            onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(null); }}
-            className={`${editorCls} max-w-[85%]`}
-            placeholder="输入文本…"
-          />
-        </div>
-      ) : (
-        <div onClick={() => startEdit("text", row.input)} className="cursor-text">
-          <UserBubble>
-            {row.input || <span className="opacity-60">点击输入文本…</span>}
-          </UserBubble>
-        </div>
-      )}
-
-      {/* 图片 */}
-      {editing === "image" ? (
-        <div className="flex justify-end">
-          <input
-            autoFocus
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={commit}
-            onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(null); }}
-            className={`${editorCls} max-w-[85%]`}
-            placeholder="图片 URL 或文件名"
-          />
-        </div>
-      ) : image ? (
-        <div onClick={() => startEdit("image", image)} className="cursor-text">
-          <UserBubble icon={ImageIcon} onRemove={() => setExtra("输入图片", "")}>
-            {image}
-          </UserBubble>
-        </div>
-      ) : null}
-
-      {/* 笔记 */}
-      {editing === "note" ? (
-        <div className="flex justify-end">
-          <textarea
-            autoFocus
-            rows={2}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={commit}
-            onKeyDown={(e) => { if (e.key === "Escape") setEditing(null); }}
-            className={`${editorCls} max-w-[85%] resize-none`}
-            placeholder="笔记内容…"
-          />
-        </div>
-      ) : note ? (
-        <div onClick={() => startEdit("note", note)} className="cursor-text">
-          <UserBubble icon={StickyNote} onRemove={() => setExtra("输入笔记", "")}>
-            {note}
-          </UserBubble>
-        </div>
-      ) : null}
-
+      <UserBubble>
+        {row.input || <span className="opacity-60">（无输入文本）</span>}
+      </UserBubble>
+      {image ? <UserBubble icon={ImageIcon}>{image}</UserBubble> : null}
+      {note ? <UserBubble icon={StickyNote}>{note}</UserBubble> : null}
     </div>
   );
 }
