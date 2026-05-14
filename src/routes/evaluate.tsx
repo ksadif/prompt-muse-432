@@ -278,6 +278,9 @@ function TestSetPage() {
           folders={folders}
           selectedId={selectedId}
           onSelect={(id) => setSelectedId(id)}
+          onAddFolder={(name) =>
+            setFolders((fs) => [...fs, { id: `tsf-${Date.now()}`, name, prompts: [] }])
+          }
           variant="testset"
         />
 
