@@ -536,13 +536,6 @@ export function EvalTable({
                             v{vi + 1}
                           </span>
                           <span className="text-xs font-medium truncate flex-1">{p.name}</span>
-                          <button
-                            onClick={() => runRow(selectedRow.id, vi)}
-                            className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-accent"
-                            title="重新运行"
-                          >
-                            <Play className="h-3 w-3" />
-                          </button>
                           {vi > 0 && (
                             <button
                               onClick={() => {
