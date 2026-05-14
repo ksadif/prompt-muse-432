@@ -248,64 +248,43 @@ export function AgentPreview() {
 
               {dialog === "trace" && (
                 <>
-                  <div className="flex items-center gap-1 border-b border-border">
-                    {([
-                      { k: "trace", label: ".trace", icon: Activity },
-                      { k: "jsonl", label: ".jsonl", icon: FileJson },
-                      { k: "online", label: "online", icon: Globe },
-                    ] as { k: TraceTab; label: string; icon: typeof Activity }[]).map((t) => {
-                      const Icon = t.icon;
-                      const active = traceTab === t.k;
-                      return (
-                        <button
-                          key={t.k}
-                          onClick={() => setTraceTab(t.k)}
-                          className={`inline-flex items-center gap-1 px-3 py-2 text-xs border-b-2 -mb-px transition ${
-                            active
-                              ? "border-[var(--console-orange)] text-foreground"
-                              : "border-transparent text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          <Icon className="h-3.5 w-3.5" />
-                          {t.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {traceTab !== "online" ? (
-                    <button
-                      onClick={() => (traceTab === "trace" ? traceRef : jsonlRef).current?.click()}
-                      className="w-full rounded-md border border-dashed border-border py-8 text-xs text-muted-foreground hover:bg-accent flex flex-col items-center gap-2"
-                    >
-                      <Upload className="h-4 w-4" />
-                      点击选择 {traceTab === "trace" ? ".trace" : ".jsonl"} 文件（支持多个）
-                    </button>
-                  ) : (
-                    <div className="space-y-2">
+                  <div className="space-y-2">
+                    <label className="text-[11px] text-muted-foreground block">历史轨迹</label>
+                    <div className="flex items-center gap-2">
                       <input
                         autoFocus
                         value={onlineTrace}
                         onChange={(e) => setOnlineTrace(e.target.value)}
-                        placeholder="粘贴线上 trace ID 或 URL"
-                        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)]"
+                        placeholder="输入 hash_id"
+                        className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)]"
                       />
                       <button
                         onClick={() => {
                           if (!onlineTrace.trim()) return;
                           setAttachments((a) => [
                             ...a,
-                            { name: `online: ${onlineTrace.trim()}`, kind: "trace" },
+                            { name: `hash: ${onlineTrace.trim()}`, kind: "trace" },
                           ]);
                           setOnlineTrace("");
                         }}
                         disabled={!onlineTrace.trim()}
-                        className="w-full px-3 py-1.5 text-xs rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-40"
+                        className="px-4 py-2 text-xs rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-40"
                       >
-                        加载线上轨迹
+                        加载
                       </button>
                     </div>
-                  )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[11px] text-muted-foreground block">上传文件</label>
+                    <button
+                      onClick={() => traceRef.current?.click()}
+                      className="w-full rounded-md border border-dashed border-border py-6 text-xs text-muted-foreground hover:bg-accent flex flex-col items-center gap-1.5"
+                    >
+                      <Upload className="h-4 w-4" />
+                      点击选择 .trace / .jsonl / .json 文件（支持多个）
+                    </button>
+                  </div>
 
                   {traces.length > 0 && (
                     <div className="space-y-1">
