@@ -123,7 +123,12 @@ function TestSetPage() {
   const renameSet = (id: string, currentName: string) => {
     const next = window.prompt("重命名测试集", currentName);
     if (!next || !next.trim() || next === currentName) return;
-    setSets((s) => s.map((x) => (x.id === id ? { ...x, name: next.trim() } : x)));
+    setFolders((fs) =>
+      fs.map((f) => ({
+        ...f,
+        prompts: f.prompts.map((p) => (p.id === id ? { ...p, name: next.trim() } : p)),
+      })),
+    );
     markDirty(id);
   };
 
