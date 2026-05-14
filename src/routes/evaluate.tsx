@@ -105,26 +105,57 @@ function TestSetPage() {
               <Plus className="h-3 w-3" /> 新建
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-1.5">
+          <div className="flex-1 overflow-y-auto p-2">
             {sets.map((t) => {
               const active = t.id === selectedId;
               return (
-                <button
+                <div
                   key={t.id}
-                  onClick={() => setSelectedId(t.id)}
-                  className={`w-full text-left rounded px-2 py-1.5 mb-0.5 transition flex items-center gap-2 ${
-                    active ? "bg-muted text-foreground" : "hover:bg-muted/60 text-foreground/80"
+                  className={`group relative rounded mb-1 transition flex items-center ${
+                    active ? "bg-muted" : "hover:bg-muted/60"
                   }`}
                 >
-                  <FileSpreadsheet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <div className="min-w-0 flex-1">
+                  <button
+                    onClick={() => setSelectedId(t.id)}
+                    className="flex-1 min-w-0 text-left px-2.5 py-2.5 flex items-center gap-2.5"
+                  >
+                    <FileSpreadsheet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                     <div className="text-xs truncate">{t.name}</div>
-                  </div>
-                </button>
+                  </button>
+                  <button
+                    onClick={() => deleteSet(t.id)}
+                    className="opacity-0 group-hover:opacity-100 transition shrink-0 mr-1.5 p-1 rounded text-muted-foreground hover:text-destructive hover:bg-background"
+                    title="删除测试集"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
               );
             })}
           </div>
         </aside>
+
+        {/* 右：详细内容 */}
+        <div className="flex-1 min-w-0 flex flex-col min-h-0">
+          {selected ? (
+            <>
+              <div className="px-6 pt-4 pb-3 border-b border-border flex items-center justify-between gap-3">
+                <div className="min-w-0 flex items-baseline gap-2">
+                  <div className="text-sm font-medium truncate">{selected.name}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {detailRows.length} 条
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                    <input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="搜索 Query"
+                      className="pl-6 pr-2 py-1.5 text-xs rounded border border-border bg-background outline-none focus:border-[var(--console-orange)] w-44"
+                    />
+                  </div>
 
         {/* 右：详细内容 */}
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
