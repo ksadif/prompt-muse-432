@@ -34,11 +34,32 @@ export const versionHistory = [
   { version: "v5", name: "点点3.0-主对话", time: "2026-05-08 09:30", operator: "yz" },
 ];
 
-export const testSets = [
-  { id: "ts1", name: "社区助手-基础测试集（30 条）" },
-  { id: "ts2", name: "客服机器人-情绪测试集（50 条）" },
-  { id: "ts3", name: "通用-翻译评测集（100 条）" },
+export const testSetFolders: Folder[] = [
+  {
+    id: "tsf1",
+    name: "社区助手",
+    prompts: [
+      { id: "ts1", name: "社区助手-基础测试集（30 条）", updatedAt: "2026-05-10 11:20", owner: "yz" },
+      { id: "ts4", name: "社区助手-意图测试集（20 条）", updatedAt: "2026-05-08 09:00", owner: "lina" },
+    ],
+  },
+  {
+    id: "tsf2",
+    name: "客服机器人",
+    prompts: [
+      { id: "ts2", name: "客服机器人-情绪测试集（50 条）", updatedAt: "2026-05-09 16:32", owner: "wang" },
+    ],
+  },
+  {
+    id: "tsf3",
+    name: "通用",
+    prompts: [
+      { id: "ts3", name: "通用-翻译评测集（100 条）", updatedAt: "2026-05-06 10:00", owner: "yz" },
+    ],
+  },
 ];
+
+export const testSets = testSetFolders.flatMap((f) => f.prompts.map((p) => ({ id: p.id, name: p.name })));
 
 export type EvalRow = {
   id: number;
