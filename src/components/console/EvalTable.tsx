@@ -357,130 +357,105 @@ export function EvalTable({
                   gridTemplateColumns: `repeat(${allVersions.length}, minmax(320px, 1fr))`,
                 };
                 return (
-                  <>
-                    {/* 运行结果（轨迹 + 最终结果） */}
-                    <div className="grid gap-3" style={gridStyle}>
-                      {allVersions.map((p, vi) => {
-                        const key = `${selectedRow.id}-${vi}`;
-                        const steps = trajectories[key];
-                        const v = selectedRow.versions[vi];
-                        return (
-                          <div key={p.id + vi} className="rounded-lg border border-border bg-background flex flex-col">
-                            <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border">
-                              <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                                v{vi + 1}
-                              </span>
-                              <span className="text-xs font-medium truncate flex-1">{p.name}</span>
-                              <button
-                                onClick={() => runRow(selectedRow.id, vi)}
-                                className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-accent"
-                                title="重新运行"
-                              >
-                                <Play className="h-3 w-3" />
-                              </button>
-                            </div>
-                            <div className="p-2.5 space-y-2 flex-1">
-                              {steps ? (
-                                <>
-                                  <div className="text-[10.5px] text-muted-foreground px-0.5">历史轨迹</div>
-                                  {steps.slice(0, -1).map((s, i) => (
-                                    <StepCard key={i} s={s} />
-                                  ))}
-                                  <div className="text-[10.5px] text-muted-foreground px-0.5 pt-1">最终结果</div>
-                                  <div className="rounded-md border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 p-2.5">
-                                    <div className="flex items-center gap-1.5 text-[11px] text-[var(--console-orange)] mb-1">
-                                      <Bot className="h-3 w-3" /> Agent
-                                    </div>
-                                    <div className="text-xs leading-relaxed whitespace-pre-wrap break-words">
-                                      {steps[steps.length - 1].content}
-                                    </div>
-                                  </div>
-                                </>
-                              ) : v?.output ? (
+                  <div className="grid gap-4" style={gridStyle}>
+                    {allVersions.map((p, vi) => {
+                      const key = `${selectedRow.id}-${vi}`;
+                      const steps = trajectories[key];
+                      const v = selectedRow.versions[vi];
+                      return (
+                        <div key={p.id + vi} className="flex flex-col">
+                          {/* 列标题 */}
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              v{vi + 1}
+                            </span>
+                            <span className="text-xs font-medium truncate flex-1">{p.name}</span>
+                            <button
+                              onClick={() => runRow(selectedRow.id, vi)}
+                              className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-accent"
+                              title="重新运行"
+                            >
+                              <Play className="h-3 w-3" />
+                            </button>
+                          </div>
+
+                          {/* 第一部分：运行结果（轨迹 + 最终） */}
+                          <div className="space-y-2">
+                            {steps ? (
+                              <>
+                                <div className="text-[10.5px] text-muted-foreground">历史轨迹</div>
+                                {steps.slice(0, -1).map((s, i) => (
+                                  <StepCard key={i} s={s} />
+                                ))}
+                                <div className="text-[10.5px] text-muted-foreground pt-1">最终结果</div>
                                 <div className="rounded-md border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 p-2.5">
                                   <div className="flex items-center gap-1.5 text-[11px] text-[var(--console-orange)] mb-1">
                                     <Bot className="h-3 w-3" /> Agent
                                   </div>
                                   <div className="text-xs leading-relaxed whitespace-pre-wrap break-words">
-                                    {v.output}
+                                    {steps[steps.length - 1].content}
                                   </div>
                                 </div>
-                              ) : (
-                                <div className="flex items-center justify-center py-10">
-                                  <button
-                                    onClick={() => runRow(selectedRow.id, vi)}
-                                    className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent"
-                                  >
-                                    <Play className="h-3 w-3" /> 运行
-                                  </button>
+                              </>
+                            ) : v?.output ? (
+                              <div className="rounded-md border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 p-2.5">
+                                <div className="flex items-center gap-1.5 text-[11px] text-[var(--console-orange)] mb-1">
+                                  <Bot className="h-3 w-3" /> Agent
                                 </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* 大模型评估区 — 与轨迹/结果分离，整体放在底部 */}
-                    <div className="mt-5 rounded-lg border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 p-3">
-                      <div className="flex items-center gap-1.5 mb-2.5">
-                        <Sparkles className="h-3.5 w-3.5 text-[var(--console-orange)]" />
-                        <span className="text-[11px] font-semibold text-[var(--console-orange)]">
-                          大模型评估
-                        </span>
-                        <span className="text-[10.5px] text-muted-foreground">
-                          为每个 Agent 的输出独立打分与备注
-                        </span>
-                      </div>
-                      <div className="grid gap-3" style={gridStyle}>
-                        {allVersions.map((p, vi) => {
-                          const v = selectedRow.versions[vi];
-                          return (
-                            <div key={p.id + vi} className="rounded-md border border-border bg-background p-2.5">
-                              <div className="flex items-center gap-1.5 mb-1.5">
-                                <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                                  v{vi + 1}
-                                </span>
-                                <span className="text-[11px] font-medium truncate">{p.name}</span>
+                                <div className="text-xs leading-relaxed whitespace-pre-wrap break-words">
+                                  {v.output}
+                                </div>
                               </div>
-                              <div className="flex items-center gap-1.5 mb-1.5">
-                                <input
-                                  type="number"
-                                  min={1}
-                                  max={5}
-                                  value={v?.score ?? ""}
-                                  onChange={(e) =>
-                                    updateVersion(selectedRow.id, vi, {
-                                      score: e.target.value ? +e.target.value : null,
-                                    })
-                                  }
-                                  placeholder="分"
-                                  className="w-14 rounded border border-border bg-background px-1.5 py-1 text-xs outline-none focus:border-[var(--console-orange)]"
-                                />
-                                <select
-                                  value={v?.issueType ?? "无"}
-                                  onChange={(e) =>
-                                    updateVersion(selectedRow.id, vi, { issueType: e.target.value })
-                                  }
-                                  className="rounded border border-border bg-background px-1.5 py-1 text-xs outline-none cursor-pointer flex-1 min-w-0"
+                            ) : (
+                              <div className="flex items-center justify-center py-8 border border-dashed border-border rounded-md">
+                                <button
+                                  onClick={() => runRow(selectedRow.id, vi)}
+                                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                                 >
-                                  {ISSUE_TYPES.map((it) => (
-                                    <option key={it}>{it}</option>
-                                  ))}
-                                </select>
+                                  <Play className="h-3 w-3" /> 运行
+                                </button>
                               </div>
-                              <input
-                                value={v?.note ?? ""}
-                                onChange={(e) => updateVersion(selectedRow.id, vi, { note: e.target.value })}
-                                placeholder="评估备注…"
-                                className="w-full rounded border border-border bg-background px-2 py-1 text-xs outline-none focus:border-[var(--console-orange)]"
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </>
+                            )}
+                          </div>
+
+                          {/* 第二部分：评估和备注 — 紧凑一行 */}
+                          <div className="mt-3 pt-2.5 border-t border-dashed border-border flex items-center gap-1.5">
+                            <Sparkles className="h-3 w-3 text-[var(--console-orange)] shrink-0" />
+                            <input
+                              type="number"
+                              min={1}
+                              max={5}
+                              value={v?.score ?? ""}
+                              onChange={(e) =>
+                                updateVersion(selectedRow.id, vi, {
+                                  score: e.target.value ? +e.target.value : null,
+                                })
+                              }
+                              placeholder="分"
+                              className="w-10 rounded border border-border bg-background px-1 py-0.5 text-xs outline-none focus:border-[var(--console-orange)]"
+                            />
+                            <select
+                              value={v?.issueType ?? "无"}
+                              onChange={(e) =>
+                                updateVersion(selectedRow.id, vi, { issueType: e.target.value })
+                              }
+                              className="rounded border border-border bg-background px-1 py-0.5 text-xs outline-none cursor-pointer shrink-0"
+                            >
+                              {ISSUE_TYPES.map((it) => (
+                                <option key={it}>{it}</option>
+                              ))}
+                            </select>
+                            <input
+                              value={v?.note ?? ""}
+                              onChange={(e) => updateVersion(selectedRow.id, vi, { note: e.target.value })}
+                              placeholder="备注"
+                              className="flex-1 min-w-0 rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none focus:border-[var(--console-orange)]"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 );
               })()}
             </div>
