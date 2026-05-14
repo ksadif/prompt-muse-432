@@ -50,6 +50,16 @@ export function AgentPreview() {
   const [bulkImageUrls, setBulkImageUrls] = useState("");
 
   const imgRef = useRef<HTMLInputElement>(null);
+  const [historyHash, setHistoryHash] = useState("");
+
+  function loadHistory() {
+    const h = historyHash.trim();
+    if (!h) return;
+    setSteps([
+      { kind: "user-text", content: `[历史轨迹 ${h}]` },
+      ...buildDemoTrajectory(`hash:${h}`, "点点"),
+    ]);
+  }
 
   function onLocalImage(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
