@@ -170,12 +170,18 @@ function TestSetPage() {
                         <MoreHorizontal className="h-3.5 w-3.5" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-32">
+                    <DropdownMenuContent align="end" className="w-28 p-1">
+                      <DropdownMenuItem
+                        onClick={() => renameSet(t.id, t.name)}
+                        className="text-xs py-1 px-2 cursor-pointer"
+                      >
+                        <Pencil className="h-3 w-3 mr-1.5" /> 重命名
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => deleteSet(t.id)}
-                        className="text-destructive focus:text-destructive"
+                        className="text-xs py-1 px-2 cursor-pointer text-destructive focus:text-destructive"
                       >
-                        <Trash2 className="h-3.5 w-3.5 mr-2" /> 删除
+                        <Trash2 className="h-3 w-3 mr-1.5" /> 删除
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
