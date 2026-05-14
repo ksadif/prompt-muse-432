@@ -350,6 +350,12 @@ function TestSetPage() {
                     </tbody>
                   </table>
                 </div>
+                <button
+                  onClick={addBlankRow}
+                  className="mt-2 inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-[var(--console-orange)] hover:bg-muted"
+                >
+                  <Plus className="h-3 w-3" /> 新增一行
+                </button>
               </div>
             </>
           ) : (
