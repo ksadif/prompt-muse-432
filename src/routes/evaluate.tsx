@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
 import { Plus, Upload, FileSpreadsheet, Trash2, PencilLine, FileUp, Search, MoreHorizontal, Pencil, ListTree, ChevronDown, X } from "lucide-react";
 import { testSets as initialTestSets } from "@/components/console/mockData";
@@ -70,8 +70,9 @@ function TestSetPage() {
   
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [dirtySets, setDirtySets] = useState<Set<string>>(new Set());
-  
+  const [listOpen, setListOpen] = useState(false);
   const [nameMenuOpen, setNameMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const selected = sets.find((s) => s.id === selectedId) ?? null;
   const baseRows = useMemo(
@@ -176,6 +177,13 @@ function TestSetPage() {
         {/* 顶部工具条 */}
         <div className="px-3 flex items-center gap-2 border-b border-border bg-background py-2 min-h-[52px]">
           <button
+            onClick={() => setListOpen((v) => !v)}
+            className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent"
+            title="测试集列表"
+          >
+            <ListTree className="h-4 w-4" />
+          </button>
+          <button
             onClick={() => setOpen(true)}
             className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border text-[var(--console-orange)] hover:bg-accent"
             title="新建测试集"
@@ -194,8 +202,7 @@ function TestSetPage() {
               {nameMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setNameMenuOpen(false)} />
-                  <div className="absolute left-0 top-full mt-1 z-40 w-64 max-h-96 overflow-auto rounded-md border border-border bg-background shadow-lg py-1">
-                    <div className="px-3 pt-1 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground">操作</div>
+                  <div className="absolute left-0 top-full mt-1 z-40 w-56 rounded-md border border-border bg-background shadow-lg py-1">
                     <button
                       onClick={() => {
                         setNameMenuOpen(false);
@@ -208,29 +215,32 @@ function TestSetPage() {
                     <button
                       onClick={() => {
                         setNameMenuOpen(false);
+                        saveSelected();
+                      }}
+                      disabled={!isDirty}
+                      className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <FileUp className="h-3.5 w-3.5" /> 保存{isDirty ? " ·" : ""}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setNameMenuOpen(false);
+                        navigate({ to: "/" });
+                      }}
+                      className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent"
+                    >
+                      <Upload className="h-3.5 w-3.5" /> 在 Agent 工作台使用
+                    </button>
+                    <div className="my-1 border-t border-border" />
+                    <button
+                      onClick={() => {
+                        setNameMenuOpen(false);
                         if (window.confirm(`确认删除测试集「${selected.name}」？`)) deleteSet(selected.id);
                       }}
                       className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm text-destructive hover:bg-accent"
                     >
                       <Trash2 className="h-3.5 w-3.5" /> 删除
                     </button>
-                    <div className="my-1 border-t border-border" />
-                    <div className="px-3 pt-1 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground">切换测试集</div>
-                    {sets.map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => {
-                          setSelectedId(t.id);
-                          setNameMenuOpen(false);
-                        }}
-                        className={`w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent ${
-                          t.id === selectedId ? "bg-muted" : ""
-                        }`}
-                      >
-                        <FileSpreadsheet className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="truncate">{t.name}</span>
-                      </button>
-                    ))}
                   </div>
                 </>
               )}
@@ -248,22 +258,48 @@ function TestSetPage() {
                 />
               </div>
               <span className="text-[11px] text-muted-foreground">{detailRows.length} 条</span>
-              <button
-                onClick={saveSelected}
-                disabled={!isDirty}
-                className="inline-flex items-center gap-1 rounded bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                保存{isDirty ? " ·" : ""}
-              </button>
-              <Link
-                to="/"
-                className="text-xs text-muted-foreground hover:text-foreground shrink-0"
-              >
-                在 Prompt 工作台中使用 →
-              </Link>
             </div>
           )}
         </div>
+
+        {/* 测试集列表覆盖面板 */}
+        {listOpen && (
+          <>
+            <div className="absolute inset-0 z-40 bg-black/20" onClick={() => setListOpen(false)} />
+            <aside className="absolute left-0 top-0 z-50 h-full w-[320px] bg-background border-r border-border shadow-2xl flex flex-col">
+              <div className="flex items-center justify-between px-5 pt-5 pb-3">
+                <h3 className="text-lg font-semibold tracking-tight">测试集列表</h3>
+                <button
+                  onClick={() => setListOpen(false)}
+                  className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-2">
+                {sets.map((t) => {
+                  const active = t.id === selectedId;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        setSelectedId(t.id);
+                        setListOpen(false);
+                      }}
+                      className={`w-full text-left rounded mb-1 px-2.5 py-2.5 flex items-center gap-2 transition ${
+                        active ? "bg-muted" : "hover:bg-muted/60"
+                      }`}
+                    >
+                      <FileSpreadsheet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      <div className="text-xs truncate">{t.name}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </aside>
+          </>
+        )}
+
 
         {/* 详细内容 */}
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
