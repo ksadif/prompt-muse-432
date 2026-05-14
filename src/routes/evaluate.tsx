@@ -201,7 +201,28 @@ function TestSetPage() {
               {nameMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setNameMenuOpen(false)} />
-                  <div className="absolute left-0 top-full mt-1 z-40 w-64 max-h-80 overflow-auto rounded-md border border-border bg-background shadow-lg py-1">
+                  <div className="absolute left-0 top-full mt-1 z-40 w-64 max-h-96 overflow-auto rounded-md border border-border bg-background shadow-lg py-1">
+                    <div className="px-3 pt-1 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground">操作</div>
+                    <button
+                      onClick={() => {
+                        setNameMenuOpen(false);
+                        renameSet(selected.id, selected.name);
+                      }}
+                      className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent"
+                    >
+                      <Pencil className="h-3.5 w-3.5" /> 重命名
+                    </button>
+                    <button
+                      onClick={() => {
+                        setNameMenuOpen(false);
+                        if (window.confirm(`确认删除测试集「${selected.name}」？`)) deleteSet(selected.id);
+                      }}
+                      className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm text-destructive hover:bg-accent"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> 删除
+                    </button>
+                    <div className="my-1 border-t border-border" />
+                    <div className="px-3 pt-1 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground">切换测试集</div>
                     {sets.map((t) => (
                       <button
                         key={t.id}
