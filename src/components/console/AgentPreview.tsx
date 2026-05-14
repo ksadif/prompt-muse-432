@@ -164,11 +164,27 @@ export function AgentPreview() {
   const userBadge = randomUid || userId.trim() ? 1 : 0;
   const triggers: { k: Exclude<DialogKind, null>; icon: typeof ImageIcon; title: string; badge: number }[] = [
     { k: "image", icon: ImageIcon, title: "上传图片（本地）", badge: images.length },
-    { k: "note", icon: FileText, title: "附加笔记", badge: note.trim() ? 1 : 0 },
     { k: "share", icon: Share2, title: "拖拽 / 分享内容", badge: shares.length },
     { k: "bulk", icon: Upload, title: "上传内容（笔记 ID / 图片 URL）", badge: bulks.length },
-    { k: "user", icon: UserRound, title: "用户记忆 ID", badge: userBadge },
   ];
+
+  function onPasteImage(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const items = Array.from(e.clipboardData?.items ?? []);
+    const files = items
+      .filter((it) => it.kind === "file" && it.type.startsWith("image/"))
+      .map((it) => it.getAsFile())
+      .filter((f): f is File => !!f);
+    if (!files.length) return;
+    e.preventDefault();
+    setAttachments((a) => [
+      ...a,
+      ...files.map<Attachment>((f) => ({
+        name: f.name || `截图-${Date.now()}.png`,
+        kind: "image",
+        url: URL.createObjectURL(f),
+      })),
+    ]);
+  }
 
   // share field schemas
   const shareSchema: Record<ShareKind, { key: string; label: string; placeholder?: string }[]> = {
