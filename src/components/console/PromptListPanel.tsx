@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { X, Search, Lock, Box, Bot, ChevronDown, ChevronRight, Folder as FolderIcon } from "lucide-react";
+import { X, Search, Lock, Box, Bot, FileSpreadsheet, ChevronDown, ChevronRight, Folder as FolderIcon } from "lucide-react";
 import type { Folder } from "./types";
 
-type Variant = "agent" | "prompt";
+type Variant = "agent" | "prompt" | "testset";
 
 const VARIANT = {
   agent: {
@@ -22,6 +22,15 @@ const VARIANT = {
     searchPlaceholder: "搜索 Prompt",
     suffix: "Prompt",
     onlyMineLabel: "只看我的 Prompt",
+  },
+  testset: {
+    title: "测试集列表",
+    itemIcon: FileSpreadsheet,
+    accent: "text-[var(--console-orange)]",
+    activeBg: "bg-[var(--console-active)]",
+    searchPlaceholder: "搜索测试集",
+    suffix: "测试集",
+    onlyMineLabel: "只看我的测试集",
   },
 } as const;
 
