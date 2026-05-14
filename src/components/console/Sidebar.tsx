@@ -1,10 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import {
   Wrench,
-  Sparkles,
-  BarChart3,
-  Terminal,
-  Briefcase,
   ChevronDown,
   ChevronRight,
   PanelLeftClose,
@@ -31,22 +27,6 @@ const sections: Section[] = [
       { label: "测试集管理", to: "/evaluate" },
     ],
   },
-  {
-    icon: Sparkles,
-    label: "托管 Agent",
-    badge: "新",
-    items: [
-      { label: "快速开始" },
-      { label: "Agent 列表" },
-      { label: "会话" },
-      { label: "环境" },
-      { label: "凭证库" },
-      { label: "记忆库" },
-    ],
-  },
-  { icon: BarChart3, label: "数据分析" },
-  { icon: Terminal, label: "Claude Code" },
-  { icon: Briefcase, label: "管理" },
 ];
 
 export function Sidebar() {
