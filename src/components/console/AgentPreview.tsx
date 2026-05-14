@@ -182,15 +182,7 @@ export function AgentPreview() {
       <input
         ref={traceRef}
         type="file"
-        accept=".trace"
-        multiple
-        className="hidden"
-        onChange={(e) => onFiles(e, "trace")}
-      />
-      <input
-        ref={jsonlRef}
-        type="file"
-        accept=".jsonl,.json"
+        accept=".trace,.jsonl,.json"
         multiple
         className="hidden"
         onChange={(e) => onFiles(e, "trace")}
