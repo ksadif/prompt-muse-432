@@ -156,15 +156,175 @@ function buildSteps(input: string, promptName: string): Step[] {
 }
 
 function StepCard({ s }: { s: Step }) {
-  return (
-    <div className="rounded-md border border-border bg-background p-2.5">
-      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-1">
-        {s.role === "user" && <><StickyNote className="h-3 w-3" /> 输入内容</>}
-        {s.role === "agent" && <><Bot className="h-3 w-3 text-[var(--console-orange)]" /> Agent</>}
-        {s.role === "tool" && <><Wrench className="h-3 w-3" /> 工具调用</>}
-        {s.meta && <span className="ml-auto">{s.meta}</span>}
+  // tool call — neutral inline note
+  if (s.role === "tool") {
+    return (
+      <div className="flex justify-center">
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1 text-[10.5px] text-muted-foreground">
+          <Wrench className="h-3 w-3" />
+          <span>{s.content}</span>
+          {s.meta && <span className="text-muted-foreground/70">· {s.meta}</span>}
+        </div>
       </div>
-      <div className="text-xs leading-relaxed whitespace-pre-wrap break-words">{s.content}</div>
+    );
+  }
+  // agent — left bubble
+  return (
+    <div className="flex gap-2">
+      <div className="shrink-0 h-6 w-6 rounded-full bg-[var(--console-orange)]/15 flex items-center justify-center">
+        <Bot className="h-3.5 w-3.5 text-[var(--console-orange)]" />
+      </div>
+      <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-muted/60 px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap break-words">
+        {s.content}
+      </div>
+    </div>
+  );
+}
+
+function UserBubble({
+  icon: Icon,
+  children,
+  onRemove,
+}: {
+  icon?: typeof ImageIcon;
+  children: React.ReactNode;
+  onRemove?: () => void;
+}) {
+  return (
+    <div className="flex justify-end group/bubble">
+      {onRemove && (
+        <button
+          onClick={onRemove}
+          className="self-center mr-1 opacity-0 group-hover/bubble:opacity-100 text-muted-foreground hover:text-destructive transition"
+          title="移除"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
+      <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-2 text-xs leading-relaxed shadow-sm flex items-start gap-1.5">
+        {Icon && <Icon className="h-3 w-3 mt-0.5 shrink-0 opacity-80" />}
+        <div className="min-w-0 flex-1 break-words whitespace-pre-wrap">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function ChatInputBubbles({
+  row,
+  onChange,
+}: {
+  row: EvalRow;
+  onChange: (patch: Partial<EvalRow>) => void;
+}) {
+  const image = row.extras["输入图片"] && row.extras["输入图片"] !== "-" ? row.extras["输入图片"] : "";
+  const note = row.extras["输入笔记"] && row.extras["输入笔记"] !== "-" ? row.extras["输入笔记"] : "";
+  const [editing, setEditing] = useState<null | "text" | "image" | "note">(null);
+  const [draft, setDraft] = useState("");
+
+  const setExtra = (k: string, v: string) =>
+    onChange({ extras: { ...row.extras, [k]: v || "-" } });
+
+  const startEdit = (kind: "text" | "image" | "note", current: string) => {
+    setEditing(kind);
+    setDraft(current);
+  };
+  const commit = () => {
+    if (editing === "text") onChange({ input: draft });
+    else if (editing === "image") setExtra("输入图片", draft);
+    else if (editing === "note") setExtra("输入笔记", draft);
+    setEditing(null);
+  };
+
+  const editorCls =
+    "w-full rounded-2xl rounded-tr-sm bg-background border border-[var(--console-orange)] px-3 py-2 text-xs outline-none";
+
+  return (
+    <div className="space-y-2">
+      {/* 文本 */}
+      {editing === "text" ? (
+        <div className="flex justify-end">
+          <input
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(null); }}
+            className={`${editorCls} max-w-[85%]`}
+            placeholder="输入文本…"
+          />
+        </div>
+      ) : (
+        <div onClick={() => startEdit("text", row.input)} className="cursor-text">
+          <UserBubble>
+            {row.input || <span className="opacity-60">点击输入文本…</span>}
+          </UserBubble>
+        </div>
+      )}
+
+      {/* 图片 */}
+      {editing === "image" ? (
+        <div className="flex justify-end">
+          <input
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(null); }}
+            className={`${editorCls} max-w-[85%]`}
+            placeholder="图片 URL 或文件名"
+          />
+        </div>
+      ) : image ? (
+        <div onClick={() => startEdit("image", image)} className="cursor-text">
+          <UserBubble icon={ImageIcon} onRemove={() => setExtra("输入图片", "")}>
+            {image}
+          </UserBubble>
+        </div>
+      ) : null}
+
+      {/* 笔记 */}
+      {editing === "note" ? (
+        <div className="flex justify-end">
+          <textarea
+            autoFocus
+            rows={2}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => { if (e.key === "Escape") setEditing(null); }}
+            className={`${editorCls} max-w-[85%] resize-none`}
+            placeholder="笔记内容…"
+          />
+        </div>
+      ) : note ? (
+        <div onClick={() => startEdit("note", note)} className="cursor-text">
+          <UserBubble icon={StickyNote} onRemove={() => setExtra("输入笔记", "")}>
+            {note}
+          </UserBubble>
+        </div>
+      ) : null}
+
+      {/* 添加按钮 */}
+      {(!image || !note) && editing === null && (
+        <div className="flex justify-end gap-1.5">
+          {!image && (
+            <button
+              onClick={() => startEdit("image", "")}
+              className="inline-flex items-center gap-1 text-[10.5px] text-muted-foreground hover:text-foreground border border-dashed border-border rounded-full px-2 py-0.5 hover:bg-accent"
+            >
+              <ImageIcon className="h-2.5 w-2.5" /> 添加图片
+            </button>
+          )}
+          {!note && (
+            <button
+              onClick={() => startEdit("note", "")}
+              className="inline-flex items-center gap-1 text-[10.5px] text-muted-foreground hover:text-foreground border border-dashed border-border rounded-full px-2 py-0.5 hover:bg-accent"
+            >
+              <StickyNote className="h-2.5 w-2.5" /> 添加笔记
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
