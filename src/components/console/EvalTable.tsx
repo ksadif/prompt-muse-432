@@ -171,7 +171,6 @@ export function EvalTable({
   onPickComparePrompt: (cb: (p: PromptItem) => void) => void;
 }) {
   const [testSetId, setTestSetId] = useState(testSets[0].id);
-  const [showExtras, setShowExtras] = useState(false);
   const [rows, setRows] = useState<EvalRow[]>(initialEvalRows);
   const [comparePrompts, setComparePrompts] = useState<PromptItem[]>([]);
   const [selectedId, setSelectedId] = useState<number>(initialEvalRows[0]?.id ?? 0);
