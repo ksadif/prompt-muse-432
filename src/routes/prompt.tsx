@@ -239,13 +239,15 @@ function PromptWorkbenchPage() {
         />
 
 
-        <div className="flex-1 min-h-0 grid grid-rows-2 gap-4 px-6 py-5 bg-muted/30">
+        <div className="flex-1 min-h-0 flex flex-col gap-4 px-6 py-5 bg-muted/30 overflow-auto">
           <EditorCard
             label="System Prompt"
             hint="定义角色 / 任务 / 输出格式"
             value={content.system}
             onChange={(v) => setContent({ system: v })}
             placeholder={"# 角色\n你是一个专业的 {{角色}}\n\n## 任务\n- 第一步...\n- 第二步...\n\n## 输出格式\n使用 **Markdown** 输出结果"}
+            collapsed={systemCollapsed}
+            onToggle={() => setSystemCollapsed((v) => !v)}
           />
           <EditorCard
             label="User Prompt"
@@ -253,6 +255,8 @@ function PromptWorkbenchPage() {
             value={content.user}
             onChange={(v) => setContent({ user: v })}
             placeholder={"请帮我处理以下内容：{{输入}}"}
+            collapsed={userCollapsed}
+            onToggle={() => setUserCollapsed((v) => !v)}
           />
         </div>
       </div>
