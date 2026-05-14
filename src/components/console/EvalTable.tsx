@@ -525,81 +525,93 @@ function SampleHeader({
   const setExtra = (k: string, v: string) =>
     onChange({ extras: { ...row.extras, [k]: v || "-" } });
 
+  const Field = ({
+    icon: Icon,
+    label,
+    children,
+    onRemove,
+  }: {
+    icon: typeof ImageIcon;
+    label: string;
+    children: React.ReactNode;
+    onRemove?: () => void;
+  }) => (
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-1 mb-1 h-4">
+        <Icon className="h-3 w-3 text-muted-foreground" />
+        <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+          {label}
+        </span>
+        {onRemove && (
+          <button
+            onClick={onRemove}
+            className="ml-auto text-muted-foreground hover:text-destructive"
+          >
+            <X className="h-2.5 w-2.5" />
+          </button>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+
+  const inputCls =
+    "w-full bg-background text-xs outline-none border border-border focus:border-[var(--console-orange)] rounded px-2 py-1.5";
+
   return (
     <div className="shrink-0 border-b border-border px-4 py-2.5 bg-muted/20">
-      <div className="flex items-center gap-2 mb-1.5">
-        <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-          输入内容
-        </span>
-        <div className="ml-auto flex items-center gap-1">
-          {!showImage && (
-            <button
-              onClick={() => setShowImage(true)}
-              className="inline-flex items-center gap-0.5 text-[10.5px] text-muted-foreground hover:text-foreground rounded px-1.5 py-0.5 hover:bg-accent"
-            >
-              <ImageIcon className="h-3 w-3" /> 添加图片
-            </button>
-          )}
-          {!showNote && (
-            <button
-              onClick={() => setShowNote(true)}
-              className="inline-flex items-center gap-0.5 text-[10.5px] text-muted-foreground hover:text-foreground rounded px-1.5 py-0.5 hover:bg-accent"
-            >
-              <StickyNote className="h-3 w-3" /> 添加笔记
-            </button>
-          )}
-        </div>
+      <div className="flex items-start gap-2">
+        <Field icon={StickyNote} label="文本">
+          <input
+            value={row.input}
+            onChange={(e) => onChange({ input: e.target.value })}
+            placeholder="测试 query 文本..."
+            className={inputCls}
+          />
+        </Field>
+        {showImage ? (
+          <Field
+            icon={ImageIcon}
+            label="图片"
+            onRemove={() => { setShowImage(false); setExtra("输入图片", ""); }}
+          >
+            <input
+              value={image}
+              onChange={(e) => setExtra("输入图片", e.target.value)}
+              placeholder="图片 URL 或文件名"
+              className={inputCls}
+            />
+          </Field>
+        ) : (
+          <button
+            onClick={() => setShowImage(true)}
+            className="mt-5 shrink-0 inline-flex items-center gap-1 text-[10.5px] text-muted-foreground hover:text-foreground border border-dashed border-border rounded px-2 py-1.5 hover:bg-accent"
+          >
+            <ImageIcon className="h-3 w-3" /> 添加图片
+          </button>
+        )}
+        {showNote ? (
+          <Field
+            icon={StickyNote}
+            label="笔记"
+            onRemove={() => { setShowNote(false); setExtra("输入笔记", ""); }}
+          >
+            <input
+              value={note}
+              onChange={(e) => setExtra("输入笔记", e.target.value)}
+              placeholder="补充笔记内容"
+              className={inputCls}
+            />
+          </Field>
+        ) : (
+          <button
+            onClick={() => setShowNote(true)}
+            className="mt-5 shrink-0 inline-flex items-center gap-1 text-[10.5px] text-muted-foreground hover:text-foreground border border-dashed border-border rounded px-2 py-1.5 hover:bg-accent"
+          >
+            <StickyNote className="h-3 w-3" /> 添加笔记
+          </button>
+        )}
       </div>
-      <input
-        value={row.input}
-        onChange={(e) => onChange({ input: e.target.value })}
-        placeholder="输入测试内容（query 文本）..."
-        className="w-full bg-background text-sm outline-none border border-border focus:border-[var(--console-orange)] rounded px-2 py-1.5"
-      />
-      {(showImage || showNote) && (
-        <div className="grid grid-cols-2 gap-2 mt-2">
-          {showImage && (
-            <div className="relative">
-              <div className="flex items-center gap-1 mb-0.5">
-                <ImageIcon className="h-2.5 w-2.5 text-muted-foreground" />
-                <span className="text-[10px] text-muted-foreground">图片</span>
-                <button
-                  onClick={() => { setShowImage(false); setExtra("输入图片", ""); }}
-                  className="ml-auto text-muted-foreground hover:text-destructive"
-                >
-                  <X className="h-2.5 w-2.5" />
-                </button>
-              </div>
-              <input
-                value={image}
-                onChange={(e) => setExtra("输入图片", e.target.value)}
-                placeholder="图片 URL 或文件名"
-                className="w-full bg-background text-xs outline-none border border-border focus:border-[var(--console-orange)] rounded px-2 py-1"
-              />
-            </div>
-          )}
-          {showNote && (
-            <div className="relative">
-              <div className="flex items-center gap-1 mb-0.5">
-                <StickyNote className="h-2.5 w-2.5 text-muted-foreground" />
-                <span className="text-[10px] text-muted-foreground">笔记</span>
-                <button
-                  onClick={() => { setShowNote(false); setExtra("输入笔记", ""); }}
-                  className="ml-auto text-muted-foreground hover:text-destructive"
-                >
-                  <X className="h-2.5 w-2.5" />
-                </button>
-              </div>
-              <input
-                value={note}
-                onChange={(e) => setExtra("输入笔记", e.target.value)}
-                placeholder="补充笔记内容"
-                className="w-full bg-background text-xs outline-none border border-border focus:border-[var(--console-orange)] rounded px-2 py-1"
-              />
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
