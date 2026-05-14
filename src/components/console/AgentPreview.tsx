@@ -1,9 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { Image as ImageIcon, FileText, FileSpreadsheet, X, ArrowUp } from "lucide-react";
+import {
+  Image as ImageIcon,
+  FileText,
+  FileJson,
+  X,
+  ArrowUp,
+  UserRound,
+  Activity,
+  Globe,
+  Upload,
+} from "lucide-react";
 import { TrajectoryView, buildDemoTrajectory, type TrajectoryStep } from "./TrajectoryView";
 
-type Attachment = { name: string; url?: string; kind: "image" | "excel" };
-type DialogKind = null | "image" | "note" | "excel";
+type Attachment = { name: string; url?: string; kind: "image" | "trace" };
+type DialogKind = null | "image" | "note" | "trace" | "user";
+type TraceTab = "trace" | "jsonl" | "online";
 
 export function AgentPreview() {
   const [query, setQuery] = useState("");
@@ -13,10 +24,13 @@ export function AgentPreview() {
   const [dialog, setDialog] = useState<DialogKind>(null);
   const [userId, setUserId] = useState("");
   const [randomUid, setRandomUid] = useState(false);
+  const [traceTab, setTraceTab] = useState<TraceTab>("trace");
+  const [onlineTrace, setOnlineTrace] = useState("");
   const imgRef = useRef<HTMLInputElement>(null);
-  const xlsRef = useRef<HTMLInputElement>(null);
+  const traceRef = useRef<HTMLInputElement>(null);
+  const jsonlRef = useRef<HTMLInputElement>(null);
 
-  function onFiles(e: React.ChangeEvent<HTMLInputElement>, kind: "image" | "excel") {
+  function onFiles(e: React.ChangeEvent<HTMLInputElement>, kind: "image" | "trace") {
     const files = Array.from(e.target.files ?? []);
     const next: Attachment[] = files.map((f) => ({
       name: f.name,
@@ -28,7 +42,7 @@ export function AgentPreview() {
   }
 
   const images = attachments.filter((a) => a.kind === "image");
-  const excels = attachments.filter((a) => a.kind === "excel");
+  const traces = attachments.filter((a) => a.kind === "trace");
 
   function run() {
     if (!query.trim() && !note.trim() && !attachments.length) return;
@@ -40,11 +54,11 @@ export function AgentPreview() {
         content: `[图片] ${images.map((a) => a.name).join("、")}`,
       });
     }
-    if (excels.length) {
+    if (traces.length) {
       trajectory.push({
         kind: "user-attachment",
         icon: "note",
-        content: `[Excel] ${excels.map((a) => a.name).join("、")}`,
+        content: `[轨迹] ${traces.map((a) => a.name).join("、")}`,
       });
     }
     if (note.trim()) {
@@ -63,10 +77,12 @@ export function AgentPreview() {
     return () => window.removeEventListener("console:run", onRun);
   });
 
+  const userBadge = randomUid || userId.trim() ? 1 : 0;
   const triggers: { k: Exclude<DialogKind, null>; icon: typeof ImageIcon; title: string; badge: number }[] = [
     { k: "image", icon: ImageIcon, title: "上传图片", badge: images.length },
     { k: "note", icon: FileText, title: "附加笔记", badge: note.trim() ? 1 : 0 },
-    { k: "excel", icon: FileSpreadsheet, title: "上传 Excel", badge: excels.length },
+    { k: "trace", icon: Activity, title: "导入轨迹 (trace / jsonl / online)", badge: traces.length },
+    { k: "user", icon: UserRound, title: "用户记忆 ID", badge: userBadge },
   ];
 
   return (
@@ -82,7 +98,6 @@ export function AgentPreview() {
       {/* 底部输入：现代 chat 样式 */}
       <div className="px-4 pt-2 pb-4 bg-background">
         <div className="mx-auto max-w-3xl">
-
           {/* 附件预览条 */}
           {attachments.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2">
@@ -94,7 +109,7 @@ export function AgentPreview() {
                   {a.kind === "image" ? (
                     <ImageIcon className="h-3 w-3 text-[var(--console-orange)]" />
                   ) : (
-                    <FileSpreadsheet className="h-3 w-3 text-[var(--console-orange)]" />
+                    <Activity className="h-3 w-3 text-[var(--console-orange)]" />
                   )}
                   <span className="max-w-[140px] truncate">{a.name}</span>
                   <button
@@ -142,23 +157,6 @@ export function AgentPreview() {
                     </button>
                   );
                 })}
-                <div className="mx-1 h-4 w-px bg-border" />
-                <input
-                  value={randomUid ? "" : userId}
-                  onChange={(e) => setUserId(e.target.value)}
-                  disabled={randomUid}
-                  placeholder={randomUid ? "随机 userid" : "用户 ID"}
-                  className="h-7 w-[110px] bg-transparent text-[11px] outline-none disabled:opacity-50 placeholder:text-muted-foreground/60"
-                />
-                <label className="inline-flex items-center gap-1 cursor-pointer select-none text-[11px] px-1.5 h-7 rounded-md hover:bg-accent">
-                  <input
-                    type="checkbox"
-                    checked={randomUid}
-                    onChange={(e) => setRandomUid(e.target.checked)}
-                    className="h-3 w-3 accent-[var(--console-orange)]"
-                  />
-                  <span>随机</span>
-                </label>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-[10.5px] text-muted-foreground/70 hidden sm:block">
@@ -187,12 +185,20 @@ export function AgentPreview() {
         onChange={(e) => onFiles(e, "image")}
       />
       <input
-        ref={xlsRef}
+        ref={traceRef}
         type="file"
-        accept=".xls,.xlsx,.csv"
+        accept=".trace"
         multiple
         className="hidden"
-        onChange={(e) => onFiles(e, "excel")}
+        onChange={(e) => onFiles(e, "trace")}
+      />
+      <input
+        ref={jsonlRef}
+        type="file"
+        accept=".jsonl,.json"
+        multiple
+        className="hidden"
+        onChange={(e) => onFiles(e, "trace")}
       />
 
       {dialog && (
@@ -208,7 +214,8 @@ export function AgentPreview() {
               <div className="text-sm font-semibold">
                 {dialog === "image" && "上传图片"}
                 {dialog === "note" && "附加笔记"}
-                {dialog === "excel" && "上传 Excel"}
+                {dialog === "trace" && "导入历史轨迹"}
+                {dialog === "user" && "用户记忆 ID"}
               </div>
               <button onClick={() => setDialog(null)} className="p-1 rounded hover:bg-accent">
                 <X className="h-3.5 w-3.5 text-muted-foreground" />
@@ -252,22 +259,75 @@ export function AgentPreview() {
                 />
               )}
 
-              {dialog === "excel" && (
+              {dialog === "trace" && (
                 <>
-                  <button
-                    onClick={() => xlsRef.current?.click()}
-                    className="w-full rounded-md border border-dashed border-border py-8 text-xs text-muted-foreground hover:bg-accent"
-                  >
-                    点击选择 Excel / CSV（用于带记忆批量测试）
-                  </button>
-                  {excels.length > 0 && (
+                  <div className="flex items-center gap-1 border-b border-border">
+                    {([
+                      { k: "trace", label: ".trace", icon: Activity },
+                      { k: "jsonl", label: ".jsonl", icon: FileJson },
+                      { k: "online", label: "online", icon: Globe },
+                    ] as { k: TraceTab; label: string; icon: typeof Activity }[]).map((t) => {
+                      const Icon = t.icon;
+                      const active = traceTab === t.k;
+                      return (
+                        <button
+                          key={t.k}
+                          onClick={() => setTraceTab(t.k)}
+                          className={`inline-flex items-center gap-1 px-3 py-2 text-xs border-b-2 -mb-px transition ${
+                            active
+                              ? "border-[var(--console-orange)] text-foreground"
+                              : "border-transparent text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <Icon className="h-3.5 w-3.5" />
+                          {t.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {traceTab !== "online" ? (
+                    <button
+                      onClick={() => (traceTab === "trace" ? traceRef : jsonlRef).current?.click()}
+                      className="w-full rounded-md border border-dashed border-border py-8 text-xs text-muted-foreground hover:bg-accent flex flex-col items-center gap-2"
+                    >
+                      <Upload className="h-4 w-4" />
+                      点击选择 {traceTab === "trace" ? ".trace" : ".jsonl"} 文件（支持多个）
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      <input
+                        autoFocus
+                        value={onlineTrace}
+                        onChange={(e) => setOnlineTrace(e.target.value)}
+                        placeholder="粘贴线上 trace ID 或 URL"
+                        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)]"
+                      />
+                      <button
+                        onClick={() => {
+                          if (!onlineTrace.trim()) return;
+                          setAttachments((a) => [
+                            ...a,
+                            { name: `online: ${onlineTrace.trim()}`, kind: "trace" },
+                          ]);
+                          setOnlineTrace("");
+                        }}
+                        disabled={!onlineTrace.trim()}
+                        className="w-full px-3 py-1.5 text-xs rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-40"
+                      >
+                        加载线上轨迹
+                      </button>
+                    </div>
+                  )}
+
+                  {traces.length > 0 && (
                     <div className="space-y-1">
-                      {excels.map((a, i) => (
+                      {traces.map((a, i) => (
                         <div
                           key={i}
                           className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5 text-xs"
                         >
-                          <FileSpreadsheet className="h-3.5 w-3.5 text-[var(--console-orange)]" />
+                          <Activity className="h-3.5 w-3.5 text-[var(--console-orange)]" />
                           <span className="flex-1 truncate">{a.name}</span>
                           <button onClick={() => setAttachments((arr) => arr.filter((x) => x !== a))}>
                             <X className="h-3 w-3 text-muted-foreground" />
@@ -277,6 +337,31 @@ export function AgentPreview() {
                     </div>
                   )}
                 </>
+              )}
+
+              {dialog === "user" && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[11px] text-muted-foreground mb-1 block">用户 ID</label>
+                    <input
+                      autoFocus
+                      value={randomUid ? "" : userId}
+                      onChange={(e) => setUserId(e.target.value)}
+                      disabled={randomUid}
+                      placeholder={randomUid ? "已启用随机 userid" : "用于记忆检索"}
+                      className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)] disabled:opacity-50"
+                    />
+                  </div>
+                  <label className="inline-flex items-center gap-2 cursor-pointer select-none text-xs">
+                    <input
+                      type="checkbox"
+                      checked={randomUid}
+                      onChange={(e) => setRandomUid(e.target.checked)}
+                      className="h-3.5 w-3.5 accent-[var(--console-orange)]"
+                    />
+                    <span>使用随机 userid（每次运行生成新 ID）</span>
+                  </label>
+                </div>
               )}
             </div>
 
