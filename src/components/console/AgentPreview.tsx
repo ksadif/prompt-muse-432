@@ -82,6 +82,27 @@ export function AgentPreview() {
       {/* 底部输入：现代 chat 样式 */}
       <div className="px-4 pt-2 pb-4 bg-background">
         <div className="mx-auto max-w-3xl">
+          {/* 用户记忆 */}
+          <div className="flex items-center gap-2 mb-2 text-[11px] text-muted-foreground">
+            <span className="shrink-0">用户 ID</span>
+            <input
+              value={randomUid ? "" : userId}
+              onChange={(e) => setUserId(e.target.value)}
+              disabled={randomUid}
+              placeholder={randomUid ? "已启用随机 userid" : "用于记忆检索"}
+              className="flex-1 max-w-[260px] h-7 rounded-md border border-border bg-background px-2 text-[11px] outline-none focus:border-[var(--console-orange)]/60 disabled:opacity-50 placeholder:text-muted-foreground/60"
+            />
+            <label className="inline-flex items-center gap-1 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={randomUid}
+                onChange={(e) => setRandomUid(e.target.checked)}
+                className="h-3 w-3 accent-[var(--console-orange)]"
+              />
+              <span>随机 userid</span>
+            </label>
+          </div>
+
           {/* 附件预览条 */}
           {attachments.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2">
