@@ -508,29 +508,25 @@ export function EvalTable({
                           )}
                         </div>
 
-                        {/* 大模型评估 — 固定底部 */}
-                        <div className="shrink-0 border-t border-border bg-[var(--console-orange)]/[0.04] p-2.5 space-y-1.5">
-                          <div className="flex items-center gap-1.5">
+                        {/* 人工评分 — 固定底部 */}
+                        <div className="shrink-0 border-t border-border bg-[var(--console-orange)]/[0.04] px-2.5 py-2 space-y-1.5">
+                          <div className="flex items-center gap-1.5 text-[11px]">
                             <Sparkles className="h-3 w-3 text-[var(--console-orange)]" />
-                            <span className="text-[11px] font-medium text-foreground">大模型评估</span>
-                            <div className="ml-auto flex items-center gap-1">
-                              <span className="text-[10px] text-muted-foreground">分数</span>
-                              <input
-                                type="number"
-                                min={1}
-                                max={5}
-                                value={v?.score ?? ""}
-                                onChange={(e) =>
-                                  updateVersion(selectedRow.id, vi, {
-                                    score: e.target.value ? +e.target.value : null,
-                                  })
-                                }
-                                placeholder="—"
-                                className="w-12 rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none focus:border-[var(--console-orange)] text-center"
-                              />
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5">
+                            <span className="font-medium text-foreground">人工评分</span>
+                            <select
+                              value={v?.score ?? ""}
+                              onChange={(e) =>
+                                updateVersion(selectedRow.id, vi, {
+                                  score: e.target.value === "" ? null : +e.target.value,
+                                })
+                              }
+                              className="ml-auto w-12 rounded border border-border bg-background px-1 py-0.5 text-xs outline-none cursor-pointer text-center"
+                            >
+                              <option value="">—</option>
+                              {[0, 1, 2, 3].map((n) => (
+                                <option key={n} value={n}>{n}</option>
+                              ))}
+                            </select>
                             <select
                               value={v?.issueType ?? "无"}
                               onChange={(e) =>
@@ -539,7 +535,7 @@ export function EvalTable({
                                   issueSubType: "",
                                 })
                               }
-                              className="flex-1 min-w-0 rounded border border-border bg-background px-1.5 py-1 text-xs outline-none cursor-pointer"
+                              className="flex-1 min-w-0 rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none cursor-pointer"
                             >
                               {ISSUE_TYPES.map((it) => (
                                 <option key={it}>{it}</option>
@@ -551,9 +547,9 @@ export function EvalTable({
                                 updateVersion(selectedRow.id, vi, { issueSubType: e.target.value })
                               }
                               disabled={subTypes.length === 0}
-                              className="flex-1 min-w-0 rounded border border-border bg-background px-1.5 py-1 text-xs outline-none cursor-pointer disabled:opacity-40"
+                              className="flex-1 min-w-0 rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none cursor-pointer disabled:opacity-40"
                             >
-                              <option value="">{subTypes.length ? "细分类型…" : "—"}</option>
+                              <option value="">{subTypes.length ? "细分…" : "—"}</option>
                               {subTypes.map((it) => (
                                 <option key={it}>{it}</option>
                               ))}
@@ -562,9 +558,9 @@ export function EvalTable({
                           <textarea
                             value={v?.note ?? ""}
                             onChange={(e) => updateVersion(selectedRow.id, vi, { note: e.target.value })}
-                            placeholder="备注：写下评估说明、改进建议……"
+                            placeholder="备注…"
                             rows={1}
-                            className="w-full resize-y rounded border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-[var(--console-orange)] leading-relaxed"
+                            className="w-full resize-y rounded border border-transparent bg-transparent px-1 py-0.5 text-xs outline-none focus:border-border focus:bg-background leading-relaxed"
                           />
                         </div>
                       </div>
