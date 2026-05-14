@@ -67,7 +67,7 @@ export function PromptListPanel({
           return true;
         }),
       }))
-      .filter((f) => f.prompts.length > 0);
+      .filter((f) => f.prompts.length > 0 || (!query && !onlyMine));
   }, [folders, query, onlyMine]);
 
   if (!open) return null;
