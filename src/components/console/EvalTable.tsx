@@ -222,7 +222,7 @@ export function EvalTable({
   const [rows, setRows] = useState<EvalRow[]>(initialEvalRows);
   const [comparePrompts, setComparePrompts] = useState<PromptItem[]>([]);
   const [selectedId, setSelectedId] = useState<number>(initialEvalRows[0]?.id ?? 0);
-  const [trajectories, setTrajectories] = useState<Record<string, Step[]>>({});
+  const [trajectories, setTrajectories] = useState<Record<string, TrajectoryStep[]>>({});
 
   const allVersions = useMemo(
     () => [currentPrompt, ...comparePrompts],
