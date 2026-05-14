@@ -341,7 +341,7 @@ function TestSetPage() {
                     </tr>
                   </thead>
                   <tbody>
-                     {filteredRows.map((r) => {
+                     {pagedRows.map((r) => {
                        const cellCls =
                          "w-full rounded border border-transparent bg-transparent px-2 py-1 outline-none transition-colors hover:border-border focus:border-[var(--console-orange)] focus:bg-background";
                        return (
