@@ -243,7 +243,7 @@ export function EvalTable({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex-1 min-h-0 flex flex-col">
       {/* 顶部控制条 */}
       <div className="flex flex-wrap items-center gap-3 px-6 py-3 border-b border-border">
         <div className="inline-flex items-center gap-2">
