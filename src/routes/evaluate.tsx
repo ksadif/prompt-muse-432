@@ -402,12 +402,29 @@ function TestSetPage() {
 
       <NewTestSetDialog
         open={open}
+        folders={folders}
         onClose={() => setOpen(false)}
-        onCreate={(name, count) => {
-          setSets((s) => [
-            ...s,
-            { id: `ts-${Date.now()}`, name: `${name}（${count} 条）` },
-          ]);
+        onCreate={(name, count, folderId) => {
+          const newId = `ts-${Date.now()}`;
+          setFolders((fs) =>
+            fs.map((f) =>
+              f.id === folderId
+                ? {
+                    ...f,
+                    prompts: [
+                      ...f.prompts,
+                      {
+                        id: newId,
+                        name: `${name}（${count} 条）`,
+                        updatedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
+                        owner: "yz",
+                      },
+                    ],
+                  }
+                : f,
+            ),
+          );
+          setSelectedId(newId);
           setOpen(false);
         }}
       />
