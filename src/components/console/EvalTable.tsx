@@ -210,10 +210,9 @@ function UserBubble({
 
 function ChatInputBubbles({
   row,
-  onChange,
 }: {
   row: EvalRow;
-  onChange: (patch: Partial<EvalRow>) => void;
+  onChange?: (patch: Partial<EvalRow>) => void;
 }) {
   const image = row.extras["输入图片"] && row.extras["输入图片"] !== "-" ? row.extras["输入图片"] : "";
   const note = row.extras["输入笔记"] && row.extras["输入笔记"] !== "-" ? row.extras["输入笔记"] : "";
