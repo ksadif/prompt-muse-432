@@ -49,6 +49,7 @@ export type EvalRow = {
     output: string;
     score: number | null;
     issueType: string;
+    issueSubType?: string;
     note: string;
   }[];
 };
