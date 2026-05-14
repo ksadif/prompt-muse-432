@@ -642,7 +642,7 @@ export function EvalTable({
                             value={v?.note ?? ""}
                             onChange={(e) => updateVersion(selectedRow.id, vi, { note: e.target.value })}
                             placeholder="备注：写下评估说明、改进建议……"
-                            rows={3}
+                            rows={1}
                             className="w-full resize-y rounded border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-[var(--console-orange)] leading-relaxed"
                           />
                         </div>
