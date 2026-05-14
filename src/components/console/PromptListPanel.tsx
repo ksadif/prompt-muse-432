@@ -40,6 +40,7 @@ export function PromptListPanel({
   folders,
   selectedId,
   onSelect,
+  onAddFolder,
   variant = "prompt",
 }: {
   open: boolean;
@@ -56,6 +57,8 @@ export function PromptListPanel({
   const [query, setQuery] = useState("");
   const [onlyMine, setOnlyMine] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [addingFolder, setAddingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
 
   const filteredFolders = useMemo(() => {
     return folders
