@@ -444,3 +444,109 @@ function NewTestSetDialog({
     </Dialog>
   );
 }
+
+function AddSampleDialog({
+  open,
+  onClose,
+  onAdd,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onAdd: (query: string, extras: Record<string, string>) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [activeExtras, setActiveExtras] = useState<string[]>([]);
+  const [values, setValues] = useState<Record<string, string>>({});
+
+  const reset = () => {
+    setQuery("");
+    setActiveExtras([]);
+    setValues({});
+  };
+  const close = () => {
+    onClose();
+    setTimeout(reset, 200);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && close()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>新增测试样本</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">输入 Query *</label>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="用户输入的问题"
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)]"
+            />
+          </div>
+          <div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5">附加字段（可选）</div>
+            <div className="flex flex-wrap gap-1.5">
+              {EXTRA_FIELDS.map((f) => {
+                const on = activeExtras.includes(f);
+                return (
+                  <button
+                    key={f}
+                    onClick={() =>
+                      setActiveExtras((a) => (on ? a.filter((x) => x !== f) : [...a, f]))
+                    }
+                    className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
+                      on
+                        ? "border-[var(--console-orange)] bg-[var(--console-orange)]/10 text-[var(--console-orange)]"
+                        : "border-border bg-background text-muted-foreground hover:bg-accent"
+                    }`}
+                  >
+                    {f}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {activeExtras.length > 0 && (
+            <div className="space-y-2">
+              {activeExtras.map((f) => (
+                <div key={f}>
+                  <label className="text-xs text-muted-foreground">{f}</label>
+                  <input
+                    value={values[f] ?? ""}
+                    onChange={(e) =>
+                      setValues((v) => ({ ...v, [f]: e.target.value }))
+                    }
+                    className="mt-1 w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-[var(--console-orange)]"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              onClick={close}
+              className="px-4 py-1.5 text-sm rounded-md border border-border hover:bg-accent"
+            >
+              取消
+            </button>
+            <button
+              disabled={!query.trim()}
+              onClick={() => {
+                const extras: Record<string, string> = {};
+                activeExtras.forEach((f) => {
+                  extras[f] = values[f]?.trim() || "-";
+                });
+                onAdd(query.trim(), extras);
+                reset();
+              }}
+              className="px-4 py-1.5 text-sm rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-40"
+            >
+              添加
+            </button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
