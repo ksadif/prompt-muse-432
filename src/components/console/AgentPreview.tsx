@@ -225,8 +225,7 @@ export function AgentPreview() {
               加载
             </button>
           </div>
-
-
+          {attachments.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2">
               {attachments.map((a, i) => {
                 const Ico = attachIcon(a.kind);
