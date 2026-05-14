@@ -442,13 +442,21 @@ export function EvalTable({
           testSetName={testSets.find((t) => t.id === testSetId)?.name ?? "测试集"}
         />
 
-        <button
-          onClick={runAll}
-          className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
-        >
-          <Play className="h-3 w-3 fill-current" />
-          运行全部
-        </button>
+        <div className="ml-auto inline-flex items-center gap-1.5">
+          <button
+            onClick={() => runAllForRow(selectedId)}
+            className="inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
+          >
+            <Play className="h-3 w-3 fill-current" />
+            运行此样本
+          </button>
+          <button
+            onClick={runAll}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground hover:bg-accent"
+          >
+            运行全部
+          </button>
+        </div>
       </div>
 
       {/* 主体：左侧测试集列表 + 右侧对比环境 */}
@@ -496,15 +504,6 @@ export function EvalTable({
                       </div>
                     )}
                   </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); runAllForRow(r.id); }}
-                    className={`shrink-0 p-1 rounded hover:bg-accent text-muted-foreground hover:text-[var(--console-orange)] transition ${
-                      active ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                    }`}
-                    title="运行此样本"
-                  >
-                    <Play className="h-3 w-3" />
-                  </button>
                 </div>
               );
             })}
@@ -537,13 +536,6 @@ export function EvalTable({
                             v{vi + 1}
                           </span>
                           <span className="text-xs font-medium truncate flex-1">{p.name}</span>
-                          <button
-                            onClick={() => runRow(selectedRow.id, vi)}
-                            className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-accent"
-                            title="重新运行"
-                          >
-                            <Play className="h-3 w-3" />
-                          </button>
                           {vi > 0 && (
                             <button
                               onClick={() => {
