@@ -49,17 +49,26 @@ function genDetailRows(setId: string, name: string) {
   }));
 }
 
+type ExtraSample = { id: string; no: number; query: string; extras: Record<string, string> };
+
 function TestSetPage() {
   const [sets, setSets] = useState(initialTestSets);
   const [open, setOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(initialTestSets[0]?.id ?? null);
   const [search, setSearch] = useState("");
+  const [extraRows, setExtraRows] = useState<Record<string, ExtraSample[]>>({});
+  const [addOpen, setAddOpen] = useState(false);
 
   const selected = sets.find((s) => s.id === selectedId) ?? null;
-  const detailRows = useMemo(
+  const baseRows = useMemo(
     () => (selected ? genDetailRows(selected.id, selected.name) : []),
     [selected],
   );
+  const detailRows = useMemo(() => {
+    if (!selected) return [];
+    const added = extraRows[selected.id] ?? [];
+    return [...baseRows, ...added];
+  }, [selected, baseRows, extraRows]);
   const filteredRows = detailRows.filter((r) =>
     search.trim() ? r.query.toLowerCase().includes(search.trim().toLowerCase()) : true,
   );
