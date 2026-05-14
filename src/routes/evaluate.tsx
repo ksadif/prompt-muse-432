@@ -67,14 +67,9 @@ function TestSetPage() {
   const [overrides, setOverrides] = useState<
     Record<string, Record<string, { query?: string; extras?: Record<string, string> }>>
   >({});
-  const [addOpen, setAddOpen] = useState(false);
+  
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
-
-  const renameSet = (id: string, currentName: string) => {
-    const next = window.prompt("重命名测试集", currentName);
-    if (!next || !next.trim() || next === currentName) return;
-    setSets((s) => s.map((x) => (x.id === id ? { ...x, name: next.trim() } : x)));
-  };
+  const [dirtySets, setDirtySets] = useState<Set<string>>(new Set());
 
   const selected = sets.find((s) => s.id === selectedId) ?? null;
   const baseRows = useMemo(
@@ -102,6 +97,48 @@ function TestSetPage() {
     search.trim() ? r.query.toLowerCase().includes(search.trim().toLowerCase()) : true,
   );
 
+  const markDirty = (sid: string) =>
+    setDirtySets((d) => {
+      if (d.has(sid)) return d;
+      const n = new Set(d);
+      n.add(sid);
+      return n;
+    });
+  const saveSelected = () => {
+    if (!selected) return;
+    setDirtySets((d) => {
+      const n = new Set(d);
+      n.delete(selected.id);
+      return n;
+    });
+  };
+  const isDirty = selected ? dirtySets.has(selected.id) : false;
+
+  const renameSet = (id: string, currentName: string) => {
+    const next = window.prompt("重命名测试集", currentName);
+    if (!next || !next.trim() || next === currentName) return;
+    setSets((s) => s.map((x) => (x.id === id ? { ...x, name: next.trim() } : x)));
+    markDirty(id);
+  };
+
+  const addBlankRow = () => {
+    if (!selected) return;
+    setExtraRows((m) => {
+      const list = m[selected.id] ?? [];
+      const empty: Record<string, string> = {};
+      MOCK_DETAIL_FIELDS.forEach((f) => (empty[f] = ""));
+      const next: ExtraSample = {
+        id: `${selected.id}-x${list.length + 1}-${Date.now()}`,
+        no: baseRows.length + list.length + 1,
+        query: "",
+        extras: empty,
+      };
+      return { ...m, [selected.id]: [...list, next] };
+    });
+    markDirty(selected.id);
+    setEditingRowId(`${selected.id}-x${(extraRows[selected.id]?.length ?? 0) + 1}-${Date.now()}`);
+  };
+
   const updateCell = (rowId: string, field: "query" | string, value: string) => {
     if (!selected) return;
     setOverrides((m) => {
@@ -113,6 +150,7 @@ function TestSetPage() {
       ov[rowId] = cur;
       return { ...m, [sid]: ov };
     });
+    if (selected) markDirty(selected.id);
   };
 
   const deleteSet = (id: string) => {
@@ -127,6 +165,7 @@ function TestSetPage() {
       cur.add(rowId);
       return { ...m, [selected.id]: cur };
     });
+    markDirty(selected.id);
   };
 
   return (
@@ -213,10 +252,11 @@ function TestSetPage() {
                     />
                   </div>
                   <button
-                    onClick={() => setAddOpen(true)}
-                    className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1.5 text-xs text-foreground hover:bg-muted"
+                    onClick={saveSelected}
+                    disabled={!isDirty}
+                    className="inline-flex items-center gap-1 rounded bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-xs hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <Plus className="h-3 w-3" /> 新增样本
+                    保存{isDirty ? " ·" : ""}
                   </button>
                   <Link
                     to="/"
@@ -310,6 +350,12 @@ function TestSetPage() {
                     </tbody>
                   </table>
                 </div>
+                <button
+                  onClick={addBlankRow}
+                  className="mt-2 inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-[var(--console-orange)] hover:bg-muted"
+                >
+                  <Plus className="h-3 w-3" /> 新增一行
+                </button>
               </div>
             </>
           ) : (
@@ -327,25 +373,6 @@ function TestSetPage() {
             { id: `ts-${Date.now()}`, name: `${name}（${count} 条）` },
           ]);
           setOpen(false);
-        }}
-      />
-
-      <AddSampleDialog
-        open={addOpen}
-        onClose={() => setAddOpen(false)}
-        onAdd={(query, extras) => {
-          if (!selected) return;
-          setExtraRows((m) => {
-            const list = m[selected.id] ?? [];
-            const next: ExtraSample = {
-              id: `${selected.id}-x${list.length + 1}-${Date.now()}`,
-              no: baseRows.length + list.length + 1,
-              query,
-              extras,
-            };
-            return { ...m, [selected.id]: [...list, next] };
-          });
-          setAddOpen(false);
         }}
       />
     </ConsoleShell>
@@ -515,108 +542,3 @@ function NewTestSetDialog({
   );
 }
 
-function AddSampleDialog({
-  open,
-  onClose,
-  onAdd,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onAdd: (query: string, extras: Record<string, string>) => void;
-}) {
-  const [query, setQuery] = useState("");
-  const [activeExtras, setActiveExtras] = useState<string[]>([]);
-  const [values, setValues] = useState<Record<string, string>>({});
-
-  const reset = () => {
-    setQuery("");
-    setActiveExtras([]);
-    setValues({});
-  };
-  const close = () => {
-    onClose();
-    setTimeout(reset, 200);
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={(v) => !v && close()}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>新增测试样本</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-3">
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">输入 Query *</label>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="用户输入的问题"
-              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)]"
-            />
-          </div>
-          <div>
-            <div className="text-xs font-medium text-muted-foreground mb-1.5">附加字段（可选）</div>
-            <div className="flex flex-wrap gap-1.5">
-              {EXTRA_FIELDS.map((f) => {
-                const on = activeExtras.includes(f);
-                return (
-                  <button
-                    key={f}
-                    onClick={() =>
-                      setActiveExtras((a) => (on ? a.filter((x) => x !== f) : [...a, f]))
-                    }
-                    className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
-                      on
-                        ? "border-[var(--console-orange)] bg-[var(--console-orange)]/10 text-[var(--console-orange)]"
-                        : "border-border bg-background text-muted-foreground hover:bg-accent"
-                    }`}
-                  >
-                    {f}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          {activeExtras.length > 0 && (
-            <div className="space-y-2">
-              {activeExtras.map((f) => (
-                <div key={f}>
-                  <label className="text-xs text-muted-foreground">{f}</label>
-                  <input
-                    value={values[f] ?? ""}
-                    onChange={(e) =>
-                      setValues((v) => ({ ...v, [f]: e.target.value }))
-                    }
-                    className="mt-1 w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm outline-none focus:border-[var(--console-orange)]"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="flex justify-end gap-2 pt-1">
-            <button
-              onClick={close}
-              className="px-4 py-1.5 text-sm rounded-md border border-border hover:bg-accent"
-            >
-              取消
-            </button>
-            <button
-              disabled={!query.trim()}
-              onClick={() => {
-                const extras: Record<string, string> = {};
-                activeExtras.forEach((f) => {
-                  extras[f] = values[f]?.trim() || "-";
-                });
-                onAdd(query.trim(), extras);
-                reset();
-              }}
-              className="px-4 py-1.5 text-sm rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-40"
-            >
-              添加
-            </button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
