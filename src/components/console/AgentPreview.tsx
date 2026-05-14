@@ -14,6 +14,7 @@ import {
   ShoppingBag,
   User as UserIcon,
   MapPin,
+  History,
 } from "lucide-react";
 import { TrajectoryView, buildDemoTrajectory, type TrajectoryStep } from "./TrajectoryView";
 
