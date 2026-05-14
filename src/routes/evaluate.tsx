@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
-import { Plus, Upload, FileSpreadsheet, Trash2, PencilLine, FileUp } from "lucide-react";
+import { Plus, Upload, FileSpreadsheet, Trash2, PencilLine, FileUp, Search, ChevronRight } from "lucide-react";
 import { testSets as initialTestSets } from "@/components/console/mockData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -14,54 +14,182 @@ const EXTRA_FIELDS = ["输入图片", "输入笔记", "地理位置", "短期记
 
 type Row = { query: string; extras: Record<string, string> };
 
+const MOCK_DETAIL_FIELDS = ["输入图片", "输入笔记", "地理位置", "用户UID", "短期记忆"] as const;
+
+function genDetailRows(setId: string, name: string) {
+  const count = (() => {
+    const m = name.match(/(\d+)\s*条/);
+    return m ? Math.min(parseInt(m[1], 10), 12) : 6;
+  })();
+  const queries = [
+    "你是谁",
+    "附近有什么好吃的",
+    "明天会下雨吗",
+    "帮我写一段道歉信",
+    "邻居家漏水墙面发霉怎么办",
+    "推荐一下亲子周末活动",
+    "如何申请垃圾分类志愿者",
+    "小区电梯故障找谁报修",
+    "怎么办理居住证",
+    "最近有什么社区活动",
+    "我家猫咪走丢了",
+    "夜里楼上太吵怎么办",
+  ];
+  return Array.from({ length: count }, (_, i) => ({
+    id: `${setId}-r${i + 1}`,
+    no: i + 1,
+    query: queries[i % queries.length],
+    extras: {
+      输入图片: i % 3 === 0 ? `img_${setId}_${i}.jpg` : "-",
+      输入笔记: i % 4 === 0 ? "邻居纠纷相关笔记" : "-",
+      地理位置: ["上海·徐汇", "北京·朝阳", "杭州·西湖", "深圳·南山"][i % 4],
+      用户UID: `U${100000 + i * 7}`,
+      短期记忆: i % 5 === 0 ? "上一轮：垃圾分类时间咨询" : "-",
+    } as Record<string, string>,
+  }));
+}
+
 function TestSetPage() {
   const [sets, setSets] = useState(initialTestSets);
   const [open, setOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(initialTestSets[0]?.id ?? null);
+  const [search, setSearch] = useState("");
+
+  const selected = sets.find((s) => s.id === selectedId) ?? null;
+  const detailRows = useMemo(
+    () => (selected ? genDetailRows(selected.id, selected.name) : []),
+    [selected],
+  );
+  const filteredRows = detailRows.filter((r) =>
+    search.trim() ? r.query.toLowerCase().includes(search.trim().toLowerCase()) : true,
+  );
 
   return (
     <ConsoleShell>
-      <div className="px-6 py-5">
-        <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col h-full">
+        <div className="px-6 pt-5 pb-3 flex items-center justify-between border-b border-border">
           <div className="min-w-0">
             <h1 className="text-base font-semibold tracking-tight">测试集管理</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
-              管理用于效果测试与评估的输入样本集合，可在 Prompt 工作台「效果测试」中关联。
+              上方为测试集列表，点击任一测试集查看详细样本内容。
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => setOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
-            >
-              <Plus className="h-3.5 w-3.5" /> 新建测试集
-            </button>
+          <button
+            onClick={() => setOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-sm hover:opacity-90"
+          >
+            <Plus className="h-3.5 w-3.5" /> 新建测试集
+          </button>
+        </div>
+
+        {/* 上：测试集列表 */}
+        <div className="px-6 py-4 border-b border-border">
+          <div className="text-xs font-medium text-muted-foreground mb-2">测试集列表</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {sets.map((t) => {
+              const active = t.id === selectedId;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setSelectedId(t.id)}
+                  className={`text-left rounded-lg border p-3 transition ${
+                    active
+                      ? "border-[var(--console-orange)] bg-[var(--console-orange)]/5 shadow-sm"
+                      : "border-border bg-background hover:shadow-sm hover:border-foreground/20"
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <FileSpreadsheet
+                      className={`h-4 w-4 ${active ? "text-[var(--console-orange)]" : "text-muted-foreground"}`}
+                    />
+                    <ChevronRight
+                      className={`h-3.5 w-3.5 ${active ? "text-[var(--console-orange)]" : "text-muted-foreground/60"}`}
+                    />
+                  </div>
+                  <div className="mt-2 text-sm font-medium truncate">{t.name}</div>
+                  <div className="mt-0.5 text-[11px] text-muted-foreground">
+                    创建于 2026-05-01 · yz
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {sets.map((t) => (
-            <div
-              key={t.id}
-              className="rounded-lg border border-border bg-background p-4 hover:shadow-sm transition"
-            >
-              <div className="flex items-start justify-between">
-                <FileSpreadsheet className="h-5 w-5 text-[var(--console-orange)]" />
-                <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                  已启用
-                </span>
+        {/* 下：详细内容 */}
+        <div className="flex-1 min-h-0 px-6 py-4 overflow-auto">
+          {selected ? (
+            <>
+              <div className="flex items-center justify-between mb-3 gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold truncate">{selected.name}</div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    共 {detailRows.length} 条样本
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <input
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="搜索 Query"
+                      className="pl-7 pr-2 py-1.5 text-xs rounded-md border border-border bg-background outline-none focus:border-[var(--console-orange)] w-48"
+                    />
+                  </div>
+                  <Link
+                    to="/"
+                    className="text-xs text-[var(--console-orange)] hover:underline shrink-0"
+                  >
+                    在 Prompt 工作台中使用 →
+                  </Link>
+                </div>
               </div>
-              <div className="mt-3 text-sm font-medium">{t.name}</div>
-              <div className="mt-1 text-xs text-muted-foreground">
-                创建于 2026-05-01 · 所有者 yz
+
+              <div className="rounded-md border border-border overflow-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/60 text-muted-foreground sticky top-0">
+                    <tr>
+                      <th className="w-12 px-3 py-2 text-left font-medium">#</th>
+                      <th className="px-3 py-2 text-left font-medium min-w-[200px]">输入 Query</th>
+                      {MOCK_DETAIL_FIELDS.map((f) => (
+                        <th key={f} className="px-3 py-2 text-left font-medium whitespace-nowrap">
+                          {f}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRows.map((r) => (
+                      <tr key={r.id} className="border-t border-border hover:bg-muted/30">
+                        <td className="px-3 py-2 text-muted-foreground">{r.no}</td>
+                        <td className="px-3 py-2">{r.query}</td>
+                        {MOCK_DETAIL_FIELDS.map((f) => (
+                          <td key={f} className="px-3 py-2 text-muted-foreground whitespace-nowrap">
+                            {r.extras[f]}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                    {filteredRows.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={2 + MOCK_DETAIL_FIELDS.length}
+                          className="px-3 py-8 text-center text-muted-foreground"
+                        >
+                          没有匹配的样本
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
-              <Link
-                to="/"
-                className="inline-flex mt-3 text-xs text-[var(--console-orange)] hover:underline"
-              >
-                在 Prompt 工作台中使用 →
-              </Link>
+            </>
+          ) : (
+            <div className="text-sm text-muted-foreground text-center py-12">
+              请选择上方任一测试集查看详细内容
             </div>
-          ))}
+          )}
         </div>
       </div>
 
