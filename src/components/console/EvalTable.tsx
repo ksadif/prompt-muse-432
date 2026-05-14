@@ -462,19 +462,6 @@ export function EvalTable({
                   );
                 })}
 
-                {/* 增加对比 */}
-                {comparePrompts.length < 2 && (
-                  <button
-                    onClick={addCompare}
-                    className="rounded-lg border border-dashed border-border bg-background/40 hover:bg-background hover:border-[var(--console-orange)]/50 hover:text-[var(--console-orange)] text-muted-foreground transition flex flex-col items-center justify-center gap-1.5 py-10 text-xs"
-                  >
-                    <Plus className="h-4 w-4" />
-                    增加 Prompt 对比
-                    <span className="text-[10px] text-muted-foreground">
-                      最多 3 个环境
-                    </span>
-                  </button>
-                )}
               </div>
             </div>
           ) : (
