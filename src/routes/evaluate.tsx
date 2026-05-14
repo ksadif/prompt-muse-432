@@ -417,7 +417,7 @@ function TestSetPage() {
               </div>
               <div className="mt-2 flex items-center justify-between">
                 <button
-                  onClick={addBlankRow}
+                  onClick={() => setComposerOpen(true)}
                   className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-[var(--console-orange)] hover:bg-muted"
                 >
                   <Plus className="h-3 w-3" /> 新增一行
