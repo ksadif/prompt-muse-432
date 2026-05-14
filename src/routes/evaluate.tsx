@@ -68,6 +68,13 @@ function TestSetPage() {
     Record<string, Record<string, { query?: string; extras?: Record<string, string> }>>
   >({});
   const [addOpen, setAddOpen] = useState(false);
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
+
+  const renameSet = (id: string, currentName: string) => {
+    const next = window.prompt("重命名测试集", currentName);
+    if (!next || !next.trim() || next === currentName) return;
+    setSets((s) => s.map((x) => (x.id === id ? { ...x, name: next.trim() } : x)));
+  };
 
   const selected = sets.find((s) => s.id === selectedId) ?? null;
   const baseRows = useMemo(
