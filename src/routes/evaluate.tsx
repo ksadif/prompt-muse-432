@@ -57,6 +57,7 @@ function TestSetPage() {
   const [selectedId, setSelectedId] = useState<string | null>(initialTestSets[0]?.id ?? null);
   const [search, setSearch] = useState("");
   const [extraRows, setExtraRows] = useState<Record<string, ExtraSample[]>>({});
+  const [deletedRowIds, setDeletedRowIds] = useState<Record<string, Set<string>>>({});
   const [addOpen, setAddOpen] = useState(false);
 
   const selected = sets.find((s) => s.id === selectedId) ?? null;
@@ -67,11 +68,27 @@ function TestSetPage() {
   const detailRows = useMemo(() => {
     if (!selected) return [];
     const added = extraRows[selected.id] ?? [];
-    return [...baseRows, ...added];
-  }, [selected, baseRows, extraRows]);
+    const deleted = deletedRowIds[selected.id] ?? new Set<string>();
+    return [...baseRows, ...added].filter((r) => !deleted.has(r.id));
+  }, [selected, baseRows, extraRows, deletedRowIds]);
   const filteredRows = detailRows.filter((r) =>
     search.trim() ? r.query.toLowerCase().includes(search.trim().toLowerCase()) : true,
   );
+
+  const deleteSet = (id: string) => {
+    if (!confirm("确定删除该测试集？")) return;
+    const remaining = sets.filter((x) => x.id !== id);
+    setSets(remaining);
+    if (selectedId === id) setSelectedId(remaining[0]?.id ?? null);
+  };
+  const deleteRow = (rowId: string) => {
+    if (!selected) return;
+    setDeletedRowIds((m) => {
+      const cur = new Set(m[selected.id] ?? []);
+      cur.add(rowId);
+      return { ...m, [selected.id]: cur };
+    });
+  };
 
   return (
     <ConsoleShell>
