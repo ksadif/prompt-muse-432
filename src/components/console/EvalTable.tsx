@@ -148,7 +148,6 @@ function ExportMenu({
 
 function buildSteps(input: string, promptName: string): Step[] {
   return [
-    { role: "user", content: input || "(空)" },
     { role: "tool", content: "调用工具：知识库检索", meta: "命中 3 条相关文档" },
     { role: "tool", content: "调用工具：意图识别", meta: "意图=咨询类" },
     { role: "agent", content: `[${promptName}] 模拟输出 - ${input}` },
