@@ -7,6 +7,7 @@ export function NewPromptDialog({
   folders,
   onClose,
   onCreate,
+  variant = "agent",
 }: {
   open: boolean;
   folders: Folder[];
@@ -14,7 +15,7 @@ export function NewPromptDialog({
   onCreate: (data: { name: string; description: string; folderId: string }) => void;
   variant?: "agent" | "prompt";
 }) {
-  const label = (props as any).variant === "prompt" ? "Prompt" : "Agent";
+  const label = variant === "prompt" ? "Prompt" : "Agent";
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [folderId, setFolderId] = useState(folders[0]?.id ?? "");
