@@ -303,27 +303,6 @@ function ChatInputBubbles({
         </div>
       ) : null}
 
-      {/* 添加按钮 */}
-      {(!image || !note) && editing === null && (
-        <div className="flex justify-end gap-1.5">
-          {!image && (
-            <button
-              onClick={() => startEdit("image", "")}
-              className="inline-flex items-center gap-1 text-[10.5px] text-muted-foreground hover:text-foreground border border-dashed border-border rounded-full px-2 py-0.5 hover:bg-accent"
-            >
-              <ImageIcon className="h-2.5 w-2.5" /> 添加图片
-            </button>
-          )}
-          {!note && (
-            <button
-              onClick={() => startEdit("note", "")}
-              className="inline-flex items-center gap-1 text-[10.5px] text-muted-foreground hover:text-foreground border border-dashed border-border rounded-full px-2 py-0.5 hover:bg-accent"
-            >
-              <StickyNote className="h-2.5 w-2.5" /> 添加笔记
-            </button>
-          )}
-        </div>
-      )}
     </div>
   );
 }
@@ -663,7 +642,7 @@ export function EvalTable({
                             value={v?.note ?? ""}
                             onChange={(e) => updateVersion(selectedRow.id, vi, { note: e.target.value })}
                             placeholder="备注：写下评估说明、改进建议……"
-                            rows={3}
+                            rows={1}
                             className="w-full resize-y rounded border border-border bg-background px-2 py-1.5 text-xs outline-none focus:border-[var(--console-orange)] leading-relaxed"
                           />
                         </div>
