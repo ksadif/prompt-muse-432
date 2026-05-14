@@ -211,8 +211,62 @@ export function AgentPreview() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-border text-sm font-semibold">
-        Agent 效果预览
+      <div className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
+        <div className="text-sm font-semibold">Agent 效果预览</div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setDialog("user")}
+            className={`relative h-7 px-2 inline-flex items-center gap-1 rounded-md text-xs hover:bg-accent transition ${userBadge ? "text-[var(--console-orange)]" : "text-muted-foreground"}`}
+            title="用户记忆 ID"
+          >
+            <UserRound className="h-3.5 w-3.5" />
+            <span>用户 ID</span>
+            {userBadge > 0 && (
+              <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-[var(--console-orange)]" />
+            )}
+          </button>
+          <div className="relative">
+            <button
+              onClick={() => setHistoryOpen((v) => !v)}
+              className={`relative h-7 px-2 inline-flex items-center gap-1 rounded-md text-xs hover:bg-accent transition ${historyHash.trim() ? "text-[var(--console-orange)]" : "text-muted-foreground"}`}
+              title="加载历史轨迹"
+            >
+              <History className="h-3.5 w-3.5" />
+              <span>历史</span>
+            </button>
+            {historyOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setHistoryOpen(false)} />
+                <div className="absolute top-full right-0 mt-2 z-50 w-[280px] rounded-lg border border-border bg-background shadow-lg p-2 flex items-center gap-1.5">
+                  <input
+                    autoFocus
+                    value={historyHash}
+                    onChange={(e) => setHistoryHash(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        loadHistory();
+                        setHistoryOpen(false);
+                      }
+                    }}
+                    placeholder="输入 hash_id"
+                    className="flex-1 h-7 rounded-md border border-border bg-background px-2 text-xs outline-none focus:border-[var(--console-orange)] placeholder:text-muted-foreground/70"
+                  />
+                  <button
+                    onClick={() => {
+                      loadHistory();
+                      setHistoryOpen(false);
+                    }}
+                    disabled={!historyHash.trim()}
+                    className="shrink-0 h-7 px-3 rounded-md bg-foreground text-background text-xs hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                  >
+                    加载
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
