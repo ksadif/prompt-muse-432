@@ -77,40 +77,31 @@ function TestSetPage() {
     <ConsoleShell>
       <div className="flex h-full min-h-0">
         {/* 左：测试集列表 */}
-        <aside className="w-72 shrink-0 border-r border-border flex flex-col min-h-0">
-          <div className="px-4 pt-4 pb-3 border-b border-border">
-            <h1 className="text-sm font-semibold tracking-tight">测试集管理</h1>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              选择左侧测试集查看详情
-            </p>
+        <aside className="w-64 shrink-0 border-r border-border flex flex-col min-h-0">
+          <div className="px-3 pt-3 pb-2 border-b border-border flex items-center justify-between">
+            <h1 className="text-xs font-medium text-muted-foreground">测试集</h1>
             <button
               onClick={() => setOpen(true)}
-              className="mt-3 w-full inline-flex items-center justify-center gap-1.5 rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] px-3 py-1.5 text-xs hover:opacity-90"
+              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted"
+              title="新建测试集"
             >
-              <Plus className="h-3.5 w-3.5" /> 新建测试集
+              <Plus className="h-3 w-3" /> 新建
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-2">
+          <div className="flex-1 overflow-y-auto p-1.5">
             {sets.map((t) => {
               const active = t.id === selectedId;
               return (
                 <button
                   key={t.id}
                   onClick={() => setSelectedId(t.id)}
-                  className={`w-full text-left rounded-md px-3 py-2 mb-1 transition flex items-start gap-2 ${
-                    active
-                      ? "bg-[var(--console-orange)]/10 text-foreground"
-                      : "hover:bg-muted text-foreground/90"
+                  className={`w-full text-left rounded px-2 py-1.5 mb-0.5 transition flex items-center gap-2 ${
+                    active ? "bg-muted text-foreground" : "hover:bg-muted/60 text-foreground/80"
                   }`}
                 >
-                  <FileSpreadsheet
-                    className={`h-4 w-4 mt-0.5 shrink-0 ${active ? "text-[var(--console-orange)]" : "text-muted-foreground"}`}
-                  />
+                  <FileSpreadsheet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs font-medium truncate">{t.name}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">
-                      2026-05-01 · yz
-                    </div>
+                    <div className="text-xs truncate">{t.name}</div>
                   </div>
                 </button>
               );
@@ -122,41 +113,47 @@ function TestSetPage() {
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
           {selected ? (
             <>
-              <div className="px-6 pt-4 pb-3 border-b border-border flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold truncate">{selected.name}</div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">
-                    共 {detailRows.length} 条样本
+              <div className="px-5 pt-3 pb-2 border-b border-border flex items-center justify-between gap-3">
+                <div className="min-w-0 flex items-baseline gap-2">
+                  <div className="text-sm font-medium truncate">{selected.name}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {detailRows.length} 条
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <div className="relative">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                     <input
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="搜索 Query"
-                      className="pl-7 pr-2 py-1.5 text-xs rounded-md border border-border bg-background outline-none focus:border-[var(--console-orange)] w-48"
+                      className="pl-6 pr-2 py-1 text-xs rounded border border-border bg-background outline-none focus:border-[var(--console-orange)] w-44"
                     />
                   </div>
+                  <button
+                    onClick={() => setAddOpen(true)}
+                    className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-muted"
+                  >
+                    <Plus className="h-3 w-3" /> 新增样本
+                  </button>
                   <Link
                     to="/"
-                    className="text-xs text-[var(--console-orange)] hover:underline shrink-0"
+                    className="text-xs text-muted-foreground hover:text-foreground shrink-0"
                   >
                     在 Prompt 工作台中使用 →
                   </Link>
                 </div>
               </div>
 
-              <div className="flex-1 min-h-0 overflow-auto px-6 py-4">
-                <div className="rounded-md border border-border overflow-auto">
+              <div className="flex-1 min-h-0 overflow-auto px-5 py-3">
+                <div className="rounded border border-border overflow-auto">
                   <table className="w-full text-xs">
-                    <thead className="bg-muted/60 text-muted-foreground sticky top-0">
+                    <thead className="bg-muted/40 text-muted-foreground sticky top-0">
                       <tr>
-                        <th className="w-12 px-3 py-2 text-left font-medium">#</th>
-                        <th className="px-3 py-2 text-left font-medium min-w-[200px]">输入 Query</th>
+                        <th className="w-10 px-3 py-1.5 text-left font-normal">#</th>
+                        <th className="px-3 py-1.5 text-left font-normal min-w-[200px]">输入 Query</th>
                         {MOCK_DETAIL_FIELDS.map((f) => (
-                          <th key={f} className="px-3 py-2 text-left font-medium whitespace-nowrap">
+                          <th key={f} className="px-3 py-1.5 text-left font-normal whitespace-nowrap">
                             {f}
                           </th>
                         ))}
@@ -165,10 +162,10 @@ function TestSetPage() {
                     <tbody>
                       {filteredRows.map((r) => (
                         <tr key={r.id} className="border-t border-border hover:bg-muted/30">
-                          <td className="px-3 py-2 text-muted-foreground">{r.no}</td>
-                          <td className="px-3 py-2">{r.query}</td>
+                          <td className="px-3 py-1.5 text-muted-foreground">{r.no}</td>
+                          <td className="px-3 py-1.5">{r.query}</td>
                           {MOCK_DETAIL_FIELDS.map((f) => (
-                            <td key={f} className="px-3 py-2 text-muted-foreground whitespace-nowrap">
+                            <td key={f} className="px-3 py-1.5 text-muted-foreground whitespace-nowrap">
                               {r.extras[f]}
                             </td>
                           ))}
@@ -190,9 +187,7 @@ function TestSetPage() {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
-              请选择左侧任一测试集查看详细内容
-            </div>
+            <div className="flex-1" />
           )}
         </div>
       </div>
