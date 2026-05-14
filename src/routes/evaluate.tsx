@@ -18,7 +18,7 @@ export const Route = createFileRoute("/evaluate")({
 
 const EXTRA_FIELDS = ["输入图片", "输入笔记", "地理位置", "短期记忆", "长期记忆"] as const;
 
-type Row = { query: string; extras: Record<string, string> };
+
 
 const MOCK_DETAIL_FIELDS = ["输入图片", "输入笔记", "地理位置", "用户UID", "短期记忆"] as const;
 
