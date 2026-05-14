@@ -11,6 +11,8 @@ export function AgentPreview() {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [steps, setSteps] = useState<TrajectoryStep[]>([]);
   const [dialog, setDialog] = useState<DialogKind>(null);
+  const [userId, setUserId] = useState("");
+  const [randomUid, setRandomUid] = useState(false);
   const imgRef = useRef<HTMLInputElement>(null);
   const xlsRef = useRef<HTMLInputElement>(null);
 
