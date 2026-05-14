@@ -1,10 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, ChevronDown, Play, Download, Bot, User, Wrench, Sparkles } from "lucide-react";
+import { Plus, ChevronDown, Play, Download, Bot, Wrench, Sparkles, ImageIcon, StickyNote, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import type { Folder, PromptItem } from "./types";
 import { initialEvalRows, testSets, type EvalRow } from "./mockData";
 
-const ISSUE_TYPES = ["无", "略冗长", "事实错误", "格式不符", "拒答", "其他"];
+const ISSUE_CATEGORIES: Record<string, string[]> = {
+  "无": [],
+  "内容质量": ["事实错误", "逻辑混乱", "信息不足", "过度冗长"],
+  "格式问题": ["格式不符", "结构混乱", "Markdown 错误"],
+  "行为偏差": ["拒答", "答非所问", "幻觉"],
+  "工具使用": ["调用失败", "参数错误", "未使用工具"],
+  "其他": ["其他"],
+};
+const ISSUE_TYPES = Object.keys(ISSUE_CATEGORIES);
 
 type Step = { role: "user" | "agent" | "tool"; content: string; meta?: string };
 
