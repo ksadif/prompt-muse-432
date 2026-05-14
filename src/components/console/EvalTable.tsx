@@ -159,7 +159,7 @@ function StepCard({ s }: { s: Step }) {
   return (
     <div className="rounded-md border border-border bg-background p-2.5">
       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-1">
-        {s.role === "user" && <><User className="h-3 w-3" /> 用户</>}
+        {s.role === "user" && <><StickyNote className="h-3 w-3" /> 输入内容</>}
         {s.role === "agent" && <><Bot className="h-3 w-3 text-[var(--console-orange)]" /> Agent</>}
         {s.role === "tool" && <><Wrench className="h-3 w-3" /> 工具调用</>}
         {s.meta && <span className="ml-auto">{s.meta}</span>}
