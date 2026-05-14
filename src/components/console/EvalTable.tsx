@@ -559,7 +559,7 @@ export function EvalTable({
                             value={v?.note ?? ""}
                             onChange={(e) => updateVersion(selectedRow.id, vi, { note: e.target.value })}
                             placeholder="备注…"
-                            className="w-full bg-transparent border-0 border-b border-transparent px-0 py-0.5 text-xs outline-none focus:border-border placeholder:text-muted-foreground/60"
+                            className="w-full rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none focus:border-[var(--console-orange)]/60 placeholder:text-muted-foreground/60"
                           />
                         </div>
                       </div>
