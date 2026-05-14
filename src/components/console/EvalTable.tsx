@@ -512,7 +512,7 @@ export function EvalTable({
                         <div className="shrink-0 border-t border-border bg-[var(--console-orange)]/[0.04] px-2.5 py-2 space-y-1.5">
                           <div className="flex items-center gap-1.5 text-[11px]">
                             <Sparkles className="h-3 w-3 text-[var(--console-orange)]" />
-                            <span className="font-medium text-foreground">人工评分</span>
+                            <span className="font-medium text-foreground">评估</span>
                             <select
                               value={v?.score ?? ""}
                               onChange={(e) =>
@@ -555,12 +555,11 @@ export function EvalTable({
                               ))}
                             </select>
                           </div>
-                          <textarea
+                          <input
                             value={v?.note ?? ""}
                             onChange={(e) => updateVersion(selectedRow.id, vi, { note: e.target.value })}
                             placeholder="备注…"
-                            rows={1}
-                            className="w-full resize-y rounded border border-transparent bg-transparent px-1 py-0.5 text-xs outline-none focus:border-border focus:bg-background leading-relaxed"
+                            className="w-full bg-transparent border-0 border-b border-transparent px-0 py-0.5 text-xs outline-none focus:border-border placeholder:text-muted-foreground/60"
                           />
                         </div>
                       </div>
