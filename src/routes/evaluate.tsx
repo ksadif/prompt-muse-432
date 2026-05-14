@@ -338,15 +338,15 @@ function NewTestSetDialog({
   const [mode, setMode] = useState<"manual" | "upload">("manual");
   const [name, setName] = useState("");
   const [scope, setScope] = useState("社区助手");
-  const [rows, setRows] = useState<Row[]>([{ query: "", extras: {} }]);
   const [activeExtras, setActiveExtras] = useState<string[]>([]);
+  const [count, setCount] = useState(10);
   const [file, setFile] = useState<File | null>(null);
 
   const reset = () => {
     setMode("manual");
     setName("");
-    setRows([{ query: "", extras: {} }]);
     setActiveExtras([]);
+    setCount(10);
     setFile(null);
   };
 
@@ -355,18 +355,17 @@ function NewTestSetDialog({
     setTimeout(reset, 200);
   };
 
-  const validRows = rows.filter((r) => r.query.trim());
-  const canCreate = name.trim() && (mode === "manual" ? validRows.length > 0 : !!file);
+  const canCreate =
+    name.trim() && (mode === "manual" ? count > 0 : !!file);
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && close()}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>新建测试集</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* 基本信息 */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-muted-foreground">测试集名称</label>
@@ -391,13 +390,12 @@ function NewTestSetDialog({
             </div>
           </div>
 
-          {/* 录入方式 Tab */}
           <div className="inline-flex rounded-md border border-border bg-muted/40 p-0.5 text-xs">
             <button
               onClick={() => setMode("manual")}
               className={`inline-flex items-center gap-1.5 rounded px-3 py-1.5 ${mode === "manual" ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
             >
-              <PencilLine className="h-3.5 w-3.5" /> 手动录入
+              <PencilLine className="h-3.5 w-3.5" /> 手动创建
             </button>
             <button
               onClick={() => setMode("upload")}
@@ -409,7 +407,6 @@ function NewTestSetDialog({
 
           {mode === "manual" ? (
             <div className="space-y-3">
-              {/* 启用字段 */}
               <div>
                 <div className="text-xs font-medium text-muted-foreground mb-1.5">附加字段（可选）</div>
                 <div className="flex flex-wrap gap-1.5">
@@ -433,72 +430,20 @@ function NewTestSetDialog({
                   })}
                 </div>
               </div>
-
-              {/* 行编辑 */}
-              <div className="rounded-md border border-border max-h-[320px] overflow-auto">
-                <table className="w-full text-xs">
-                  <thead className="sticky top-0 bg-muted/60 text-muted-foreground">
-                    <tr>
-                      <th className="w-8 px-2 py-2 text-left font-medium">#</th>
-                      <th className="px-2 py-2 text-left font-medium">输入 Query *</th>
-                      {activeExtras.map((f) => (
-                        <th key={f} className="px-2 py-2 text-left font-medium">{f}</th>
-                      ))}
-                      <th className="w-8" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((r, i) => (
-                      <tr key={i} className="border-t border-border">
-                        <td className="px-2 py-1.5 text-muted-foreground">{i + 1}</td>
-                        <td className="px-1 py-1">
-                          <input
-                            value={r.query}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              setRows((rs) => rs.map((x, j) => (j === i ? { ...x, query: v } : x)));
-                            }}
-                            placeholder="用户输入的问题"
-                            className="w-full rounded border border-transparent bg-transparent px-2 py-1 outline-none focus:border-border focus:bg-background"
-                          />
-                        </td>
-                        {activeExtras.map((f) => (
-                          <td key={f} className="px-1 py-1">
-                            <input
-                              value={r.extras[f] ?? ""}
-                              onChange={(e) => {
-                                const v = e.target.value;
-                                setRows((rs) =>
-                                  rs.map((x, j) =>
-                                    j === i ? { ...x, extras: { ...x.extras, [f]: v } } : x,
-                                  ),
-                                );
-                              }}
-                              className="w-full rounded border border-transparent bg-transparent px-2 py-1 outline-none focus:border-border focus:bg-background"
-                            />
-                          </td>
-                        ))}
-                        <td className="px-1">
-                          <button
-                            onClick={() => setRows((rs) => rs.filter((_, j) => j !== i))}
-                            disabled={rows.length === 1}
-                            className="p-1 text-muted-foreground hover:text-destructive disabled:opacity-30"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">初始样本数</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={500}
+                  value={count}
+                  onChange={(e) => setCount(Math.max(1, Number(e.target.value) || 1))}
+                  className="mt-1 w-32 rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)]"
+                />
+                <p className="mt-1.5 text-[11px] text-muted-foreground">
+                  创建后会生成空白样本行，可在表格中直接编辑。
+                </p>
               </div>
-
-              <button
-                onClick={() => setRows((rs) => [...rs, { query: "", extras: {} }])}
-                className="inline-flex items-center gap-1 text-xs text-[var(--console-orange)] hover:underline"
-              >
-                <Plus className="h-3 w-3" /> 添加一行
-              </button>
             </div>
           ) : (
             <div>
@@ -514,7 +459,7 @@ function NewTestSetDialog({
                 />
               </label>
               <p className="mt-1.5 text-[11px] text-muted-foreground">
-                首行为字段名，必须包含「输入 Query」列；其他列将作为附加字段（如「输入图片」「地理位置」等）。
+                首行为字段名，必须包含「输入 Query」列；其他列将作为附加字段。
               </p>
             </div>
           )}
@@ -529,14 +474,13 @@ function NewTestSetDialog({
             <button
               disabled={!canCreate}
               onClick={() => {
-                const count =
-                  mode === "manual" ? validRows.length : Math.floor(Math.random() * 50) + 10;
-                onCreate(name.trim(), count);
+                const c = mode === "manual" ? count : Math.floor(Math.random() * 50) + 10;
+                onCreate(name.trim(), c);
                 reset();
               }}
               className="px-4 py-1.5 text-sm rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-40"
             >
-              创建{mode === "manual" && validRows.length > 0 ? `（${validRows.length} 条）` : ""}
+              创建
             </button>
           </div>
         </div>
