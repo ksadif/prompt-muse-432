@@ -235,6 +235,15 @@ function TestSetPage() {
                     <button
                       onClick={() => {
                         setNameMenuOpen(false);
+                        duplicateSet(selected.id);
+                      }}
+                      className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent"
+                    >
+                      <Plus className="h-3.5 w-3.5" /> 创建副本
+                    </button>
+                    <button
+                      onClick={() => {
+                        setNameMenuOpen(false);
                         navigate({ to: "/" });
                       }}
                       className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent"
