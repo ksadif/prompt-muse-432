@@ -29,9 +29,6 @@ const sections: Section[] = [
       { label: "Prompt 工作台", to: "/prompt" },
       { label: "Agent 编排", to: "/" },
       { label: "测试集管理", to: "/evaluate" },
-      { label: "文件" },
-      { label: "技能" },
-      { label: "批处理" },
     ],
   },
   {
