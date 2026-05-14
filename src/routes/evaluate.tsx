@@ -58,7 +58,12 @@ function TestSetPage() {
   const [search, setSearch] = useState("");
   const [extraRows, setExtraRows] = useState<Record<string, ExtraSample[]>>({});
   const [deletedRowIds, setDeletedRowIds] = useState<Record<string, Set<string>>>({});
+  const [overrides, setOverrides] = useState<
+    Record<string, Record<string, { query?: string; extras?: Record<string, string> }>>
+  >({});
   const [addOpen, setAddOpen] = useState(false);
+  const [checkedSets, setCheckedSets] = useState<Set<string>>(new Set());
+  const [checkedRows, setCheckedRows] = useState<Set<string>>(new Set());
 
   const selected = sets.find((s) => s.id === selectedId) ?? null;
   const baseRows = useMemo(
@@ -69,25 +74,70 @@ function TestSetPage() {
     if (!selected) return [];
     const added = extraRows[selected.id] ?? [];
     const deleted = deletedRowIds[selected.id] ?? new Set<string>();
-    return [...baseRows, ...added].filter((r) => !deleted.has(r.id));
-  }, [selected, baseRows, extraRows, deletedRowIds]);
+    const ov = overrides[selected.id] ?? {};
+    return [...baseRows, ...added]
+      .filter((r) => !deleted.has(r.id))
+      .map((r) => {
+        const o = ov[r.id];
+        if (!o) return r;
+        return {
+          ...r,
+          query: o.query ?? r.query,
+          extras: { ...r.extras, ...(o.extras ?? {}) },
+        };
+      });
+  }, [selected, baseRows, extraRows, deletedRowIds, overrides]);
   const filteredRows = detailRows.filter((r) =>
     search.trim() ? r.query.toLowerCase().includes(search.trim().toLowerCase()) : true,
   );
 
-  const deleteSet = (id: string) => {
-    if (!confirm("确定删除该测试集？")) return;
-    const remaining = sets.filter((x) => x.id !== id);
-    setSets(remaining);
-    if (selectedId === id) setSelectedId(remaining[0]?.id ?? null);
-  };
-  const deleteRow = (rowId: string) => {
+  const updateCell = (rowId: string, field: "query" | string, value: string) => {
     if (!selected) return;
+    setOverrides((m) => {
+      const sid = selected.id;
+      const ov = { ...(m[sid] ?? {}) };
+      const cur = { ...(ov[rowId] ?? {}) };
+      if (field === "query") cur.query = value;
+      else cur.extras = { ...(cur.extras ?? {}), [field]: value };
+      ov[rowId] = cur;
+      return { ...m, [sid]: ov };
+    });
+  };
+
+  const deleteCheckedSets = () => {
+    if (checkedSets.size === 0) return;
+    if (!confirm(`确定删除选中的 ${checkedSets.size} 个测试集？`)) return;
+    const remaining = sets.filter((x) => !checkedSets.has(x.id));
+    setSets(remaining);
+    if (selectedId && checkedSets.has(selectedId)) setSelectedId(remaining[0]?.id ?? null);
+    setCheckedSets(new Set());
+  };
+  const deleteCheckedRows = () => {
+    if (!selected || checkedRows.size === 0) return;
     setDeletedRowIds((m) => {
       const cur = new Set(m[selected.id] ?? []);
-      cur.add(rowId);
+      checkedRows.forEach((id) => cur.add(id));
       return { ...m, [selected.id]: cur };
     });
+    setCheckedRows(new Set());
+  };
+  const toggleSet = (id: string) =>
+    setCheckedSets((s) => {
+      const n = new Set(s);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  const toggleRow = (id: string) =>
+    setCheckedRows((s) => {
+      const n = new Set(s);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  const allRowsChecked =
+    filteredRows.length > 0 && filteredRows.every((r) => checkedRows.has(r.id));
+  const toggleAllRows = () => {
+    if (allRowsChecked) setCheckedRows(new Set());
+    else setCheckedRows(new Set(filteredRows.map((r) => r.id)));
   };
 
   return (
@@ -95,19 +145,29 @@ function TestSetPage() {
       <div className="flex h-full min-h-0">
         {/* 左：测试集列表 */}
         <aside className="w-64 shrink-0 border-r border-border flex flex-col min-h-0">
-          <div className="px-3 pt-3 pb-2 border-b border-border flex items-center justify-between">
+          <div className="px-3 pt-3 pb-2 border-b border-border flex items-center justify-between min-h-[40px]">
             <h1 className="text-xs font-medium text-muted-foreground">测试集</h1>
-            <button
-              onClick={() => setOpen(true)}
-              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted"
-              title="新建测试集"
-            >
-              <Plus className="h-3 w-3" /> 新建
-            </button>
+            {checkedSets.size > 0 ? (
+              <button
+                onClick={deleteCheckedSets}
+                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-3 w-3" /> 删除 {checkedSets.size}
+              </button>
+            ) : (
+              <button
+                onClick={() => setOpen(true)}
+                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted"
+                title="新建测试集"
+              >
+                <Plus className="h-3 w-3" /> 新建
+              </button>
+            )}
           </div>
           <div className="flex-1 overflow-y-auto p-2">
             {sets.map((t) => {
               const active = t.id === selectedId;
+              const checked = checkedSets.has(t.id);
               return (
                 <div
                   key={t.id}
@@ -115,19 +175,23 @@ function TestSetPage() {
                     active ? "bg-muted" : "hover:bg-muted/60"
                   }`}
                 >
+                  <label
+                    className={`pl-2 flex items-center cursor-pointer ${checked || checkedSets.size > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleSet(t.id)}
+                      className="h-3 w-3 accent-[var(--console-orange)] cursor-pointer"
+                    />
+                  </label>
                   <button
                     onClick={() => setSelectedId(t.id)}
-                    className="flex-1 min-w-0 text-left px-2.5 py-2.5 flex items-center gap-2.5"
+                    className="flex-1 min-w-0 text-left px-2 py-2.5 flex items-center gap-2"
                   >
                     <FileSpreadsheet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                     <div className="text-xs truncate">{t.name}</div>
-                  </button>
-                  <button
-                    onClick={() => deleteSet(t.id)}
-                    className="opacity-0 group-hover:opacity-100 transition shrink-0 mr-1.5 p-1 rounded text-muted-foreground hover:text-destructive hover:bg-background"
-                    title="删除测试集"
-                  >
-                    <Trash2 className="h-3 w-3" />
                   </button>
                 </div>
               );
@@ -156,6 +220,14 @@ function TestSetPage() {
                       className="pl-6 pr-2 py-1.5 text-xs rounded border border-border bg-background outline-none focus:border-[var(--console-orange)] w-44"
                     />
                   </div>
+                  {checkedRows.size > 0 && (
+                    <button
+                      onClick={deleteCheckedRows}
+                      className="inline-flex items-center gap-1 rounded border border-destructive/40 px-2.5 py-1.5 text-xs text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3 w-3" /> 删除 {checkedRows.size}
+                    </button>
+                  )}
                   <button
                     onClick={() => setAddOpen(true)}
                     className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1.5 text-xs text-foreground hover:bg-muted"
@@ -176,35 +248,51 @@ function TestSetPage() {
                   <table className="w-full text-xs">
                     <thead className="bg-muted/40 text-muted-foreground sticky top-0">
                       <tr>
-                        <th className="w-12 px-4 py-3 text-left font-normal">#</th>
+                        <th className="w-9 px-3 py-3 text-left font-normal">
+                          <input
+                            type="checkbox"
+                            checked={allRowsChecked}
+                            onChange={toggleAllRows}
+                            className="h-3 w-3 accent-[var(--console-orange)] cursor-pointer"
+                          />
+                        </th>
+                        <th className="w-10 px-2 py-3 text-left font-normal">#</th>
                         <th className="px-4 py-3 text-left font-normal min-w-[200px]">输入 Query</th>
                         {MOCK_DETAIL_FIELDS.map((f) => (
                           <th key={f} className="px-4 py-3 text-left font-normal whitespace-nowrap">
                             {f}
                           </th>
                         ))}
-                        <th className="w-10 px-2 py-3" />
                       </tr>
                     </thead>
                     <tbody>
                       {filteredRows.map((r) => (
-                        <tr key={r.id} className="group border-t border-border hover:bg-muted/30">
-                          <td className="px-4 py-3 text-muted-foreground">{r.no}</td>
-                          <td className="px-4 py-3">{r.query}</td>
+                        <tr key={r.id} className="border-t border-border hover:bg-muted/30">
+                          <td className="px-3 py-2">
+                            <input
+                              type="checkbox"
+                              checked={checkedRows.has(r.id)}
+                              onChange={() => toggleRow(r.id)}
+                              className="h-3 w-3 accent-[var(--console-orange)] cursor-pointer"
+                            />
+                          </td>
+                          <td className="px-2 py-2 text-muted-foreground">{r.no}</td>
+                          <td className="px-2 py-1.5">
+                            <input
+                              value={r.query}
+                              onChange={(e) => updateCell(r.id, "query", e.target.value)}
+                              className="w-full bg-transparent rounded border border-transparent px-2 py-1 outline-none hover:border-border focus:border-[var(--console-orange)] focus:bg-background"
+                            />
+                          </td>
                           {MOCK_DETAIL_FIELDS.map((f) => (
-                            <td key={f} className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                              {r.extras[f]}
+                            <td key={f} className="px-2 py-1.5">
+                              <input
+                                value={r.extras[f] ?? ""}
+                                onChange={(e) => updateCell(r.id, f, e.target.value)}
+                                className="w-full bg-transparent text-muted-foreground rounded border border-transparent px-2 py-1 outline-none hover:border-border focus:border-[var(--console-orange)] focus:bg-background focus:text-foreground"
+                              />
                             </td>
                           ))}
-                          <td className="px-2 py-3 text-right">
-                            <button
-                              onClick={() => deleteRow(r.id)}
-                              className="opacity-0 group-hover:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive hover:bg-background"
-                              title="删除样本"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </td>
                         </tr>
                       ))}
                       {filteredRows.length === 0 && (
