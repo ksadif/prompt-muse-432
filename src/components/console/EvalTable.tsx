@@ -316,30 +316,9 @@ export function EvalTable({
                       : "border-transparent bg-background/60 hover:border-border hover:bg-background"
                   }`}
                 >
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="inline-flex items-center justify-center min-w-5 h-4 px-1 rounded bg-muted text-[10px] text-muted-foreground font-medium">
-                      #{r.id}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground truncate">
-                      {r.extras["输入时间"] ?? "—"}
-                    </span>
-                  </div>
                   <div className="text-xs text-foreground line-clamp-2">
                     {r.input || <span className="text-muted-foreground">（空输入）</span>}
                   </div>
-                  {showExtras && (
-                    <div className="mt-1.5 space-y-0.5 text-[10.5px] text-muted-foreground">
-                      {extraKeys
-                        .filter((k) => k !== "输入时间" && r.extras[k] && r.extras[k] !== "-")
-                        .slice(0, 3)
-                        .map((k) => (
-                          <div key={k} className="truncate">
-                            <span className="text-muted-foreground/70">{k}：</span>
-                            {r.extras[k]}
-                          </div>
-                        ))}
-                    </div>
-                  )}
                 </button>
               );
             })}
