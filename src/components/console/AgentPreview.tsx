@@ -164,11 +164,27 @@ export function AgentPreview() {
   const userBadge = randomUid || userId.trim() ? 1 : 0;
   const triggers: { k: Exclude<DialogKind, null>; icon: typeof ImageIcon; title: string; badge: number }[] = [
     { k: "image", icon: ImageIcon, title: "上传图片（本地）", badge: images.length },
-    { k: "note", icon: FileText, title: "附加笔记", badge: note.trim() ? 1 : 0 },
     { k: "share", icon: Share2, title: "拖拽 / 分享内容", badge: shares.length },
     { k: "bulk", icon: Upload, title: "上传内容（笔记 ID / 图片 URL）", badge: bulks.length },
-    { k: "user", icon: UserRound, title: "用户记忆 ID", badge: userBadge },
   ];
+
+  function onPasteImage(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const items = Array.from(e.clipboardData?.items ?? []);
+    const files = items
+      .filter((it) => it.kind === "file" && it.type.startsWith("image/"))
+      .map((it) => it.getAsFile())
+      .filter((f): f is File => !!f);
+    if (!files.length) return;
+    e.preventDefault();
+    setAttachments((a) => [
+      ...a,
+      ...files.map<Attachment>((f) => ({
+        name: f.name || `截图-${Date.now()}.png`,
+        kind: "image",
+        url: URL.createObjectURL(f),
+      })),
+    ]);
+  }
 
   // share field schemas
   const shareSchema: Record<ShareKind, { key: string; label: string; placeholder?: string }[]> = {
@@ -195,8 +211,62 @@ export function AgentPreview() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-border text-sm font-semibold">
-        Agent 效果预览
+      <div className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
+        <div className="text-sm font-semibold">Agent 效果预览</div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setDialog("user")}
+            className={`relative h-7 px-2 inline-flex items-center gap-1 rounded-md text-xs hover:bg-accent transition ${userBadge ? "text-[var(--console-orange)]" : "text-muted-foreground"}`}
+            title="用户记忆 ID"
+          >
+            <UserRound className="h-3.5 w-3.5" />
+            <span>用户 ID</span>
+            {userBadge > 0 && (
+              <span className="ml-0.5 h-1.5 w-1.5 rounded-full bg-[var(--console-orange)]" />
+            )}
+          </button>
+          <div className="relative">
+            <button
+              onClick={() => setHistoryOpen((v) => !v)}
+              className={`relative h-7 px-2 inline-flex items-center gap-1 rounded-md text-xs hover:bg-accent transition ${historyHash.trim() ? "text-[var(--console-orange)]" : "text-muted-foreground"}`}
+              title="加载历史轨迹"
+            >
+              <History className="h-3.5 w-3.5" />
+              <span>历史</span>
+            </button>
+            {historyOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setHistoryOpen(false)} />
+                <div className="absolute top-full right-0 mt-2 z-50 w-[280px] rounded-lg border border-border bg-background shadow-lg p-2 flex items-center gap-1.5">
+                  <input
+                    autoFocus
+                    value={historyHash}
+                    onChange={(e) => setHistoryHash(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        loadHistory();
+                        setHistoryOpen(false);
+                      }
+                    }}
+                    placeholder="输入 hash_id"
+                    className="flex-1 h-7 rounded-md border border-border bg-background px-2 text-xs outline-none focus:border-[var(--console-orange)] placeholder:text-muted-foreground/70"
+                  />
+                  <button
+                    onClick={() => {
+                      loadHistory();
+                      setHistoryOpen(false);
+                    }}
+                    disabled={!historyHash.trim()}
+                    className="shrink-0 h-7 px-3 rounded-md bg-foreground text-background text-xs hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                  >
+                    加载
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
@@ -233,12 +303,13 @@ export function AgentPreview() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                   e.preventDefault();
                   run();
                 }
               }}
-              placeholder="请输入要测试的内容…"
+              onPaste={onPasteImage}
+              placeholder="输入消息与 Agent 对话... (Enter 发送, Shift+Enter 换行, Ctrl+V 可粘贴截图)"
               rows={1}
               className="w-full bg-transparent outline-none text-sm resize-none px-4 pt-3 pb-1 min-h-[52px] max-h-[200px] placeholder:text-muted-foreground/70"
             />
@@ -268,53 +339,8 @@ export function AgentPreview() {
                     </button>
                   );
                 })}
-
-                <div className="relative">
-                  <button
-                    onClick={() => setHistoryOpen((v) => !v)}
-                    className={`relative h-8 px-2 inline-flex items-center gap-1 rounded-lg hover:bg-accent hover:text-foreground transition ${historyHash.trim() ? "text-[var(--console-orange)]" : ""}`}
-                    title="加载历史轨迹"
-                  >
-                    <History className="h-4 w-4" />
-                    <span className="text-[11px]">历史</span>
-                  </button>
-                  {historyOpen && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setHistoryOpen(false)} />
-                      <div className="absolute bottom-full left-0 mb-2 z-50 w-[280px] rounded-lg border border-border bg-background shadow-lg p-2 flex items-center gap-1.5">
-                        <input
-                          autoFocus
-                          value={historyHash}
-                          onChange={(e) => setHistoryHash(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              loadHistory();
-                              setHistoryOpen(false);
-                            }
-                          }}
-                          placeholder="输入 hash_id"
-                          className="flex-1 h-7 rounded-md border border-border bg-background px-2 text-xs outline-none focus:border-[var(--console-orange)] placeholder:text-muted-foreground/70"
-                        />
-                        <button
-                          onClick={() => {
-                            loadHistory();
-                            setHistoryOpen(false);
-                          }}
-                          disabled={!historyHash.trim()}
-                          className="shrink-0 h-7 px-3 rounded-md bg-foreground text-background text-xs hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed transition"
-                        >
-                          加载
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10.5px] text-muted-foreground/70 hidden sm:block">
-                  ⌘ / Ctrl + Enter
-                </span>
                 <button
                   onClick={run}
                   disabled={!query.trim() && !attachments.length && !note.trim()}
