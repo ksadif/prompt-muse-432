@@ -1,9 +1,15 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
-import { Plus, Upload, FileSpreadsheet, Trash2, PencilLine, FileUp, Search } from "lucide-react";
+import { Plus, Upload, FileSpreadsheet, Trash2, PencilLine, FileUp, Search, MoreHorizontal } from "lucide-react";
 import { testSets as initialTestSets } from "@/components/console/mockData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/evaluate")({
   head: () => ({ meta: [{ title: "测试集管理 · Claude Console" }] }),
