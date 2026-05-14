@@ -259,10 +259,11 @@ export function EvalTable({
   function runRow(rowId: number, vIndex: number) {
     const r = rows.find((x) => x.id === rowId);
     if (!r) return;
-    const steps = buildSteps(r.input, allVersions[vIndex].name);
-    setTrajectories((t) => ({ ...t, [`${rowId}-${vIndex}`]: steps }));
+    const demo = buildDemoTrajectory(r.input, allVersions[vIndex].name);
+    setTrajectories((t) => ({ ...t, [`${rowId}-${vIndex}`]: demo }));
+    const lastAgent = [...demo].reverse().find((s) => s.kind === "agent");
     updateVersion(rowId, vIndex, {
-      output: steps[steps.length - 1].content,
+      output: lastAgent && lastAgent.kind === "agent" ? lastAgent.content : "",
       score: Math.floor(Math.random() * 5) + 1,
     });
   }
