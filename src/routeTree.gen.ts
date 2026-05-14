@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PromptRouteImport } from './routes/prompt'
 import { Route as EvaluateRouteImport } from './routes/evaluate'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SharedEvalIdRouteImport } from './routes/shared-eval.$id'
 
 const PromptRoute = PromptRouteImport.update({
   id: '/prompt',
@@ -28,35 +29,44 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SharedEvalIdRoute = SharedEvalIdRouteImport.update({
+  id: '/shared-eval/$id',
+  path: '/shared-eval/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/evaluate': typeof EvaluateRoute
   '/prompt': typeof PromptRoute
+  '/shared-eval/$id': typeof SharedEvalIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/evaluate': typeof EvaluateRoute
   '/prompt': typeof PromptRoute
+  '/shared-eval/$id': typeof SharedEvalIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/evaluate': typeof EvaluateRoute
   '/prompt': typeof PromptRoute
+  '/shared-eval/$id': typeof SharedEvalIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/evaluate' | '/prompt'
+  fullPaths: '/' | '/evaluate' | '/prompt' | '/shared-eval/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/evaluate' | '/prompt'
-  id: '__root__' | '/' | '/evaluate' | '/prompt'
+  to: '/' | '/evaluate' | '/prompt' | '/shared-eval/$id'
+  id: '__root__' | '/' | '/evaluate' | '/prompt' | '/shared-eval/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EvaluateRoute: typeof EvaluateRoute
   PromptRoute: typeof PromptRoute
+  SharedEvalIdRoute: typeof SharedEvalIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shared-eval/$id': {
+      id: '/shared-eval/$id'
+      path: '/shared-eval/$id'
+      fullPath: '/shared-eval/$id'
+      preLoaderRoute: typeof SharedEvalIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EvaluateRoute: EvaluateRoute,
   PromptRoute: PromptRoute,
+  SharedEvalIdRoute: SharedEvalIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
