@@ -364,29 +364,19 @@ export function EvalTable({
                   const steps = trajectories[key];
                   const v = selectedRow.versions[vi];
                   return (
-                    <div key={p.id + vi} className="rounded-lg border border-border bg-background flex flex-col">
-                      {/* 环境标题 */}
-                      <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border">
-                        <span className="inline-flex items-center rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                          v{vi + 1}
-                        </span>
-                        <span className="text-xs font-medium truncate flex-1">{p.name}</span>
-                        <button
-                          onClick={() => runRow(selectedRow.id, vi)}
-                          className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-accent"
-                          title="运行"
-                        >
-                          <Play className="h-3 w-3" />
-                        </button>
-                      </div>
-
-                      {/* 大模型评估（位于结果上方） */}
-                      <div className="px-3 py-2 border-b border-border bg-[var(--console-sidebar)]/40 space-y-1.5">
-                        <div className="flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
-                          <Sparkles className="h-3 w-3 text-[var(--console-orange)]" />
-                          大模型评估
+                    <div key={p.id + vi} className="flex flex-col gap-2.5">
+                      {/* 大模型评估面板 — 独立卡片 */}
+                      <div className="rounded-lg border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 p-3">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <Sparkles className="h-3.5 w-3.5 text-[var(--console-orange)]" />
+                          <span className="text-[11px] font-semibold text-[var(--console-orange)]">
+                            大模型评估
+                          </span>
+                          <span className="ml-auto inline-flex items-center rounded-full bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground border border-border">
+                            v{vi + 1} · {p.name}
+                          </span>
                         </div>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 mb-1.5">
                           <input
                             type="number"
                             min={1}
@@ -398,14 +388,14 @@ export function EvalTable({
                               })
                             }
                             placeholder="分"
-                            className="w-12 rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none"
+                            className="w-14 rounded border border-border bg-background px-1.5 py-1 text-xs outline-none focus:border-[var(--console-orange)]"
                           />
                           <select
                             value={v?.issueType ?? "无"}
                             onChange={(e) =>
                               updateVersion(selectedRow.id, vi, { issueType: e.target.value })
                             }
-                            className="rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none"
+                            className="rounded border border-border bg-background px-1.5 py-1 text-xs outline-none cursor-pointer"
                           >
                             {ISSUE_TYPES.map((it) => (
                               <option key={it}>{it}</option>
@@ -415,48 +405,63 @@ export function EvalTable({
                         <input
                           value={v?.note ?? ""}
                           onChange={(e) => updateVersion(selectedRow.id, vi, { note: e.target.value })}
-                          placeholder="备注"
-                          className="w-full rounded border border-border bg-background px-1.5 py-0.5 text-xs outline-none"
+                          placeholder="评估备注…"
+                          className="w-full rounded border border-border bg-background px-2 py-1 text-xs outline-none focus:border-[var(--console-orange)]"
                         />
                       </div>
 
-                      {/* 历史轨迹 + 最终结果 */}
-                      <div className="p-2.5 space-y-2 flex-1">
-                        {steps ? (
-                          <>
-                            <div className="text-[10.5px] text-muted-foreground px-0.5">历史轨迹</div>
-                            {steps.slice(0, -1).map((s, i) => (
-                              <StepCard key={i} s={s} />
-                            ))}
-                            <div className="text-[10.5px] text-muted-foreground px-0.5 pt-1">最终结果</div>
+                      {/* 运行结果 — 独立卡片 */}
+                      <div className="rounded-lg border border-border bg-background flex flex-col">
+                        <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border">
+                          <Bot className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-[11px] font-semibold text-foreground">
+                            运行结果
+                          </span>
+                          <button
+                            onClick={() => runRow(selectedRow.id, vi)}
+                            className="ml-auto text-muted-foreground hover:text-foreground p-1 rounded hover:bg-accent"
+                            title="重新运行"
+                          >
+                            <Play className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <div className="p-2.5 space-y-2 flex-1">
+                          {steps ? (
+                            <>
+                              <div className="text-[10.5px] text-muted-foreground px-0.5">历史轨迹</div>
+                              {steps.slice(0, -1).map((s, i) => (
+                                <StepCard key={i} s={s} />
+                              ))}
+                              <div className="text-[10.5px] text-muted-foreground px-0.5 pt-1">最终结果</div>
+                              <div className="rounded-md border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 p-2.5">
+                                <div className="flex items-center gap-1.5 text-[11px] text-[var(--console-orange)] mb-1">
+                                  <Bot className="h-3 w-3" /> Agent
+                                </div>
+                                <div className="text-xs leading-relaxed whitespace-pre-wrap break-words">
+                                  {steps[steps.length - 1].content}
+                                </div>
+                              </div>
+                            </>
+                          ) : v?.output ? (
                             <div className="rounded-md border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 p-2.5">
                               <div className="flex items-center gap-1.5 text-[11px] text-[var(--console-orange)] mb-1">
                                 <Bot className="h-3 w-3" /> Agent
                               </div>
                               <div className="text-xs leading-relaxed whitespace-pre-wrap break-words">
-                                {steps[steps.length - 1].content}
+                                {v.output}
                               </div>
                             </div>
-                          </>
-                        ) : v?.output ? (
-                          <div className="rounded-md border border-[var(--console-orange)]/40 bg-[var(--console-orange)]/5 p-2.5">
-                            <div className="flex items-center gap-1.5 text-[11px] text-[var(--console-orange)] mb-1">
-                              <Bot className="h-3 w-3" /> Agent
+                          ) : (
+                            <div className="flex items-center justify-center py-10">
+                              <button
+                                onClick={() => runRow(selectedRow.id, vi)}
+                                className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent"
+                              >
+                                <Play className="h-3 w-3" /> 运行
+                              </button>
                             </div>
-                            <div className="text-xs leading-relaxed whitespace-pre-wrap break-words">
-                              {v.output}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-center py-10">
-                            <button
-                              onClick={() => runRow(selectedRow.id, vi)}
-                              className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs hover:bg-accent"
-                            >
-                              <Play className="h-3 w-3" /> 运行
-                            </button>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
