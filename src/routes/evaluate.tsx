@@ -68,8 +68,6 @@ function TestSetPage() {
     Record<string, Record<string, { query?: string; extras?: Record<string, string> }>>
   >({});
   const [addOpen, setAddOpen] = useState(false);
-  const [checkedSets, setCheckedSets] = useState<Set<string>>(new Set());
-  const [checkedRows, setCheckedRows] = useState<Set<string>>(new Set());
 
   const selected = sets.find((s) => s.id === selectedId) ?? null;
   const baseRows = useMemo(
@@ -110,40 +108,18 @@ function TestSetPage() {
     });
   };
 
-  const deleteCheckedSets = () => {
-    if (checkedSets.size === 0) return;
-    if (!confirm(`确定删除选中的 ${checkedSets.size} 个测试集？`)) return;
-    const remaining = sets.filter((x) => !checkedSets.has(x.id));
+  const deleteSet = (id: string) => {
+    const remaining = sets.filter((x) => x.id !== id);
     setSets(remaining);
-    if (selectedId && checkedSets.has(selectedId)) setSelectedId(remaining[0]?.id ?? null);
-    setCheckedSets(new Set());
+    if (selectedId === id) setSelectedId(remaining[0]?.id ?? null);
   };
-  const deleteCheckedRows = () => {
-    if (!selected || checkedRows.size === 0) return;
+  const deleteRow = (rowId: string) => {
+    if (!selected) return;
     setDeletedRowIds((m) => {
       const cur = new Set(m[selected.id] ?? []);
-      checkedRows.forEach((id) => cur.add(id));
+      cur.add(rowId);
       return { ...m, [selected.id]: cur };
     });
-    setCheckedRows(new Set());
-  };
-  const toggleSet = (id: string) =>
-    setCheckedSets((s) => {
-      const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
-  const toggleRow = (id: string) =>
-    setCheckedRows((s) => {
-      const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
-  const allRowsChecked =
-    filteredRows.length > 0 && filteredRows.every((r) => checkedRows.has(r.id));
-  const toggleAllRows = () => {
-    if (allRowsChecked) setCheckedRows(new Set());
-    else setCheckedRows(new Set(filteredRows.map((r) => r.id)));
   };
 
   return (
@@ -153,27 +129,17 @@ function TestSetPage() {
         <aside className="w-64 shrink-0 border-r border-border flex flex-col min-h-0">
           <div className="px-3 pt-3 pb-2 border-b border-border flex items-center justify-between min-h-[40px]">
             <h1 className="text-xs font-medium text-muted-foreground">测试集</h1>
-            {checkedSets.size > 0 ? (
-              <button
-                onClick={deleteCheckedSets}
-                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 className="h-3 w-3" /> 删除 {checkedSets.size}
-              </button>
-            ) : (
-              <button
-                onClick={() => setOpen(true)}
-                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted"
-                title="新建测试集"
-              >
-                <Plus className="h-3 w-3" /> 新建
-              </button>
-            )}
+            <button
+              onClick={() => setOpen(true)}
+              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted"
+              title="新建测试集"
+            >
+              <Plus className="h-3 w-3" /> 新建
+            </button>
           </div>
           <div className="flex-1 overflow-y-auto p-2">
             {sets.map((t) => {
               const active = t.id === selectedId;
-              const checked = checkedSets.has(t.id);
               return (
                 <div
                   key={t.id}
@@ -181,24 +147,31 @@ function TestSetPage() {
                     active ? "bg-muted" : "hover:bg-muted/60"
                   }`}
                 >
-                  <label
-                    className={`pl-2 flex items-center cursor-pointer ${checked || checkedSets.size > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleSet(t.id)}
-                      className="h-3 w-3 accent-[var(--console-orange)] cursor-pointer"
-                    />
-                  </label>
                   <button
                     onClick={() => setSelectedId(t.id)}
-                    className="flex-1 min-w-0 text-left px-2 py-2.5 flex items-center gap-2"
+                    className="flex-1 min-w-0 text-left pl-2.5 pr-8 py-2.5 flex items-center gap-2"
                   >
                     <FileSpreadsheet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                     <div className="text-xs truncate">{t.name}</div>
                   </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 hover:bg-background hover:text-foreground"
+                        aria-label="更多"
+                      >
+                        <MoreHorizontal className="h-3.5 w-3.5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-32">
+                      <DropdownMenuItem
+                        onClick={() => deleteSet(t.id)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-2" /> 删除
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               );
             })}
@@ -226,14 +199,6 @@ function TestSetPage() {
                       className="pl-6 pr-2 py-1.5 text-xs rounded border border-border bg-background outline-none focus:border-[var(--console-orange)] w-44"
                     />
                   </div>
-                  {checkedRows.size > 0 && (
-                    <button
-                      onClick={deleteCheckedRows}
-                      className="inline-flex items-center gap-1 rounded border border-destructive/40 px-2.5 py-1.5 text-xs text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="h-3 w-3" /> 删除 {checkedRows.size}
-                    </button>
-                  )}
                   <button
                     onClick={() => setAddOpen(true)}
                     className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1.5 text-xs text-foreground hover:bg-muted"
@@ -254,35 +219,20 @@ function TestSetPage() {
                   <table className="w-full text-xs">
                     <thead className="bg-muted/40 text-muted-foreground sticky top-0">
                       <tr>
-                        <th className="w-9 px-3 py-3 text-left font-normal">
-                          <input
-                            type="checkbox"
-                            checked={allRowsChecked}
-                            onChange={toggleAllRows}
-                            className="h-3 w-3 accent-[var(--console-orange)] cursor-pointer"
-                          />
-                        </th>
-                        <th className="w-10 px-2 py-3 text-left font-normal">#</th>
+                        <th className="w-10 px-3 py-3 text-left font-normal">#</th>
                         <th className="px-4 py-3 text-left font-normal min-w-[200px]">输入 Query</th>
                         {MOCK_DETAIL_FIELDS.map((f) => (
                           <th key={f} className="px-4 py-3 text-left font-normal whitespace-nowrap">
                             {f}
                           </th>
                         ))}
+                        <th className="w-8 px-2 py-3" />
                       </tr>
                     </thead>
                     <tbody>
                       {filteredRows.map((r) => (
-                        <tr key={r.id} className="border-t border-border hover:bg-muted/30">
-                          <td className="px-3 py-2">
-                            <input
-                              type="checkbox"
-                              checked={checkedRows.has(r.id)}
-                              onChange={() => toggleRow(r.id)}
-                              className="h-3 w-3 accent-[var(--console-orange)] cursor-pointer"
-                            />
-                          </td>
-                          <td className="px-2 py-2 text-muted-foreground">{r.no}</td>
+                        <tr key={r.id} className="group border-t border-border hover:bg-muted/30">
+                          <td className="px-3 py-2 text-muted-foreground">{r.no}</td>
                           <td className="px-2 py-1.5">
                             <input
                               value={r.query}
@@ -299,6 +249,26 @@ function TestSetPage() {
                               />
                             </td>
                           ))}
+                          <td className="px-1 py-1.5 text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  className="p-1 rounded text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 hover:bg-background hover:text-foreground"
+                                  aria-label="更多"
+                                >
+                                  <MoreHorizontal className="h-3.5 w-3.5" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-32">
+                                <DropdownMenuItem
+                                  onClick={() => deleteRow(r.id)}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 mr-2" /> 删除
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
                         </tr>
                       ))}
                       {filteredRows.length === 0 && (
