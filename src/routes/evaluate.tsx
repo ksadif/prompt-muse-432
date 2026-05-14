@@ -485,15 +485,17 @@ function NewTestSetDialog({
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground">所属业务</label>
+              <label className="text-xs font-medium text-muted-foreground">所属文件夹</label>
               <select
-                value={scope}
-                onChange={(e) => setScope(e.target.value)}
+                value={folderId}
+                onChange={(e) => setFolderId(e.target.value)}
                 className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-[var(--console-orange)]"
               >
-                <option>社区助手</option>
-                <option>客服机器人</option>
-                <option>通用</option>
+                {folders.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
