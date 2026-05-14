@@ -341,9 +341,6 @@ export function AgentPreview() {
                 })}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10.5px] text-muted-foreground/70 hidden sm:block">
-                  ⌘ / Ctrl + Enter
-                </span>
                 <button
                   onClick={run}
                   disabled={!query.trim() && !attachments.length && !note.trim()}
