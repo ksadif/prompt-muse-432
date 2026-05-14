@@ -214,6 +214,15 @@ export function AgentPreview() {
       <div className="px-4 py-2.5 border-b border-border flex items-center justify-between gap-3">
         <div className="text-sm font-semibold">Agent 效果预览</div>
         <div className="flex items-center gap-1">
+          {steps.length > 0 && (
+            <button
+              onClick={() => setSteps([])}
+              className="h-7 w-7 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition"
+              title="清空预览"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
           <button
             onClick={() => setDialog("user")}
             className={`relative h-7 px-2 inline-flex items-center gap-1 rounded-md text-xs hover:bg-accent transition ${userBadge ? "text-[var(--console-orange)]" : "text-muted-foreground"}`}
