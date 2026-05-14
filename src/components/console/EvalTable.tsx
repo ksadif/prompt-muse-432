@@ -122,6 +122,32 @@ function ExportMenu({
     setOpen(false);
   }
 
+  const [sharedUrl, setSharedUrl] = useState<string>("");
+  const [copied, setCopied] = useState(false);
+
+  function generateUrl() {
+    const id = Math.random().toString(36).slice(2, 10);
+    const snapshot = {
+      createdAt: new Date().toISOString(),
+      testSetName,
+      versions: versions.map((p) => ({ id: p.id, name: p.name })),
+      extraKeys,
+      rows: getRows(),
+    };
+    try {
+      localStorage.setItem(`shared-eval:${id}`, JSON.stringify(snapshot));
+    } catch {
+      /* ignore */
+    }
+    const url = `${window.location.origin}/shared-eval/${id}`;
+    setSharedUrl(url);
+    setCopied(false);
+    navigator.clipboard?.writeText(url).then(
+      () => setCopied(true),
+      () => setCopied(false),
+    );
+  }
+
   return (
     <div className="relative" ref={ref}>
       <button
@@ -133,13 +159,40 @@ function ExportMenu({
         <ChevronDown className={`h-3 w-3 transition ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-20 min-w-[160px] rounded-md border border-border bg-background shadow-lg p-1">
+        <div className="absolute right-0 top-full mt-1 z-20 min-w-[200px] rounded-md border border-border bg-background shadow-lg p-1">
           <button onClick={exportJSON} className="w-full text-left rounded px-2 py-1.5 text-xs hover:bg-accent">
             导出为 JSON
           </button>
           <button onClick={exportExcel} className="w-full text-left rounded px-2 py-1.5 text-xs hover:bg-accent">
             导出为 Excel
           </button>
+          <button onClick={generateUrl} className="w-full text-left rounded px-2 py-1.5 text-xs hover:bg-accent">
+            生成分享 URL
+          </button>
+          {sharedUrl && (
+            <div className="mt-1 border-t border-border pt-2 px-2 pb-1 space-y-1.5">
+              <div className="text-[10px] text-muted-foreground">
+                {copied ? "已复制到剪贴板" : "分享链接（点击复制）"}
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard?.writeText(sharedUrl).then(() => setCopied(true));
+                }}
+                className="w-full text-left rounded border border-border bg-muted/40 px-1.5 py-1 text-[10.5px] font-mono break-all hover:bg-accent"
+                title="点击复制"
+              >
+                {sharedUrl}
+              </button>
+              <a
+                href={sharedUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="block text-center text-[11px] text-[var(--console-orange)] hover:underline"
+              >
+                打开链接 →
+              </a>
+            </div>
+          )}
         </div>
       )}
     </div>
