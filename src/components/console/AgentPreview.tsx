@@ -203,28 +203,6 @@ export function AgentPreview() {
 
       <div className="px-4 pt-2 pb-4 bg-background">
         <div className="mx-auto max-w-3xl">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs text-muted-foreground shrink-0">历史轨迹</span>
-            <input
-              value={historyHash}
-              onChange={(e) => setHistoryHash(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  loadHistory();
-                }
-              }}
-              placeholder="输入 hash_id"
-              className="flex-1 h-8 rounded-full border border-border bg-background px-3 text-xs outline-none focus:border-[var(--console-orange)] placeholder:text-muted-foreground/70"
-            />
-            <button
-              onClick={loadHistory}
-              disabled={!historyHash.trim()}
-              className="shrink-0 h-8 px-4 rounded-full bg-muted text-xs text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              加载
-            </button>
-          </div>
           {attachments.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2">
               {attachments.map((a, i) => {
