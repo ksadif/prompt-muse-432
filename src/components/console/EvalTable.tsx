@@ -258,7 +258,15 @@ export function EvalTable({
           </select>
         </div>
 
-        <SwitchRow label="显示测试集字段" checked={showExtras} onChange={setShowExtras} />
+        <button
+          onClick={addCompare}
+          disabled={comparePrompts.length >= 2}
+          className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-xs hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <Plus className="h-3 w-3" />
+          增加 Agent 对比
+          <span className="text-[10px] text-muted-foreground">（{allVersions.length}/3）</span>
+        </button>
 
         <ExportMenu
           getRows={() => rows}
