@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
-import { Plus, Upload, FileSpreadsheet, Trash2, PencilLine, FileUp, Search, MoreHorizontal } from "lucide-react";
+import { Plus, Upload, FileSpreadsheet, Trash2, PencilLine, FileUp, Search, MoreHorizontal, Pencil } from "lucide-react";
 import { testSets as initialTestSets } from "@/components/console/mockData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
@@ -68,6 +68,13 @@ function TestSetPage() {
     Record<string, Record<string, { query?: string; extras?: Record<string, string> }>>
   >({});
   const [addOpen, setAddOpen] = useState(false);
+  const [editingRowId, setEditingRowId] = useState<string | null>(null);
+
+  const renameSet = (id: string, currentName: string) => {
+    const next = window.prompt("重命名测试集", currentName);
+    if (!next || !next.trim() || next === currentName) return;
+    setSets((s) => s.map((x) => (x.id === id ? { ...x, name: next.trim() } : x)));
+  };
 
   const selected = sets.find((s) => s.id === selectedId) ?? null;
   const baseRows = useMemo(
@@ -163,12 +170,18 @@ function TestSetPage() {
                         <MoreHorizontal className="h-3.5 w-3.5" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-32">
+                    <DropdownMenuContent align="end" className="w-28 p-1">
+                      <DropdownMenuItem
+                        onClick={() => renameSet(t.id, t.name)}
+                        className="text-xs py-1 px-2 cursor-pointer"
+                      >
+                        <Pencil className="h-3 w-3 mr-1.5" /> 重命名
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => deleteSet(t.id)}
-                        className="text-destructive focus:text-destructive"
+                        className="text-xs py-1 px-2 cursor-pointer text-destructive focus:text-destructive"
                       >
-                        <Trash2 className="h-3.5 w-3.5 mr-2" /> 删除
+                        <Trash2 className="h-3 w-3 mr-1.5" /> 删除
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -235,6 +248,13 @@ function TestSetPage() {
                           <td className="px-3 py-2 text-muted-foreground">{r.no}</td>
                           <td className="px-2 py-1.5">
                             <input
+                              autoFocus={editingRowId === r.id}
+                              onFocus={(e) => {
+                                if (editingRowId === r.id) {
+                                  e.currentTarget.select();
+                                  setEditingRowId(null);
+                                }
+                              }}
                               value={r.query}
                               onChange={(e) => updateCell(r.id, "query", e.target.value)}
                               className="w-full bg-transparent rounded border border-transparent px-2 py-1 outline-none hover:border-border focus:border-[var(--console-orange)] focus:bg-background"
@@ -259,12 +279,18 @@ function TestSetPage() {
                                   <MoreHorizontal className="h-3.5 w-3.5" />
                                 </button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-32">
+                              <DropdownMenuContent align="end" className="w-28 p-1">
+                                <DropdownMenuItem
+                                  onClick={() => setEditingRowId(r.id)}
+                                  className="text-xs py-1 px-2 cursor-pointer"
+                                >
+                                  <Pencil className="h-3 w-3 mr-1.5" /> 编辑
+                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => deleteRow(r.id)}
-                                  className="text-destructive focus:text-destructive"
+                                  className="text-xs py-1 px-2 cursor-pointer text-destructive focus:text-destructive"
                                 >
-                                  <Trash2 className="h-3.5 w-3.5 mr-2" /> 删除
+                                  <Trash2 className="h-3 w-3 mr-1.5" /> 删除
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
