@@ -139,22 +139,37 @@ function TestSetPage() {
     markDirty(id);
   };
 
-  const addBlankRow = () => {
+  const [composerOpen, setComposerOpen] = useState(false);
+
+  const addSampleFromComposer = (r: ComposerResult) => {
     if (!selected) return;
+    const images = r.attachments.filter((a) => a.kind === "image" || a.kind === "bulk-image");
+    const shares = r.attachments.filter((a) => a.kind === "share");
+    const bulkNotes = r.attachments.filter((a) => a.kind === "bulk-note");
+    const noteParts: string[] = [];
+    if (r.note.trim()) noteParts.push(r.note.trim());
+    if (shares.length) noteParts.push(shares.map((a) => a.name).join("；"));
+    if (bulkNotes.length) noteParts.push(bulkNotes.map((a) => a.name).join("、"));
+    const extras: Record<string, string> = {
+      输入图片: images.length ? images.map((a) => a.name).join("、") : "-",
+      输入笔记: noteParts.length ? noteParts.join(" | ") : "-",
+      地理位置: "-",
+      用户UID: "-",
+      短期记忆: "-",
+    };
     setExtraRows((m) => {
       const list = m[selected.id] ?? [];
-      const empty: Record<string, string> = {};
-      MOCK_DETAIL_FIELDS.forEach((f) => (empty[f] = ""));
       const next: ExtraSample = {
         id: `${selected.id}-x${list.length + 1}-${Date.now()}`,
         no: baseRows.length + list.length + 1,
-        query: "",
-        extras: empty,
+        query: r.query,
+        extras,
       };
       return { ...m, [selected.id]: [...list, next] };
     });
     markDirty(selected.id);
-    setEditingRowId(`${selected.id}-x${(extraRows[selected.id]?.length ?? 0) + 1}-${Date.now()}`);
+    const lastPage = Math.max(1, Math.ceil((filteredRows.length + 1) / PAGE_SIZE));
+    setPage(lastPage);
   };
 
   const updateCell = (rowId: string, field: "query" | string, value: string) => {
