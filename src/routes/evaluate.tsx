@@ -97,6 +97,48 @@ function TestSetPage() {
     search.trim() ? r.query.toLowerCase().includes(search.trim().toLowerCase()) : true,
   );
 
+  const markDirty = (sid: string) =>
+    setDirtySets((d) => {
+      if (d.has(sid)) return d;
+      const n = new Set(d);
+      n.add(sid);
+      return n;
+    });
+  const saveSelected = () => {
+    if (!selected) return;
+    setDirtySets((d) => {
+      const n = new Set(d);
+      n.delete(selected.id);
+      return n;
+    });
+  };
+  const isDirty = selected ? dirtySets.has(selected.id) : false;
+
+  const renameSet = (id: string, currentName: string) => {
+    const next = window.prompt("重命名测试集", currentName);
+    if (!next || !next.trim() || next === currentName) return;
+    setSets((s) => s.map((x) => (x.id === id ? { ...x, name: next.trim() } : x)));
+    markDirty(id);
+  };
+
+  const addBlankRow = () => {
+    if (!selected) return;
+    setExtraRows((m) => {
+      const list = m[selected.id] ?? [];
+      const empty: Record<string, string> = {};
+      MOCK_DETAIL_FIELDS.forEach((f) => (empty[f] = ""));
+      const next: ExtraSample = {
+        id: `${selected.id}-x${list.length + 1}-${Date.now()}`,
+        no: baseRows.length + list.length + 1,
+        query: "",
+        extras: empty,
+      };
+      return { ...m, [selected.id]: [...list, next] };
+    });
+    markDirty(selected.id);
+    setEditingRowId(`${selected.id}-x${(extraRows[selected.id]?.length ?? 0) + 1}-${Date.now()}`);
+  };
+
   const updateCell = (rowId: string, field: "query" | string, value: string) => {
     if (!selected) return;
     setOverrides((m) => {
