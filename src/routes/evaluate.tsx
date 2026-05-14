@@ -585,7 +585,7 @@ function NewTestSetDialog({
               disabled={!canCreate}
               onClick={() => {
                 const c = mode === "manual" ? count : Math.floor(Math.random() * 50) + 10;
-                onCreate(name.trim(), c);
+                onCreate(name.trim(), c, folderId);
                 reset();
               }}
               className="px-4 py-1.5 text-sm rounded-md bg-[var(--console-cta)] text-[var(--console-cta-foreground)] hover:opacity-90 disabled:opacity-40"
