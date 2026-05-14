@@ -70,7 +70,7 @@ function TestSetPage() {
   
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [dirtySets, setDirtySets] = useState<Set<string>>(new Set());
-  const [listOpen, setListOpen] = useState(false);
+  
   const [nameMenuOpen, setNameMenuOpen] = useState(false);
 
   const selected = sets.find((s) => s.id === selectedId) ?? null;
@@ -176,13 +176,6 @@ function TestSetPage() {
         {/* 顶部工具条 */}
         <div className="px-3 flex items-center gap-2 border-b border-border bg-background py-2 min-h-[52px]">
           <button
-            onClick={() => setListOpen((v) => !v)}
-            className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent"
-            title="测试集列表"
-          >
-            <ListTree className="h-4 w-4" />
-          </button>
-          <button
             onClick={() => setOpen(true)}
             className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border text-[var(--console-orange)] hover:bg-accent"
             title="新建测试集"
@@ -201,7 +194,28 @@ function TestSetPage() {
               {nameMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setNameMenuOpen(false)} />
-                  <div className="absolute left-0 top-full mt-1 z-40 w-64 max-h-80 overflow-auto rounded-md border border-border bg-background shadow-lg py-1">
+                  <div className="absolute left-0 top-full mt-1 z-40 w-64 max-h-96 overflow-auto rounded-md border border-border bg-background shadow-lg py-1">
+                    <div className="px-3 pt-1 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground">操作</div>
+                    <button
+                      onClick={() => {
+                        setNameMenuOpen(false);
+                        renameSet(selected.id, selected.name);
+                      }}
+                      className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent"
+                    >
+                      <Pencil className="h-3.5 w-3.5" /> 重命名
+                    </button>
+                    <button
+                      onClick={() => {
+                        setNameMenuOpen(false);
+                        if (window.confirm(`确认删除测试集「${selected.name}」？`)) deleteSet(selected.id);
+                      }}
+                      className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm text-destructive hover:bg-accent"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> 删除
+                    </button>
+                    <div className="my-1 border-t border-border" />
+                    <div className="px-3 pt-1 pb-1 text-[10px] uppercase tracking-wide text-muted-foreground">切换测试集</div>
                     {sets.map((t) => (
                       <button
                         key={t.id}
@@ -250,72 +264,6 @@ function TestSetPage() {
             </div>
           )}
         </div>
-
-        {/* 列表覆盖面板 */}
-        {listOpen && (
-          <>
-            <div className="absolute inset-0 z-40 bg-black/20" onClick={() => setListOpen(false)} />
-            <aside className="absolute left-0 top-0 z-50 h-full w-[320px] bg-background border-r border-border shadow-2xl flex flex-col">
-              <div className="flex items-center justify-between px-5 pt-5 pb-3">
-                <h3 className="text-lg font-semibold tracking-tight">测试集列表</h3>
-                <button
-                  onClick={() => setListOpen(false)}
-                  className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto p-2">
-                {sets.map((t) => {
-                  const active = t.id === selectedId;
-                  return (
-                    <div
-                      key={t.id}
-                      className={`group relative rounded mb-1 transition flex items-center ${
-                        active ? "bg-muted" : "hover:bg-muted/60"
-                      }`}
-                    >
-                      <button
-                        onClick={() => {
-                          setSelectedId(t.id);
-                          setListOpen(false);
-                        }}
-                        className="flex-1 min-w-0 text-left pl-2.5 pr-8 py-2.5 flex items-center gap-2"
-                      >
-                        <FileSpreadsheet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                        <div className="text-xs truncate">{t.name}</div>
-                      </button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100 hover:bg-background hover:text-foreground"
-                            aria-label="更多"
-                          >
-                            <MoreHorizontal className="h-3.5 w-3.5" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-28 p-1">
-                          <DropdownMenuItem
-                            onClick={() => renameSet(t.id, t.name)}
-                            className="text-xs py-1 px-2 cursor-pointer"
-                          >
-                            <Pencil className="h-3 w-3 mr-1.5" /> 重命名
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => deleteSet(t.id)}
-                            className="text-xs py-1 px-2 cursor-pointer text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="h-3 w-3 mr-1.5" /> 删除
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  );
-                })}
-              </div>
-            </aside>
-          </>
-        )}
 
         {/* 详细内容 */}
         <div className="flex-1 min-w-0 flex flex-col min-h-0">
