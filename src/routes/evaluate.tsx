@@ -298,7 +298,7 @@ function TestSetPage() {
                   className="pl-6 pr-2 py-1.5 text-xs rounded border border-border bg-background outline-none focus:border-[var(--console-orange)] w-44"
                 />
               </div>
-              <span className="text-[11px] text-muted-foreground">{detailRows.length} 条</span>
+              
             </div>
           )}
         </div>
