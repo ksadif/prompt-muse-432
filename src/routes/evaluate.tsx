@@ -176,13 +176,6 @@ function TestSetPage() {
         {/* 顶部工具条 */}
         <div className="px-3 flex items-center gap-2 border-b border-border bg-background py-2 min-h-[52px]">
           <button
-            onClick={() => setListOpen((v) => !v)}
-            className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent"
-            title="测试集列表"
-          >
-            <ListTree className="h-4 w-4" />
-          </button>
-          <button
             onClick={() => setOpen(true)}
             className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border text-[var(--console-orange)] hover:bg-accent"
             title="新建测试集"
