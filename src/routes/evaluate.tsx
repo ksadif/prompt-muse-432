@@ -156,31 +156,9 @@ function TestSetPage() {
                       className="pl-6 pr-2 py-1.5 text-xs rounded border border-border bg-background outline-none focus:border-[var(--console-orange)] w-44"
                     />
                   </div>
-
-        {/* 右：详细内容 */}
-        <div className="flex-1 min-w-0 flex flex-col min-h-0">
-          {selected ? (
-            <>
-              <div className="px-5 pt-3 pb-2 border-b border-border flex items-center justify-between gap-3">
-                <div className="min-w-0 flex items-baseline gap-2">
-                  <div className="text-sm font-medium truncate">{selected.name}</div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {detailRows.length} 条
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                    <input
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="搜索 Query"
-                      className="pl-6 pr-2 py-1 text-xs rounded border border-border bg-background outline-none focus:border-[var(--console-orange)] w-44"
-                    />
-                  </div>
                   <button
                     onClick={() => setAddOpen(true)}
-                    className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-xs text-foreground hover:bg-muted"
+                    className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1.5 text-xs text-foreground hover:bg-muted"
                   >
                     <Plus className="h-3 w-3" /> 新增样本
                   </button>
@@ -193,30 +171,40 @@ function TestSetPage() {
                 </div>
               </div>
 
-              <div className="flex-1 min-h-0 overflow-auto px-5 py-3">
+              <div className="flex-1 min-h-0 overflow-auto px-6 py-4">
                 <div className="rounded border border-border overflow-auto">
                   <table className="w-full text-xs">
                     <thead className="bg-muted/40 text-muted-foreground sticky top-0">
                       <tr>
-                        <th className="w-10 px-3 py-1.5 text-left font-normal">#</th>
-                        <th className="px-3 py-1.5 text-left font-normal min-w-[200px]">输入 Query</th>
+                        <th className="w-12 px-4 py-3 text-left font-normal">#</th>
+                        <th className="px-4 py-3 text-left font-normal min-w-[200px]">输入 Query</th>
                         {MOCK_DETAIL_FIELDS.map((f) => (
-                          <th key={f} className="px-3 py-1.5 text-left font-normal whitespace-nowrap">
+                          <th key={f} className="px-4 py-3 text-left font-normal whitespace-nowrap">
                             {f}
                           </th>
                         ))}
+                        <th className="w-10 px-2 py-3" />
                       </tr>
                     </thead>
                     <tbody>
                       {filteredRows.map((r) => (
-                        <tr key={r.id} className="border-t border-border hover:bg-muted/30">
-                          <td className="px-3 py-1.5 text-muted-foreground">{r.no}</td>
-                          <td className="px-3 py-1.5">{r.query}</td>
+                        <tr key={r.id} className="group border-t border-border hover:bg-muted/30">
+                          <td className="px-4 py-3 text-muted-foreground">{r.no}</td>
+                          <td className="px-4 py-3">{r.query}</td>
                           {MOCK_DETAIL_FIELDS.map((f) => (
-                            <td key={f} className="px-3 py-1.5 text-muted-foreground whitespace-nowrap">
+                            <td key={f} className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                               {r.extras[f]}
                             </td>
                           ))}
+                          <td className="px-2 py-3 text-right">
+                            <button
+                              onClick={() => deleteRow(r.id)}
+                              className="opacity-0 group-hover:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive hover:bg-background"
+                              title="删除样本"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </td>
                         </tr>
                       ))}
                       {filteredRows.length === 0 && (
