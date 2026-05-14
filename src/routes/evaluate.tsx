@@ -60,9 +60,10 @@ function genDetailRows(setId: string, name: string) {
 type ExtraSample = { id: string; no: number; query: string; extras: Record<string, string> };
 
 function TestSetPage() {
-  const [sets, setSets] = useState(initialTestSets);
+  const [folders, setFolders] = useState<Folder[]>(initialFolders);
+  const sets = useMemo(() => folders.flatMap((f) => f.prompts), [folders]);
   const [open, setOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(initialTestSets[0]?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(sets[0]?.id ?? null);
   const [search, setSearch] = useState("");
   const [extraRows, setExtraRows] = useState<Record<string, ExtraSample[]>>({});
   const [deletedRowIds, setDeletedRowIds] = useState<Record<string, Set<string>>>({});
