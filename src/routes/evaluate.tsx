@@ -248,6 +248,13 @@ function TestSetPage() {
                           <td className="px-3 py-2 text-muted-foreground">{r.no}</td>
                           <td className="px-2 py-1.5">
                             <input
+                              autoFocus={editingRowId === r.id}
+                              onFocus={(e) => {
+                                if (editingRowId === r.id) {
+                                  e.currentTarget.select();
+                                  setEditingRowId(null);
+                                }
+                              }}
                               value={r.query}
                               onChange={(e) => updateCell(r.id, "query", e.target.value)}
                               className="w-full bg-transparent rounded border border-transparent px-2 py-1 outline-none hover:border-border focus:border-[var(--console-orange)] focus:bg-background"
