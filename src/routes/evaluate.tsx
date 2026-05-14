@@ -103,6 +103,12 @@ function TestSetPage() {
     search.trim() ? r.query.toLowerCase().includes(search.trim().toLowerCase()) : true,
   );
 
+  const PAGE_SIZE = 10;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedRows = filteredRows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   const markDirty = (sid: string) =>
     setDirtySets((d) => {
       if (d.has(sid)) return d;
