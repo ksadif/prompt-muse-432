@@ -117,7 +117,57 @@ export function PromptListPanel({
             />
           </button>
           <span className="text-[13px] text-muted-foreground">{v.onlyMineLabel}</span>
+          {onAddFolder && (
+            <button
+              onClick={() => {
+                setNewFolderName("");
+                setAddingFolder(true);
+              }}
+              className="ml-auto inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground"
+            >
+              <FolderPlus className="h-3.5 w-3.5" />
+              新建文件夹
+            </button>
+          )}
         </div>
+
+        {addingFolder && (
+          <div className="px-5 pb-2 flex items-center gap-2">
+            <FolderIcon className={`h-3.5 w-3.5 ${v.accent}`} />
+            <input
+              autoFocus
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const n = newFolderName.trim();
+                  if (n && onAddFolder) onAddFolder(n);
+                  setAddingFolder(false);
+                } else if (e.key === "Escape") {
+                  setAddingFolder(false);
+                }
+              }}
+              placeholder="文件夹名称"
+              className="flex-1 rounded border border-border bg-background px-2 py-1 text-xs outline-none focus:border-[var(--console-orange)]"
+            />
+            <button
+              onClick={() => {
+                const n = newFolderName.trim();
+                if (n && onAddFolder) onAddFolder(n);
+                setAddingFolder(false);
+              }}
+              className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
+            >
+              <Check className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => setAddingFolder(false)}
+              className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
 
         {/* Folder list */}
         <div className="flex-1 overflow-y-auto px-2 pb-3">
