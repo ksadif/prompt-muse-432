@@ -67,7 +67,7 @@ function TestSetPage() {
   const [overrides, setOverrides] = useState<
     Record<string, Record<string, { query?: string; extras?: Record<string, string> }>>
   >({});
-  const [addOpen, setAddOpen] = useState(false);
+  
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [dirtySets, setDirtySets] = useState<Set<string>>(new Set());
 
