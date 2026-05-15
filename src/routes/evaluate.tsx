@@ -425,7 +425,7 @@ function TestSetPage() {
                     {filteredRows.length === 0 && (
                       <tr>
                         <td
-                          colSpan={3 + MOCK_DETAIL_FIELDS.length}
+                          colSpan={3 + visibleFields.length}
                           className="px-3 py-8 text-center text-muted-foreground"
                         >
                           没有匹配的样本
