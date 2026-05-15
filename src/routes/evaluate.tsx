@@ -94,6 +94,8 @@ function TestSetPage() {
   const [dirtySets, setDirtySets] = useState<Set<string>>(new Set());
   const [listOpen, setListOpen] = useState(false);
   const [nameMenuOpen, setNameMenuOpen] = useState(false);
+  const [showAllFields, setShowAllFields] = useState(false);
+  const visibleFields = (showAllFields ? ALL_FIELDS : DEFAULT_FIELDS) as readonly string[];
   const navigate = useNavigate();
   const confirm = useConfirm();
 
