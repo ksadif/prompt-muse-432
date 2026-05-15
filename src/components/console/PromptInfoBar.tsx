@@ -75,7 +75,7 @@ export function PromptInfoBar({
               { label: "保存", icon: Save, action: () => { onSave(); setMenuOpen(false); } },
               { label: "查看版本历史", icon: History, action: () => { onShowHistory(); setMenuOpen(false); } },
               { label: "创建副本", icon: Copy, action: () => { onDuplicate(); setMenuOpen(false); } },
-              { label: "删除", icon: Trash2, action: () => { setMenuOpen(false); if (window.confirm(`确认删除「${prompt.name}」？此操作不可恢复。`)) onDelete(); }, danger: true },
+              { label: "删除", icon: Trash2, action: async () => { setMenuOpen(false); if (await confirm({ title: "删除", description: `确认删除「${prompt.name}」？此操作不可恢复。` })) onDelete(); }, danger: true },
             ].map((it) => (
               <button
                 key={it.label}
