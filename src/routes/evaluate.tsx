@@ -402,13 +402,7 @@ function TestSetPage() {
                   </tbody>
                 </table>
               </div>
-              <div className="mt-2 flex items-center justify-between">
-                <button
-                  onClick={() => setComposerOpen(true)}
-                  className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:text-[var(--console-orange)] hover:bg-muted"
-                >
-                  <Plus className="h-3 w-3" /> 新增一行
-                </button>
+              <div className="mt-2 flex items-center justify-end">
                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                   <span>共 {filteredRows.length} 条</span>
                   <button
