@@ -70,6 +70,7 @@ export function PromptListPanel({
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [addingFolder, setAddingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  const confirm = useConfirm();
 
   const filteredFolders = useMemo(() => {
     return folders
