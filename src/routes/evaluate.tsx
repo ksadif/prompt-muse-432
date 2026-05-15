@@ -78,6 +78,7 @@ function TestSetPage() {
   const [listOpen, setListOpen] = useState(false);
   const [nameMenuOpen, setNameMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const confirm = useConfirm();
 
   const selected = sets.find((s) => s.id === selectedId) ?? null;
   const baseRows = useMemo(
