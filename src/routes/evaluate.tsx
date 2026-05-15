@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SampleComposerDialog, type ComposerResult } from "@/components/console/SampleComposerDialog";
+import { useConfirm } from "@/components/console/ConfirmDialog";
 
 export const Route = createFileRoute("/evaluate")({
   head: () => ({ meta: [{ title: "测试集管理 · Claude Console" }] }),
