@@ -244,6 +244,7 @@ function PromptPage() {
                             role="button"
                             onClick={(e) => {
                               e.stopPropagation();
+                              if (!window.confirm(`确认删除该步骤？`)) return;
                               setBlocks((bs) => bs.filter((_, idx) => idx !== i));
                               if (drawer?.kind === "edit" && drawer.blockIdx === i) setDrawer(null);
                             }}
