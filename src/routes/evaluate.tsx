@@ -390,7 +390,7 @@ function TestSetPage() {
                              className={cellCls}
                            />
                          </td>
-                         {MOCK_DETAIL_FIELDS.map((f) => (
+                         {visibleFields.map((f) => (
                            <td key={f} className="px-2 py-1.5">
                              <input
                                value={r.extras[f] ?? ""}
