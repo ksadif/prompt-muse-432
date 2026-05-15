@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
-import { X, Search, Lock, Box, Bot, FileSpreadsheet, ChevronDown, ChevronRight, Folder as FolderIcon, FolderPlus, Check } from "lucide-react";
+import { X, Search, Lock, Box, Bot, FileSpreadsheet, ChevronDown, ChevronRight, Folder as FolderIcon, FolderPlus, Check, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Folder } from "./types";
 
 type Variant = "agent" | "prompt" | "testset";
