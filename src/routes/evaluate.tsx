@@ -165,10 +165,6 @@ function TestSetPage() {
     const images = r.attachments.filter((a) => a.kind === "image" || a.kind === "bulk-image");
     const shares = r.attachments.filter((a) => a.kind === "share");
     const bulkNotes = r.attachments.filter((a) => a.kind === "bulk-note");
-    const noteParts: string[] = [];
-    if (r.note.trim()) noteParts.push(r.note.trim());
-    if (shares.length) noteParts.push(shares.map((a) => a.name).join("；"));
-    if (bulkNotes.length) noteParts.push(bulkNotes.map((a) => a.name).join("、"));
     const noteId = bulkNotes[0]?.name ?? (shares.find((s) => /笔记|note/i.test(s.name))?.name ?? "-");
     const extras: Record<string, string> = {
       输入图片: images.length ? images.map((a) => a.name).join("、") : "-",
