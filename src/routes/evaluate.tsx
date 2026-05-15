@@ -368,7 +368,7 @@ function TestSetPage() {
                     <tr>
                       <th className="w-10 px-3 py-3 text-left font-normal">#</th>
                       <th className="px-4 py-3 text-left font-normal min-w-[200px]">输入 Query</th>
-                      {MOCK_DETAIL_FIELDS.map((f) => (
+                      {visibleFields.map((f) => (
                         <th key={f} className="px-4 py-3 text-left font-normal whitespace-nowrap">
                           {f}
                         </th>
