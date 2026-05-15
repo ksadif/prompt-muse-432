@@ -171,6 +171,7 @@ function TestSetPage() {
     const bulkNotes = r.attachments.filter((a) => a.kind === "bulk-note");
     const noteId = bulkNotes[0]?.name ?? (shares.find((s) => /笔记|note/i.test(s.name))?.name ?? "-");
     const extras: Record<string, string> = {
+      轮次: "第 1 轮",
       输入图片: images.length ? images.map((a) => a.name).join("、") : "-",
       用户ID: "-",
       笔记ID: noteId,
