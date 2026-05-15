@@ -333,7 +333,18 @@ function TestSetPage() {
               )}
             </div>
           )}
-          {selected && <div className="ml-auto" />}
+          {selected && (
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={() => setShowAllFields((v) => !v)}
+                className={`inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 h-8 text-xs hover:bg-accent transition ${showAllFields ? "text-[var(--console-orange)] border-[var(--console-orange)]/40" : "text-muted-foreground"}`}
+                title="按多模态协议展示全部字段"
+              >
+                <Columns3 className="h-3.5 w-3.5" />
+                {showAllFields ? "收起字段" : "展开全部字段"}
+              </button>
+            </div>
+          )}
         </div>
 
         <PromptListPanel
