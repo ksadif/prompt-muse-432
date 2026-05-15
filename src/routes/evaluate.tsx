@@ -298,9 +298,9 @@ function TestSetPage() {
                     </button>
                     <div className="my-1 border-t border-border" />
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         setNameMenuOpen(false);
-                        if (window.confirm(`确认删除测试集「${selected.name}」？`)) deleteSet(selected.id);
+                        if (await confirm({ title: "删除测试集", description: `确认删除测试集「${selected.name}」？此操作不可恢复。` })) deleteSet(selected.id);
                       }}
                       className="w-full text-left flex items-center gap-2 px-3 py-1.5 text-sm text-destructive hover:bg-accent"
                     >
