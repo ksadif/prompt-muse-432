@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PromptRouteImport } from './routes/prompt'
-import { Route as EvaluationRouteImport } from './routes/evaluation'
 import { Route as EvaluateRouteImport } from './routes/evaluate'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SharedEvalIdRouteImport } from './routes/shared-eval.$id'
@@ -18,11 +17,6 @@ import { Route as SharedEvalIdRouteImport } from './routes/shared-eval.$id'
 const PromptRoute = PromptRouteImport.update({
   id: '/prompt',
   path: '/prompt',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvaluationRoute = EvaluationRouteImport.update({
-  id: '/evaluation',
-  path: '/evaluation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EvaluateRoute = EvaluateRouteImport.update({
@@ -44,14 +38,12 @@ const SharedEvalIdRoute = SharedEvalIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/evaluate': typeof EvaluateRoute
-  '/evaluation': typeof EvaluationRoute
   '/prompt': typeof PromptRoute
   '/shared-eval/$id': typeof SharedEvalIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/evaluate': typeof EvaluateRoute
-  '/evaluation': typeof EvaluationRoute
   '/prompt': typeof PromptRoute
   '/shared-eval/$id': typeof SharedEvalIdRoute
 }
@@ -59,28 +51,20 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/evaluate': typeof EvaluateRoute
-  '/evaluation': typeof EvaluationRoute
   '/prompt': typeof PromptRoute
   '/shared-eval/$id': typeof SharedEvalIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/evaluate' | '/evaluation' | '/prompt' | '/shared-eval/$id'
+  fullPaths: '/' | '/evaluate' | '/prompt' | '/shared-eval/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/evaluate' | '/evaluation' | '/prompt' | '/shared-eval/$id'
-  id:
-    | '__root__'
-    | '/'
-    | '/evaluate'
-    | '/evaluation'
-    | '/prompt'
-    | '/shared-eval/$id'
+  to: '/' | '/evaluate' | '/prompt' | '/shared-eval/$id'
+  id: '__root__' | '/' | '/evaluate' | '/prompt' | '/shared-eval/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EvaluateRoute: typeof EvaluateRoute
-  EvaluationRoute: typeof EvaluationRoute
   PromptRoute: typeof PromptRoute
   SharedEvalIdRoute: typeof SharedEvalIdRoute
 }
@@ -92,13 +76,6 @@ declare module '@tanstack/react-router' {
       path: '/prompt'
       fullPath: '/prompt'
       preLoaderRoute: typeof PromptRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evaluation': {
-      id: '/evaluation'
-      path: '/evaluation'
-      fullPath: '/evaluation'
-      preLoaderRoute: typeof EvaluationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/evaluate': {
@@ -128,7 +105,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EvaluateRoute: EvaluateRoute,
-  EvaluationRoute: EvaluationRoute,
   PromptRoute: PromptRoute,
   SharedEvalIdRoute: SharedEvalIdRoute,
 }

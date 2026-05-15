@@ -238,10 +238,10 @@ export function AgentPreview() {
             <button
               onClick={() => setHistoryOpen((v) => !v)}
               className={`relative h-7 px-2 inline-flex items-center gap-1 rounded-md text-xs hover:bg-accent transition ${historyHash.trim() ? "text-[var(--console-orange)]" : "text-muted-foreground"}`}
-              title="加载历史轨迹"
+              title="加载历史轨迹 hash-id"
             >
               <History className="h-3.5 w-3.5" />
-              <span>历史</span>
+              <span>hash-id</span>
             </button>
             {historyOpen && (
               <>

@@ -194,6 +194,12 @@ function PromptPage() {
             if (!blocksMap[id]) setBlocksMap((m) => ({ ...m, [id]: [makeBlock(0)] }));
           }}
           onAddFolder={handleAddFolder}
+          onRenameFolder={(id, name) =>
+            setFolders((fs) => fs.map((f) => (f.id === id ? { ...f, name } : f)))
+          }
+          onDeleteFolder={(id) => {
+            setFolders((fs) => fs.filter((f) => f.id !== id));
+          }}
           onCreate={() => setNewPromptOpen(true)}
         />
 
@@ -244,6 +250,7 @@ function PromptPage() {
                             role="button"
                             onClick={(e) => {
                               e.stopPropagation();
+                              if (!window.confirm(`确认删除该步骤？`)) return;
                               setBlocks((bs) => bs.filter((_, idx) => idx !== i));
                               if (drawer?.kind === "edit" && drawer.blockIdx === i) setDrawer(null);
                             }}

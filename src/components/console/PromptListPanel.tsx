@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
-import { X, Search, Lock, Box, Bot, FileSpreadsheet, ChevronDown, ChevronRight, Folder as FolderIcon, FolderPlus, Check } from "lucide-react";
+import { X, Search, Lock, Box, Bot, FileSpreadsheet, ChevronDown, ChevronRight, Folder as FolderIcon, FolderPlus, Check, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { Folder } from "./types";
 
 type Variant = "agent" | "prompt" | "testset";
@@ -41,6 +47,8 @@ export function PromptListPanel({
   selectedId,
   onSelect,
   onAddFolder,
+  onRenameFolder,
+  onDeleteFolder,
   variant = "prompt",
 }: {
   open: boolean;
@@ -49,6 +57,8 @@ export function PromptListPanel({
   selectedId: string | null;
   onSelect: (id: string) => void;
   onAddFolder?: (name: string) => void;
+  onRenameFolder?: (id: string, name: string) => void;
+  onDeleteFolder?: (id: string) => void;
   onCreate?: () => void;
   variant?: Variant;
 }) {
@@ -177,20 +187,58 @@ export function PromptListPanel({
           {filteredFolders.map((f) => {
             const isCollapsed = collapsed[f.id];
             return (
-              <div key={f.id} className="mb-1">
-                <button
-                  onClick={() => setCollapsed((m) => ({ ...m, [f.id]: !isCollapsed }))}
-                  className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[12.5px] text-muted-foreground hover:text-foreground"
-                >
-                  {isCollapsed ? (
-                    <ChevronRight className="h-3 w-3" />
-                  ) : (
-                    <ChevronDown className="h-3 w-3" />
+              <div key={f.id} className="mb-1 group/folder">
+                <div className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[12.5px] text-muted-foreground hover:text-foreground rounded hover:bg-accent/40">
+                  <button
+                    onClick={() => setCollapsed((m) => ({ ...m, [f.id]: !isCollapsed }))}
+                    className="flex-1 min-w-0 flex items-center gap-1.5 text-left"
+                  >
+                    {isCollapsed ? (
+                      <ChevronRight className="h-3 w-3" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3" />
+                    )}
+                    <FolderIcon className={`h-3.5 w-3.5 ${v.accent}`} />
+                    <span className="font-medium truncate">{f.name}</span>
+                    <span className="ml-auto text-[11px]">{f.prompts.length}</span>
+                  </button>
+                  {(onRenameFolder || onDeleteFolder) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-0.5 rounded opacity-0 group-hover/folder:opacity-100 data-[state=open]:opacity-100 hover:bg-accent text-muted-foreground hover:text-foreground"
+                          aria-label="更多"
+                        >
+                          <MoreHorizontal className="h-3.5 w-3.5" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-32 p-1">
+                        {onRenameFolder && (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              const next = window.prompt("重命名文件夹", f.name);
+                              if (next && next.trim() && next.trim() !== f.name) onRenameFolder(f.id, next.trim());
+                            }}
+                            className="text-xs py-1 px-2 cursor-pointer"
+                          >
+                            <Pencil className="h-3 w-3 mr-1.5" /> 重命名
+                          </DropdownMenuItem>
+                        )}
+                        {onDeleteFolder && (
+                          <DropdownMenuItem
+                            onClick={() => {
+                              if (window.confirm(`确认删除文件夹「${f.name}」？文件夹内的内容也会被删除。`)) onDeleteFolder(f.id);
+                            }}
+                            className="text-xs py-1 px-2 cursor-pointer text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-3 w-3 mr-1.5" /> 删除
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
-                  <FolderIcon className={`h-3.5 w-3.5 ${v.accent}`} />
-                  <span className="font-medium">{f.name}</span>
-                  <span className="ml-auto text-[11px]">{f.prompts.length}</span>
-                </button>
+                </div>
                 {!isCollapsed && (
                   <div className="mt-0.5">
                     {f.prompts.map((p) => {
