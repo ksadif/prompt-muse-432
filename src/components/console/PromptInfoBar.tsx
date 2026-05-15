@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, History, Copy, Trash2, Edit3, Save } from "lucide-react";
 import type { PromptItem } from "./types";
+import { useConfirm } from "./ConfirmDialog";
 
 export function PromptInfoBar({
   prompt,
