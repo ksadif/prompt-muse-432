@@ -9,6 +9,7 @@ import { AgentPreview } from "@/components/console/AgentPreview";
 import { EvalTable } from "@/components/console/EvalTable";
 import { RightDrawer } from "@/components/console/RightDrawer";
 import { initialFolders, versionHistory } from "@/components/console/mockData";
+import { useConfirm } from "@/components/console/ConfirmDialog";
 import {
   ALL_MODELS,
   ALL_TOOLS,
@@ -58,6 +59,7 @@ function PromptPage() {
   const [drawer, setDrawer] = useState<DrawerKind>(null);
   const [listOpen, setListOpen] = useState(false);
   const [newPromptOpen, setNewPromptOpen] = useState(false);
+  const confirm = useConfirm();
 
   const selectedPrompt = useMemo(() => {
     for (const f of folders) {
@@ -248,9 +250,9 @@ function PromptPage() {
                         {i > 0 && (
                           <span
                             role="button"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
-                              if (!window.confirm(`确认删除该步骤？`)) return;
+                              if (!(await confirm({ title: "删除步骤", description: "确认删除该步骤？" }))) return;
                               setBlocks((bs) => bs.filter((_, idx) => idx !== i));
                               if (drawer?.kind === "edit" && drawer.blockIdx === i) setDrawer(null);
                             }}
