@@ -20,8 +20,9 @@ export const Route = createFileRoute("/evaluate")({
   component: TestSetPage,
 });
 
-const DEFAULT_FIELDS = ["输入图片", "用户ID"] as const;
+const DEFAULT_FIELDS = ["轮次", "输入图片", "用户ID"] as const;
 const ALL_FIELDS = [
+  "轮次",          // turns 序号
   "输入图片",      // image_urls
   "用户ID",        // user_id
   "笔记ID",        // attachments.note.noteId
