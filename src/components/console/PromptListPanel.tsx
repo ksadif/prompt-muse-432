@@ -47,6 +47,8 @@ export function PromptListPanel({
   selectedId,
   onSelect,
   onAddFolder,
+  onRenameFolder,
+  onDeleteFolder,
   variant = "prompt",
 }: {
   open: boolean;
@@ -55,6 +57,8 @@ export function PromptListPanel({
   selectedId: string | null;
   onSelect: (id: string) => void;
   onAddFolder?: (name: string) => void;
+  onRenameFolder?: (id: string, name: string) => void;
+  onDeleteFolder?: (id: string) => void;
   onCreate?: () => void;
   variant?: Variant;
 }) {
