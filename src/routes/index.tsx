@@ -250,9 +250,9 @@ function PromptPage() {
                         {i > 0 && (
                           <span
                             role="button"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
-                              if (!window.confirm(`确认删除该步骤？`)) return;
+                              if (!(await confirm({ title: "删除步骤", description: "确认删除该步骤？" }))) return;
                               setBlocks((bs) => bs.filter((_, idx) => idx !== i));
                               if (drawer?.kind === "edit" && drawer.blockIdx === i) setDrawer(null);
                             }}
