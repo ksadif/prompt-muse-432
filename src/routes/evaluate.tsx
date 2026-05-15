@@ -321,6 +321,15 @@ function TestSetPage() {
           onAddFolder={(name) =>
             setFolders((fs) => [...fs, { id: `tsf-${Date.now()}`, name, prompts: [] }])
           }
+          onRenameFolder={(id, name) =>
+            setFolders((fs) => fs.map((f) => (f.id === id ? { ...f, name } : f)))
+          }
+          onDeleteFolder={(id) => {
+            setFolders((fs) => fs.filter((f) => f.id !== id));
+            if (selected && folders.find((f) => f.id === id)?.prompts.some((p) => p.id === selected.id)) {
+              setSelectedId(null);
+            }
+          }}
           variant="testset"
         />
 
