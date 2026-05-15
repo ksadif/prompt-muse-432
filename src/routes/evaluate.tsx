@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ConsoleShell } from "@/components/console/ConsoleShell";
-import { Plus, Upload, Trash2, PencilLine, FileUp, Search, MoreHorizontal, Pencil, ListTree, ChevronDown } from "lucide-react";
+import { Plus, Upload, Trash2, PencilLine, FileUp, Search, MoreHorizontal, Pencil, ListTree, ChevronDown, Columns3 } from "lucide-react";
 import { testSetFolders as initialFolders } from "@/components/console/mockData";
 import { PromptListPanel } from "@/components/console/PromptListPanel";
 import type { Folder } from "@/components/console/types";
@@ -20,11 +20,21 @@ export const Route = createFileRoute("/evaluate")({
   component: TestSetPage,
 });
 
-const EXTRA_FIELDS = ["输入图片", "输入笔记", "地理位置", "短期记忆", "长期记忆"] as const;
-
-
-
-const MOCK_DETAIL_FIELDS = ["输入图片", "输入笔记", "地理位置", "用户UID", "短期记忆"] as const;
+const DEFAULT_FIELDS = ["输入图片", "用户ID"] as const;
+const ALL_FIELDS = [
+  "输入图片",      // image_urls
+  "用户ID",        // user_id
+  "笔记ID",        // attachments.note.noteId
+  "评论ID",        // attachments.note.commentId
+  "选中文本",      // attachments.select.selectionText
+  "商品ID",        // attachments.product.productId
+  "主页用户ID",    // attachments.profile.userId
+  "POI ID",        // attachments.poi.poiId
+  "附件图片",      // attachments.image.imageUrl
+  "对话历史",      // history
+  "来源",          // source
+] as const;
+const EXTRA_FIELDS = ALL_FIELDS;
 
 function genDetailRows(setId: string, name: string) {
   const count = (() => {
@@ -45,16 +55,23 @@ function genDetailRows(setId: string, name: string) {
     "我家猫咪走丢了",
     "夜里楼上太吵怎么办",
   ];
+  const sources = ["drag_drop", "share", "manual", "-"];
   return Array.from({ length: count }, (_, i) => ({
     id: `${setId}-r${i + 1}`,
     no: i + 1,
     query: queries[i % queries.length],
     extras: {
-      输入图片: i % 3 === 0 ? `img_${setId}_${i}.jpg` : "-",
-      输入笔记: i % 4 === 0 ? "邻居纠纷相关笔记" : "-",
-      地理位置: ["上海·徐汇", "北京·朝阳", "杭州·西湖", "深圳·南山"][i % 4],
-      用户UID: `U${100000 + i * 7}`,
-      短期记忆: i % 5 === 0 ? "上一轮：垃圾分类时间咨询" : "-",
+      输入图片: i % 3 === 0 ? `https://img.cdn/${setId}_${i}.jpg` : "-",
+      用户ID: `U${100000 + i * 7}`,
+      笔记ID: i % 4 === 0 ? `note_${1000 + i}` : "-",
+      评论ID: i % 5 === 0 ? `cmt_${2000 + i}` : "-",
+      选中文本: i % 6 === 0 ? "邻居家墙面发霉" : "-",
+      商品ID: i % 7 === 0 ? `sku_${3000 + i}` : "-",
+      主页用户ID: i % 8 === 0 ? `U${500000 + i}` : "-",
+      "POI ID": i % 4 === 1 ? `poi_${4000 + i}` : "-",
+      附件图片: i % 5 === 1 ? `https://img.cdn/att_${i}.jpg` : "-",
+      对话历史: i % 3 === 1 ? "上一轮：垃圾分类咨询" : "-",
+      来源: sources[i % sources.length],
     } as Record<string, string>,
   }));
 }
@@ -77,6 +94,8 @@ function TestSetPage() {
   const [dirtySets, setDirtySets] = useState<Set<string>>(new Set());
   const [listOpen, setListOpen] = useState(false);
   const [nameMenuOpen, setNameMenuOpen] = useState(false);
+  const [showAllFields, setShowAllFields] = useState(false);
+  const visibleFields = (showAllFields ? ALL_FIELDS : DEFAULT_FIELDS) as readonly string[];
   const navigate = useNavigate();
   const confirm = useConfirm();
 
@@ -148,16 +167,19 @@ function TestSetPage() {
     const images = r.attachments.filter((a) => a.kind === "image" || a.kind === "bulk-image");
     const shares = r.attachments.filter((a) => a.kind === "share");
     const bulkNotes = r.attachments.filter((a) => a.kind === "bulk-note");
-    const noteParts: string[] = [];
-    if (r.note.trim()) noteParts.push(r.note.trim());
-    if (shares.length) noteParts.push(shares.map((a) => a.name).join("；"));
-    if (bulkNotes.length) noteParts.push(bulkNotes.map((a) => a.name).join("、"));
+    const noteId = bulkNotes[0]?.name ?? (shares.find((s) => /笔记|note/i.test(s.name))?.name ?? "-");
     const extras: Record<string, string> = {
       输入图片: images.length ? images.map((a) => a.name).join("、") : "-",
-      输入笔记: noteParts.length ? noteParts.join(" | ") : "-",
-      地理位置: "-",
-      用户UID: "-",
-      短期记忆: "-",
+      用户ID: "-",
+      笔记ID: noteId,
+      评论ID: "-",
+      选中文本: r.note.trim() || "-",
+      商品ID: "-",
+      主页用户ID: "-",
+      "POI ID": "-",
+      附件图片: "-",
+      对话历史: "-",
+      来源: shares.length ? "share" : (images.length ? "drag_drop" : "manual"),
     };
     setExtraRows((m) => {
       const list = m[selected.id] ?? [];
@@ -311,7 +333,18 @@ function TestSetPage() {
               )}
             </div>
           )}
-          {selected && <div className="ml-auto" />}
+          {selected && (
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={() => setShowAllFields((v) => !v)}
+                className={`inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 h-8 text-xs hover:bg-accent transition ${showAllFields ? "text-[var(--console-orange)] border-[var(--console-orange)]/40" : "text-muted-foreground"}`}
+                title="按多模态协议展示全部字段"
+              >
+                <Columns3 className="h-3.5 w-3.5" />
+                {showAllFields ? "收起字段" : "展开全部字段"}
+              </button>
+            </div>
+          )}
         </div>
 
         <PromptListPanel
@@ -346,7 +379,7 @@ function TestSetPage() {
                     <tr>
                       <th className="w-10 px-3 py-3 text-left font-normal">#</th>
                       <th className="px-4 py-3 text-left font-normal min-w-[200px]">输入 Query</th>
-                      {MOCK_DETAIL_FIELDS.map((f) => (
+                      {visibleFields.map((f) => (
                         <th key={f} className="px-4 py-3 text-left font-normal whitespace-nowrap">
                           {f}
                         </th>
@@ -368,7 +401,7 @@ function TestSetPage() {
                              className={cellCls}
                            />
                          </td>
-                         {MOCK_DETAIL_FIELDS.map((f) => (
+                         {visibleFields.map((f) => (
                            <td key={f} className="px-2 py-1.5">
                              <input
                                value={r.extras[f] ?? ""}
@@ -403,7 +436,7 @@ function TestSetPage() {
                     {filteredRows.length === 0 && (
                       <tr>
                         <td
-                          colSpan={3 + MOCK_DETAIL_FIELDS.length}
+                          colSpan={3 + visibleFields.length}
                           className="px-3 py-8 text-center text-muted-foreground"
                         >
                           没有匹配的样本
