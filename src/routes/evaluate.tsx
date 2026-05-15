@@ -20,11 +20,21 @@ export const Route = createFileRoute("/evaluate")({
   component: TestSetPage,
 });
 
-const EXTRA_FIELDS = ["输入图片", "输入笔记", "地理位置", "短期记忆", "长期记忆"] as const;
-
-
-
-const MOCK_DETAIL_FIELDS = ["输入图片", "输入笔记", "地理位置", "用户UID", "短期记忆"] as const;
+const DEFAULT_FIELDS = ["输入图片", "用户ID"] as const;
+const ALL_FIELDS = [
+  "输入图片",      // image_urls
+  "用户ID",        // user_id
+  "笔记ID",        // attachments.note.noteId
+  "评论ID",        // attachments.note.commentId
+  "选中文本",      // attachments.select.selectionText
+  "商品ID",        // attachments.product.productId
+  "主页用户ID",    // attachments.profile.userId
+  "POI ID",        // attachments.poi.poiId
+  "附件图片",      // attachments.image.imageUrl
+  "对话历史",      // history
+  "来源",          // source
+] as const;
+const EXTRA_FIELDS = ALL_FIELDS;
 
 function genDetailRows(setId: string, name: string) {
   const count = (() => {
@@ -45,16 +55,23 @@ function genDetailRows(setId: string, name: string) {
     "我家猫咪走丢了",
     "夜里楼上太吵怎么办",
   ];
+  const sources = ["drag_drop", "share", "manual", "-"];
   return Array.from({ length: count }, (_, i) => ({
     id: `${setId}-r${i + 1}`,
     no: i + 1,
     query: queries[i % queries.length],
     extras: {
-      输入图片: i % 3 === 0 ? `img_${setId}_${i}.jpg` : "-",
-      输入笔记: i % 4 === 0 ? "邻居纠纷相关笔记" : "-",
-      地理位置: ["上海·徐汇", "北京·朝阳", "杭州·西湖", "深圳·南山"][i % 4],
-      用户UID: `U${100000 + i * 7}`,
-      短期记忆: i % 5 === 0 ? "上一轮：垃圾分类时间咨询" : "-",
+      输入图片: i % 3 === 0 ? `https://img.cdn/${setId}_${i}.jpg` : "-",
+      用户ID: `U${100000 + i * 7}`,
+      笔记ID: i % 4 === 0 ? `note_${1000 + i}` : "-",
+      评论ID: i % 5 === 0 ? `cmt_${2000 + i}` : "-",
+      选中文本: i % 6 === 0 ? "邻居家墙面发霉" : "-",
+      商品ID: i % 7 === 0 ? `sku_${3000 + i}` : "-",
+      主页用户ID: i % 8 === 0 ? `U${500000 + i}` : "-",
+      "POI ID": i % 4 === 1 ? `poi_${4000 + i}` : "-",
+      附件图片: i % 5 === 1 ? `https://img.cdn/att_${i}.jpg` : "-",
+      对话历史: i % 3 === 1 ? "上一轮：垃圾分类咨询" : "-",
+      来源: sources[i % sources.length],
     } as Record<string, string>,
   }));
 }
