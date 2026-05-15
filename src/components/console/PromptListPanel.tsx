@@ -229,8 +229,8 @@ export function PromptListPanel({
                         )}
                         {onDeleteFolder && (
                           <DropdownMenuItem
-                            onClick={() => {
-                              if (window.confirm(`确认删除文件夹「${f.name}」？文件夹内的内容也会被删除。`)) onDeleteFolder(f.id);
+                            onClick={async () => {
+                              if (await confirm({ title: "删除文件夹", description: `确认删除文件夹「${f.name}」？文件夹内的内容也会被删除。` })) onDeleteFolder(f.id);
                             }}
                             className="text-xs py-1 px-2 cursor-pointer text-destructive focus:text-destructive"
                           >
