@@ -26,6 +26,7 @@ export function PromptInfoBar({
   const [renaming, setRenaming] = useState(false);
   const [tmpName, setTmpName] = useState(prompt.name);
   const ref = useRef<HTMLDivElement>(null);
+  const confirm = useConfirm();
 
   useEffect(() => setTmpName(prompt.name), [prompt.name]);
 
