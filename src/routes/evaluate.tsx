@@ -169,12 +169,19 @@ function TestSetPage() {
     if (r.note.trim()) noteParts.push(r.note.trim());
     if (shares.length) noteParts.push(shares.map((a) => a.name).join("；"));
     if (bulkNotes.length) noteParts.push(bulkNotes.map((a) => a.name).join("、"));
+    const noteId = bulkNotes[0]?.name ?? (shares.find((s) => /笔记|note/i.test(s.name))?.name ?? "-");
     const extras: Record<string, string> = {
       输入图片: images.length ? images.map((a) => a.name).join("、") : "-",
-      输入笔记: noteParts.length ? noteParts.join(" | ") : "-",
-      地理位置: "-",
-      用户UID: "-",
-      短期记忆: "-",
+      用户ID: "-",
+      笔记ID: noteId,
+      评论ID: "-",
+      选中文本: r.note.trim() || "-",
+      商品ID: "-",
+      主页用户ID: "-",
+      "POI ID": "-",
+      附件图片: "-",
+      对话历史: "-",
+      来源: shares.length ? "share" : (images.length ? "drag_drop" : "manual"),
     };
     setExtraRows((m) => {
       const list = m[selected.id] ?? [];
