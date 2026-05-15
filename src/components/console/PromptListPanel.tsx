@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useConfirm } from "./ConfirmDialog";
 import type { Folder } from "./types";
 
 type Variant = "agent" | "prompt" | "testset";
