@@ -224,6 +224,12 @@ function PromptWorkbenchPage() {
             if (!contentMap[id]) setContentMap((m) => ({ ...m, [id]: { system: "", user: "" } }));
           }}
           onAddFolder={handleAddFolder}
+          onRenameFolder={(id, name) =>
+            setFolders((fs) => fs.map((f) => (f.id === id ? { ...f, name } : f)))
+          }
+          onDeleteFolder={(id) => {
+            setFolders((fs) => fs.filter((f) => f.id !== id));
+          }}
           onCreate={() => setNewOpen(true)}
         />
 
