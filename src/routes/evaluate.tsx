@@ -20,8 +20,9 @@ export const Route = createFileRoute("/evaluate")({
   component: TestSetPage,
 });
 
-const DEFAULT_FIELDS = ["输入图片", "用户ID"] as const;
+const DEFAULT_FIELDS = ["轮次", "输入图片", "用户ID"] as const;
 const ALL_FIELDS = [
+  "轮次",          // turns 序号
   "输入图片",      // image_urls
   "用户ID",        // user_id
   "笔记ID",        // attachments.note.noteId
@@ -61,6 +62,7 @@ function genDetailRows(setId: string, name: string) {
     no: i + 1,
     query: queries[i % queries.length],
     extras: {
+      轮次: `第 ${(i % 3) + 1} 轮`,
       输入图片: i % 3 === 0 ? `https://img.cdn/${setId}_${i}.jpg` : "-",
       用户ID: `U${100000 + i * 7}`,
       笔记ID: i % 4 === 0 ? `note_${1000 + i}` : "-",
@@ -169,6 +171,7 @@ function TestSetPage() {
     const bulkNotes = r.attachments.filter((a) => a.kind === "bulk-note");
     const noteId = bulkNotes[0]?.name ?? (shares.find((s) => /笔记|note/i.test(s.name))?.name ?? "-");
     const extras: Record<string, string> = {
+      轮次: "第 1 轮",
       输入图片: images.length ? images.map((a) => a.name).join("、") : "-",
       用户ID: "-",
       笔记ID: noteId,
