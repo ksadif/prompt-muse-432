@@ -62,6 +62,7 @@ function genDetailRows(setId: string, name: string) {
     no: i + 1,
     query: queries[i % queries.length],
     extras: {
+      轮次: `第 ${(i % 3) + 1} 轮`,
       输入图片: i % 3 === 0 ? `https://img.cdn/${setId}_${i}.jpg` : "-",
       用户ID: `U${100000 + i * 7}`,
       笔记ID: i % 4 === 0 ? `note_${1000 + i}` : "-",
