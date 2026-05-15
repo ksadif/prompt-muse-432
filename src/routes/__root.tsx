@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { ConfirmProvider } from "@/components/console/ConfirmDialog";
 
 function NotFoundComponent() {
   return (
