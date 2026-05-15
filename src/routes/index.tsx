@@ -9,6 +9,7 @@ import { AgentPreview } from "@/components/console/AgentPreview";
 import { EvalTable } from "@/components/console/EvalTable";
 import { RightDrawer } from "@/components/console/RightDrawer";
 import { initialFolders, versionHistory } from "@/components/console/mockData";
+import { useConfirm } from "@/components/console/ConfirmDialog";
 import {
   ALL_MODELS,
   ALL_TOOLS,
